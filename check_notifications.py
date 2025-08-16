@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import requests
 
-BACKEND_URL = 'https://cargo-tracker-28.preview.emergentagent.com/api'
+BACKEND_URL = 'https://cargo-tracker-29.preview.emergentagent.com/api'
 
 # Authorize as admin
 admin_response = requests.post(f'{BACKEND_URL}/auth/login', json={'phone': '+79999888777', 'password': 'admin123'})

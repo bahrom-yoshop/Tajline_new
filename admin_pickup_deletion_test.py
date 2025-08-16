@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://cargo-tracker-28.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-tracker-29.preview.emergentagent.com/api"
 
 class AdminPickupDeletionTest:
     def __init__(self):

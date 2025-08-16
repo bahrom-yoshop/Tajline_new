@@ -33,7 +33,7 @@ import os
 from datetime import datetime, timedelta
 
 class ImprovedPickupModalTester:
-    def __init__(self, base_url="https://cargo-tracker-28.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cargo-tracker-29.preview.emergentagent.com"):
         self.base_url = base_url
         self.session = requests.Session()
         self.tests_run = 0
@@ -627,7 +627,7 @@ class ImprovedPickupModalTester:
 
 if __name__ == "__main__":
     # Get the backend URL from environment variable or use default
-    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-tracker-28.preview.emergentagent.com')
+    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-tracker-29.preview.emergentagent.com')
     
     # Initialize tester with the correct URL
     tester = ImprovedPickupModalTester(base_url=backend_url)

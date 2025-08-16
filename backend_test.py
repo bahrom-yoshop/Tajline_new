@@ -641,7 +641,7 @@ import time
 from datetime import datetime, timedelta
 
 # Конфигурация
-BACKEND_URL = "https://03054c56-0cb9-443b-a828-f3e224602a32.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-tracker-29.preview.emergentagent.com/api"
 
 # Учетные данные для тестирования
 ADMIN_CREDENTIALS = {

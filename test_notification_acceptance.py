@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_notification_acceptance():
-    base_url = "https://cargo-tracker-28.preview.emergentagent.com"
+    base_url = "https://cargo-tracker-29.preview.emergentagent.com"
     
     # Login as operator
     print("🔍 Logging in as operator...")
