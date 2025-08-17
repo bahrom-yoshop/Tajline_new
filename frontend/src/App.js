@@ -24418,8 +24418,9 @@ function App() {
                     <Select 
                       value={cargoAcceptanceForm.payment_status} 
                       onValueChange={(value) => setCargoAcceptanceForm({...cargoAcceptanceForm, payment_status: value})}
+                      disabled={!isPaymentEditMode} // Редактируется только в режиме редактирования
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={!isPaymentEditMode ? "bg-gray-100" : ""}>
                         <SelectValue placeholder="Выберите статус оплаты" />
                       </SelectTrigger>
                       <SelectContent>
