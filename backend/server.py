@@ -12793,6 +12793,89 @@ async def create_test_cargo_for_qr_placement(
         "message": f"Тестовый груз {cargo_number} создан с QR кодом {numeric_qr_code}"
     }
 
+@app.post("/api/placement/create-test-cargo-with-warehouse")
+async def create_test_cargo_with_warehouse_location(
+    current_user: User = Depends(get_current_user)
+):
+    """ТЕСТОВАЯ ФУНКЦИЯ: Создать тестовый груз с QR кодом, размещенный в ячейке склада"""
+    if current_user.role not in [UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Only admins can use this testing function")
+    
+    # Создать тестовый груз
+    timestamp = datetime.now().strftime('%H%M%S')
+    cargo_number = f"TEST{timestamp}"
+    cargo_id = str(uuid.uuid4())
+    
+    # Генерировать числовой QR код
+    cargo_digits = ''.join(filter(str.isdigit, cargo_number))[-4:]  # Последние 4 цифры из timestamp
+    if len(cargo_digits) < 4:
+        cargo_digits = cargo_digits.ljust(4, '0')
+    
+    weight_str = "015"  # 15 кг
+    
+    import random
+    suffix = str(random.randint(100, 999))
+    numeric_qr_code = f"{cargo_digits}{weight_str}{suffix}"
+    
+    # Создать QR код
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(numeric_qr_code)
+    qr.make(fit=True)
+
+    qr_image = qr.make_image(fill_color="black", back_color="white")
+    buffered = BytesIO()
+    qr_image.save(buffered, format="PNG")
+    qr_base64 = base64.b64encode(buffered.getvalue()).decode()
+    qr_code_url = f"data:image/png;base64,{qr_base64}"
+    
+    # Создать случайную ячейку склада
+    block = random.randint(1, 5)
+    shelf = random.randint(1, 10)
+    cell = random.randint(1, 20)
+    warehouse_location = f"Б{block:02d}-П{shelf:02d}-Я{cell:02d}"
+    
+    cargo = {
+        "id": cargo_id,
+        "cargo_number": cargo_number,
+        "cargo_name": "Тестовый груз для QR размещения на транспорт",
+        "weight": 15.0,
+        "sender_full_name": "Тестовый Отправитель QR",
+        "recipient_full_name": "Тестовый Получатель QR",
+        "sender_phone": "+79991234567",
+        "recipient_phone": "+79997654321",
+        "status": "placed_in_warehouse",
+        "warehouse_location": warehouse_location,  # ВАЖНО: размещен в ячейке
+        "qr_code": qr_code_url,
+        "qr_data": numeric_qr_code,
+        "created_at": datetime.utcnow(),
+        "created_by": current_user.id,
+        "qr_generated_at": datetime.utcnow(),
+        "qr_generated_by": current_user.id,
+        "placed_in_warehouse_at": datetime.utcnow(),
+        "placed_in_warehouse_by": current_user.id
+    }
+    
+    # Сохранить в operator_cargo коллекцию
+    db.operator_cargo.insert_one(cargo)
+    
+    return {
+        "success": True,
+        "cargo": {
+            "id": cargo_id,
+            "cargo_number": cargo_number,
+            "qr_data": numeric_qr_code,
+            "warehouse_location": warehouse_location,
+            "weight": 15.0,
+            "status": "placed_in_warehouse"
+        },
+        "message": f"Тестовый груз {cargo_number} создан с QR кодом {numeric_qr_code} и размещен в ячейке {warehouse_location}"
+    }
+
 # === УПРАВЛЕНИЕ ЯЧЕЙКАМИ СКЛАДА ===
 
 @app.get("/api/warehouse/{warehouse_id}/cell/{location_code}/cargo")
