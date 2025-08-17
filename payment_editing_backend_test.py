@@ -108,7 +108,7 @@ class PaymentEditingTester:
         self.log("🔐 Авторизация курьера...")
         
         login_data = {
-            "phone": "+79991234567",
+            "phone": "+79991234571",
             "password": "courier123"
         }
         
