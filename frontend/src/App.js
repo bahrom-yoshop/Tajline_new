@@ -19182,10 +19182,20 @@ function App() {
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <Button onClick={() => fetchAvailableCargoForPlacement(availableCargoPage, availableCargoPerPage)} className="mb-4">
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            Обновить список грузов
-                          </Button>
+                          <div className="flex space-x-2 mb-4">
+                            <Button onClick={() => fetchAvailableCargoForPlacement(availableCargoPage, availableCargoPerPage)}>
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Обновить список грузов
+                            </Button>
+                            <Button 
+                              onClick={() => setCargoQRGenerationModal(true)}
+                              variant="outline"
+                              className="bg-orange-600 text-white hover:bg-orange-700 border-orange-600"
+                            >
+                              <QrCode className="mr-2 h-4 w-4" />
+                              QR коды для грузов
+                            </Button>
+                          </div>
                           
                           {/* Легенда цветов складов */}
                           {availableCargoForPlacement.length > 0 && (
