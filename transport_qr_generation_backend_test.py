@@ -307,10 +307,14 @@ class TransportQRGenerationTester:
                 self.log("📦 Создание тестового заполненного транспорта...")
                 test_transport_id = self.create_test_transport_if_needed()
                 if test_transport_id:
-                    if self.update_transport_status(test_transport_id, "filled"):
-                        # Получаем обновленный список транспортов
-                        transports = self.get_transport_list()
-                        filled_transport = self.find_filled_transport(transports)
+                    # Создаем тестовый груз
+                    cargo_id, cargo_number = self.create_test_cargo()
+                    if cargo_id and cargo_number:
+                        # Размещаем груз на транспорте чтобы сделать его заполненным
+                        if self.place_cargo_on_transport(test_transport_id, [cargo_number]):
+                            # Получаем обновленный список транспортов
+                            transports = self.get_transport_list()
+                            filled_transport = self.find_filled_transport(transports)
                         
             if filled_transport:
                 self.log("✅ Найден транспорт со статусом 'filled' для тестирования")
