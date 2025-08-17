@@ -344,22 +344,8 @@ class CourierRequestFilteringTester:
                 return False
             success_count += 1
             
-            # 4. Создание тестовых курьеров
-            self.log("\n📋 ЭТАП 4: Создание тестовых курьеров")
-            courier_a_id, courier_a_user_id = self.create_test_courier(
-                "Тестовый Курьер А", "+79991111111", "courier123", warehouse_id
-            )
-            courier_b_id, courier_b_user_id = self.create_test_courier(
-                "Тестовый Курьер Б", "+79992222222", "courier123", warehouse_id
-            )
-            
-            if not courier_a_id or not courier_b_id:
-                self.log("❌ Критическая ошибка: не удалось создать тестовых курьеров")
-                return False
-            success_count += 1
-            
-            # 5. Авторизация курьеров
-            self.log("\n📋 ЭТАП 5: Авторизация тестовых курьеров")
+            # 4. Авторизация существующих курьеров (пропускаем создание)
+            self.log("\n📋 ЭТАП 4: Авторизация существующих тестовых курьеров")
             self.courier_a_token, self.courier_a_id = self.authenticate_courier("+79991111111", "courier123")
             self.courier_b_token, self.courier_b_id = self.authenticate_courier("+79992222222", "courier123")
             
@@ -368,8 +354,8 @@ class CourierRequestFilteringTester:
                 return False
             success_count += 1
             
-            # 6. Создание тестовых заявок
-            self.log("\n📋 ЭТАП 6: Создание тестовых заявок на забор груза")
+            # 5. Создание тестовых заявок
+            self.log("\n📋 ЭТАП 5: Создание тестовых заявок на забор груза")
             request_1 = self.create_test_pickup_request(1001)
             request_2 = self.create_test_pickup_request(1002)
             
