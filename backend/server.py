@@ -8720,10 +8720,68 @@ async def get_destination_cities(current_user: User = Depends(get_current_user))
     seen = set()
     items = []
     for r in raw:
-        if r["city"].lower() not in seen:
-            seen.add(r["city"].lower())
+        key = r["city"].strip().lower()
+        if key and key not in seen:
+            seen.add(key)
             items.append(r)
     return {"items": items, "count": len(items)}
+
+# ====== ADMIN: МАССОВОЕ НАЗНАЧЕНИЕ ГОРОДОВ ДЛЯ СКЛАДОВ (1:1) ======
+class BulkWarehouseCitiesRequest(BaseModel):
+    items: List[Dict[str, str]]  # [{"warehouse_id": "..", "city": "Душанбе"}, ...]
+    dry_run: bool = False
+
+@app.post("/api/admin/warehouses/set-cities-bulk")
+async def set_cities_bulk(payload: BulkWarehouseCitiesRequest, current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only administrators can set cities in bulk")
+    if not payload.items:
+        raise HTTPException(status_code=400, detail="No items provided")
+
+    # Соберем города из запроса и проверим локальные дубликаты
+    seen_local = set()
+    for it in payload.items:
+        city = (it.get("city") or "").strip()
+        if not city:
+            raise HTTPException(status_code=400, detail="City cannot be empty")
+        key = city.lower()
+        if key in seen_local:
+            raise HTTPException(status_code=400, detail=f"Duplicate city in payload: {city}")
+        seen_local.add(key)
+
+    results = []
+    updated = 0
+
+    # Проверим конфликты с существующими активными складами (1:1)
+    for it in payload.items:
+        wh_id = it.get("warehouse_id")
+        city = (it.get("city") or "").strip()
+        if not db.warehouses.find_one({"id": wh_id}):
+            results.append({"warehouse_id": wh_id, "city": city, "status": "not_found"})
+            continue
+        conflict = db.warehouses.find_one({
+            "city": city,
+            "is_active": True,
+            "id": {"$ne": wh_id}
+        })
+        if conflict:
+            results.append({"warehouse_id": wh_id, "city": city, "status": "conflict", "conflict_with": conflict.get("id")})
+            continue
+        # Готово к обновлению
+        results.append({"warehouse_id": wh_id, "city": city, "status": "ok"})
+
+    if not payload.dry_run:
+        for r in results:
+            if r["status"] == "ok":
+                db.warehouses.update_one({"id": r["warehouse_id"]}, {"$set": {"city": r["city"], "updated_at": datetime.utcnow()}})
+                updated += 1
+
+    return {
+        "success": True,
+        "dry_run": payload.dry_run,
+        "updated": updated,
+        "results": results
+    }
 
 @app.get("/api/warehouses/by-route/{route}")
 async def get_warehouses_by_route(route: str, current_user: User = Depends(get_current_user)):
