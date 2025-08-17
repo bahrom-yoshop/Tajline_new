@@ -12538,7 +12538,7 @@ async def place_cargo_on_transport_via_qr(
     })
     
     new_load = current_load + cargo_weight
-    new_status = TransportStatus.FILLED if new_load >= capacity * 0.9 else TransportStatus.LOADING
+    new_status = TransportStatus.FILLED if new_load >= capacity * 0.9 else TransportStatus.EMPTY
     
     # Обновить транспорт
     db.transports.update_one(
