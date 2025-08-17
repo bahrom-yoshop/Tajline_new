@@ -17864,7 +17864,7 @@ function App() {
                             /* ОБЫЧНЫЙ РЕЖИМ - все поля как было */
                             <>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                                <div>
                               <Label htmlFor="sender_full_name">ФИО отправителя</Label>
                               <Input
                                 id="sender_full_name"
