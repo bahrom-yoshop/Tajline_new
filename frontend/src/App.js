@@ -97,13 +97,35 @@ function App() {
     recipient_full_name: '',
     recipient_phone: '',
     recipient_address: '',
-    cargo_items: [{ name: '', weight: '', price: '' }],
-    payment_method: '',
-    delivery_method: '',
-    payment_status: 'not_paid',
-    amount_paid: '',
-    payment_notes: ''
+    route: 'moscow_to_tajikistan',
+    cargo_items: [
+      { cargo_name: '', weight: '', price: '', description: '' }
+    ],
+    total_weight: 0,
+    total_cost: 0,
+    warehouse_id: '',
+    destination_warehouse_name: '',
+    destination_city: '',
+    payment_status: 'paid',
+    payment_method: 'cash',
+    pickup_required: false
   });
+
+  // Город → склад для выдачи (загружаем 1:1 карты)
+  const [destinationCities, setDestinationCities] = useState([]);
+
+  useEffect(() => {
+    const loadCities = async () => {
+      try {
+        const res = await apiCall('/api/destinations/cities', 'GET');
+        setDestinationCities(res.items || []);
+      } catch (e) {
+        console.error('Не удалось загрузить города назначения', e);
+        setDestinationCities([]);
+      }
+    };
+    loadCities();
+  }, []);
 
   // НОВОЕ: Состояние для информации о маршруте при оформлении груза
   const [routeInfo, setRouteInfo] = useState({
