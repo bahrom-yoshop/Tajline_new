@@ -24440,8 +24440,9 @@ function App() {
                     <Select 
                       value={cargoAcceptanceForm.payment_method} 
                       onValueChange={(value) => setCargoAcceptanceForm({...cargoAcceptanceForm, payment_method: value})}
+                      disabled={!isPaymentEditMode} // Редактируется только в режиме редактирования
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className={!isPaymentEditMode ? "bg-gray-100" : ""}>
                         <SelectValue placeholder="Выберите способ оплаты" />
                       </SelectTrigger>
                       <SelectContent>
