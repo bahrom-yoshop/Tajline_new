@@ -10309,66 +10309,100 @@ async def direct_accept_cargo_by_operator(
     try:
         print(f"🏢 Прямой приём груза через оператора: {current_user.full_name}")
         
-        # Генерируем номер груза
-        cargo_number = generate_cargo_number()
-        cargo_id = str(uuid.uuid4())
+        # Генерируем базовый номер заявки
+        base_request_number = f"{datetime.now().strftime('%y%m%d')}{str(random.randint(10000, 99999))[-4:]}"
         
-        # Подготавливаем данные груза
-        cargo_document = {
-            "id": cargo_id,
-            "cargo_number": cargo_number,
-            "sender_full_name": cargo_data.get("sender_full_name"),
-            "sender_phone": cargo_data.get("sender_phone"),
-            "sender_address": cargo_data.get("sender_address"),
-            "recipient_full_name": cargo_data.get("recipient_full_name"),
-            "recipient_phone": cargo_data.get("recipient_phone"),
-            "recipient_address": cargo_data.get("recipient_address"),
-            
-            # Данные грузов
-            "cargo_items": cargo_data.get("cargo_items", []),
-            "total_weight": float(cargo_data.get("total_weight", 0)),
-            "total_cost": float(cargo_data.get("total_cost", 0)),
-            
-            # Статусы и мета-данные
-            "status": "awaiting_placement",  # Готов к размещению
-            "processing_status": "paid",     # Считается оплаченным
-            "warehouse_id": cargo_data.get("warehouse_id") or current_user.warehouse_id,
-            "route": cargo_data.get("route", "moscow_to_tajikistan"),
-            
-            # Информация о приёме
-            "received_by_operator": current_user.full_name,
-            "received_by_operator_id": current_user.id,
-            "received_at": datetime.utcnow(),
-            "acceptance_method": "direct_operator",  # Метод приёма
-            
-            # Системные поля
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
-            "special_instructions": cargo_data.get("special_instructions", "Принят напрямую через оператора")
-        }
+        cargo_items = cargo_data.get("cargo_items", [])
+        created_cargo_list = []
         
-        # Сохраняем в основную коллекцию cargo
-        db.cargo.insert_one(cargo_document)
+        # Если нет отдельных грузов, создаем один груз из общих данных
+        if not cargo_items or len(cargo_items) == 0:
+            cargo_items = [{
+                "cargo_name": cargo_data.get("description", "Груз"),
+                "weight": cargo_data.get("total_weight", 0),
+                "value": cargo_data.get("total_cost", 0),
+                "description": cargo_data.get("special_instructions", "")
+            }]
         
-        # Также добавляем в operator_cargo для отображения в списках оператора
-        operator_cargo_document = {
-            **cargo_document,
-            "operator_id": current_user.id,
-            "assigned_at": datetime.utcnow()
-        }
-        db.operator_cargo.insert_one(operator_cargo_document)
-        
-        print(f"✅ Груз {cargo_number} успешно принят через оператора {current_user.full_name}")
+        # Создаем отдельный груз для каждого элемента
+        for index, cargo_item in enumerate(cargo_items, 1):
+            cargo_id = str(uuid.uuid4())
+            
+            # Индивидуальный номер груза в формате: базовый_номер/номер_груза
+            cargo_number = f"{base_request_number}/{index:02d}"
+            
+            cargo_document = {
+                "id": cargo_id,
+                "cargo_number": cargo_number,
+                "base_request_number": base_request_number,  # Базовый номер заявки
+                "item_sequence": index,  # Порядковый номер груза в заявке
+                
+                # Данные отправителя и получателя (общие для всех грузов заявки)
+                "sender_full_name": cargo_data.get("sender_full_name"),
+                "sender_phone": cargo_data.get("sender_phone"),
+                "sender_address": cargo_data.get("sender_address"),
+                "recipient_full_name": cargo_data.get("recipient_full_name"),
+                "recipient_phone": cargo_data.get("recipient_phone"),
+                "recipient_address": cargo_data.get("recipient_address"),
+                
+                # Данные конкретного груза
+                "cargo_name": cargo_item.get("cargo_name", f"Груз №{index}"),
+                "weight": float(cargo_item.get("weight", 0)),
+                "declared_value": float(cargo_item.get("value", 0)),
+                "description": cargo_item.get("description", ""),
+                
+                # Общие данные заявки
+                "total_items_in_request": len(cargo_items),
+                "route": cargo_data.get("route", "moscow_to_tajikistan"),
+                "warehouse_id": cargo_data.get("warehouse_id") or current_user.warehouse_id,
+                "payment_method": cargo_data.get("payment_method", "not_paid"),
+                
+                # Статусы
+                "status": "awaiting_placement",
+                "processing_status": "accepted",
+                
+                # Информация о приёме
+                "received_by_operator": current_user.full_name,
+                "received_by_operator_id": current_user.id,
+                "received_at": datetime.utcnow(),
+                "acceptance_method": "direct_operator",
+                
+                # Системные поля
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "special_instructions": cargo_data.get("special_instructions", "")
+            }
+            
+            # Сохраняем в основную коллекцию cargo
+            db.cargo.insert_one(cargo_document)
+            
+            # Также добавляем в operator_cargo для отображения в списках оператора
+            operator_cargo_document = {
+                **cargo_document,
+                "operator_id": current_user.id,
+                "assigned_at": datetime.utcnow()
+            }
+            db.operator_cargo.insert_one(operator_cargo_document)
+            
+            created_cargo_list.append({
+                "cargo_id": cargo_id,
+                "cargo_number": cargo_number,
+                "cargo_name": cargo_document["cargo_name"],
+                "weight": cargo_document["weight"],
+                "declared_value": cargo_document["declared_value"]
+            })
+            
+            print(f"✅ Груз {cargo_number} (груз {index} из {len(cargo_items)}) успешно принят через оператора {current_user.full_name}")
         
         return {
             "success": True,
-            "message": f"Груз успешно принят на склад через оператора",
-            "cargo_id": cargo_id,
-            "cargo_number": cargo_number,
-            "status": "awaiting_placement",
-            "warehouse_id": cargo_document["warehouse_id"],
+            "message": f"Успешно принято {len(created_cargo_list)} грузов на склад через оператора",
+            "base_request_number": base_request_number,
+            "created_cargo": created_cargo_list,
+            "total_cargo_count": len(created_cargo_list),
+            "warehouse_id": cargo_data.get("warehouse_id") or current_user.warehouse_id,
             "received_by": current_user.full_name,
-            "received_at": cargo_document["received_at"].isoformat()
+            "received_at": datetime.utcnow().isoformat()
         }
         
     except Exception as e:
