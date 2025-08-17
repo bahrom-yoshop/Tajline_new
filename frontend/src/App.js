@@ -9842,18 +9842,36 @@ function App() {
           },
           scannedCargo: prev.scannedCargo.filter(cargo => cargo.id !== cargoId),
           placementHistory: [response.placement_log, ...prev.placementHistory],
-          lastScanResult: `Груз ${response.cargo.cargo_number} размещен на транспорт`
+          lastScanResult: `✅ Груз ${response.cargo.cargo_number} размещен! Продолжайте сканирование.`
         }));
         
-        showAlert(response.message, 'success');
+        showAlert(response.message + ' Продолжайте сканирование грузов.', 'success');
         
         // Обновить общий список транспортов
         await fetchTransportsList();
+        
+        // Автоматически фокусируемся на поле ввода для продолжения сканирования
+        setTimeout(() => {
+          const input = document.getElementById('qr-input');
+          if (input) {
+            input.focus();
+          }
+        }, 100);
       }
     } catch (error) {
       console.error('Error placing cargo on transport:', error);
       showAlert('Ошибка размещения груза: ' + error.message, 'error');
     }
+  };
+
+  // Функция для автоматического размещения груза сразу после сканирования
+  const handleAutoPlaceCargoAfterScan = async (cargo) => {
+    if (!qrPlacementData.selectedTransport) {
+      return;
+    }
+    
+    // Автоматически размещаем груз
+    await handlePlaceCargoViaQR(cargo.id);
   };
 
   const loadTransportCargoData = async (transportId) => {
