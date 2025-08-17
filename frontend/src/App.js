@@ -1658,11 +1658,31 @@ function App() {
             const cargoNames = cargoInfo.cargo_name.split(',').map(name => name.trim()).filter(name => name);
             if (cargoNames.length > 1) {
               // Несколько грузов - создаем отдельный контейнер для каждого
-              processedCargoItems = cargoNames.map((name, index) => ({
-                name: name,
-                weight: index === 0 && cargoInfo.weight ? String(cargoInfo.weight) : '', // Вес только для первого груза
-                price: index === 0 && cargoInfo.price_per_kg ? String(cargoInfo.price_per_kg) : '' // ИСПРАВЛЕНИЕ: Используем price_per_kg вместо total_value
-              }));
+              processedCargoItems = cargoNames.map((name, index) => {
+                let pricePerKg = '';
+                
+                if (index === 0) {
+                  // Для первого груза используем данные из cargoInfo
+                  pricePerKg = cargoInfo.price_per_kg || '';
+                  
+                  // ИСПРАВЛЕНИЕ: Если price_per_kg отсутствует, но есть total_value и weight, восстанавливаем цену за кг
+                  if (!pricePerKg && cargoInfo.total_value && cargoInfo.weight) {
+                    const totalPrice = parseFloat(cargoInfo.total_value);
+                    const weight = parseFloat(cargoInfo.weight);
+                    
+                    if (totalPrice > 1000 && weight > 0) {
+                      pricePerKg = (totalPrice / weight).toFixed(2);
+                      console.log(`🔧 ИСПРАВЛЕНИЕ: Восстанавливаем цену за кг ${totalPrice}₽ / ${weight}кг = ${pricePerKg}₽/кг`);
+                    }
+                  }
+                }
+                
+                return {
+                  name: name,
+                  weight: index === 0 && cargoInfo.weight ? String(cargoInfo.weight) : '', // Вес только для первого груза
+                  price: String(pricePerKg)  
+                };
+              });
             } else {
               // Один груз
               processedCargoItems = [{
