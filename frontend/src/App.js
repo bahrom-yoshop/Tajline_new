@@ -9446,7 +9446,8 @@ function App() {
   };
 
   const getFilledTransports = () => {
-    return transports.filter(transport => transport.status === 'filled');
+    // Теперь возвращаем ВСЕ транспорты, а не только заполненные
+    return transports.filter(transport => transport && transport.id);
   };
 
   // Cargo QR Code Generation Functions
