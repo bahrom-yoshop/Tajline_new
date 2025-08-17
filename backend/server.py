@@ -12398,6 +12398,249 @@ async def batch_generate_cargo_qr_codes(
         "message": f"Успешно сгенерировано QR кодов: {len(results)}, ошибок: {len(errors)}"
     }
 
+# === РАЗМЕЩЕНИЕ ГРУЗОВ НА ТРАНСПОРТ ЧЕРЕЗ QR-КОДЫ ===
+
+@app.post("/api/placement/scan-transport-qr")
+async def scan_transport_qr_for_placement(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Сканирование QR кода транспорта для размещения грузов"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    qr_data = request.get("qr_data", "").strip()
+    if not qr_data:
+        raise HTTPException(status_code=400, detail="QR данные не предоставлены")
+    
+    # Поиск транспорта по QR коду
+    transport = db.transports.find_one({"qr_data": qr_data})
+    if not transport:
+        raise HTTPException(status_code=404, detail="Транспорт с таким QR кодом не найден")
+    
+    return {
+        "success": True,
+        "transport": {
+            "id": transport["id"],
+            "transport_number": transport["transport_number"],
+            "driver_name": transport["driver_name"],
+            "driver_phone": transport["driver_phone"],
+            "direction": transport["direction"],
+            "capacity_kg": transport["capacity_kg"],
+            "current_load_kg": transport.get("current_load_kg", 0),
+            "status": transport["status"],
+            "cargo_list": transport.get("cargo_list", [])
+        },
+        "message": f"Транспорт {transport['transport_number']} найден и готов к размещению грузов"
+    }
+
+@app.post("/api/placement/scan-cargo-qr")
+async def scan_cargo_qr_for_placement(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Сканирование QR кода груза для размещения на транспорт"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    qr_data = request.get("qr_data", "").strip()
+    if not qr_data:
+        raise HTTPException(status_code=400, detail="QR данные не предоставлены")
+    
+    # Поиск груза по QR коду в обеих коллекциях
+    cargo = db.cargo.find_one({"qr_data": qr_data})
+    if not cargo:
+        cargo = db.operator_cargo.find_one({"qr_data": qr_data})
+    
+    if not cargo:
+        raise HTTPException(status_code=404, detail="Груз с таким QR кодом не найден")
+    
+    # Проверить, что груз доступен для размещения (находится в ячейке склада)
+    if not cargo.get("warehouse_location"):
+        raise HTTPException(status_code=400, detail="Груз не находится в ячейке склада и не может быть размещен")
+    
+    if cargo.get("transport_id"):
+        raise HTTPException(status_code=400, detail="Груз уже размещен на транспорт")
+    
+    return {
+        "success": True,
+        "cargo": {
+            "id": cargo["id"],
+            "cargo_number": cargo["cargo_number"],
+            "cargo_name": cargo.get("cargo_name", ""),
+            "weight": cargo.get("weight", 0),
+            "sender_full_name": cargo.get("sender_full_name", ""),
+            "recipient_full_name": cargo.get("recipient_full_name", ""),
+            "warehouse_location": cargo.get("warehouse_location", ""),
+            "status": cargo.get("status", ""),
+            "qr_data": cargo.get("qr_data", "")
+        },
+        "message": f"Груз {cargo['cargo_number']} найден и готов к размещению"
+    }
+
+@app.post("/api/placement/place-cargo-on-transport")
+async def place_cargo_on_transport_via_qr(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Размещение груза на транспорт через QR-коды"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    transport_id = request.get("transport_id", "").strip()
+    cargo_id = request.get("cargo_id", "").strip()
+    
+    if not transport_id or not cargo_id:
+        raise HTTPException(status_code=400, detail="ID транспорта и груза обязательны")
+    
+    # Получить данные транспорта
+    transport = db.transports.find_one({"id": transport_id})
+    if not transport:
+        raise HTTPException(status_code=404, detail="Транспорт не найден")
+    
+    # Получить данные груза
+    cargo = db.cargo.find_one({"id": cargo_id})
+    cargo_collection = "cargo"
+    if not cargo:
+        cargo = db.operator_cargo.find_one({"id": cargo_id})
+        cargo_collection = "operator_cargo"
+    
+    if not cargo:
+        raise HTTPException(status_code=404, detail="Груз не найден")
+    
+    # Проверки
+    if cargo.get("transport_id"):
+        raise HTTPException(status_code=400, detail="Груз уже размещен на транспорт")
+    
+    if not cargo.get("warehouse_location"):
+        raise HTTPException(status_code=400, detail="Груз не находится в ячейке склада")
+    
+    # Проверить грузоподъемность
+    cargo_weight = float(cargo.get("weight", 0))
+    current_load = float(transport.get("current_load_kg", 0))
+    capacity = float(transport.get("capacity_kg", 0))
+    
+    if current_load + cargo_weight > capacity:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Превышение грузоподъемности: {current_load + cargo_weight} кг > {capacity} кг"
+        )
+    
+    # Размещение груза на транспорт
+    cargo_list = transport.get("cargo_list", [])
+    cargo_list.append({
+        "cargo_id": cargo_id,
+        "cargo_number": cargo["cargo_number"],
+        "weight": cargo_weight,
+        "placed_at": datetime.utcnow(),
+        "placed_by": current_user.id,
+        "operator_name": current_user.full_name
+    })
+    
+    new_load = current_load + cargo_weight
+    new_status = TransportStatus.FILLED if new_load >= capacity * 0.9 else TransportStatus.LOADING
+    
+    # Обновить транспорт
+    db.transports.update_one(
+        {"id": transport_id},
+        {"$set": {
+            "cargo_list": cargo_list,
+            "current_load_kg": new_load,
+            "status": new_status,
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_user.id
+        }}
+    )
+    
+    # Обновить груз - убрать из ячейки и назначить на транспорт
+    cargo_update = {
+        "transport_id": transport_id,
+        "warehouse_location": None,  # Убираем из ячейки
+        "placed_on_transport_at": datetime.utcnow(),
+        "placed_by": current_user.id,
+        "status": "placed_on_transport",
+        "updated_at": datetime.utcnow()
+    }
+    
+    if cargo_collection == "cargo":
+        db.cargo.update_one({"id": cargo_id}, {"$set": cargo_update})
+    else:
+        db.operator_cargo.update_one({"id": cargo_id}, {"$set": cargo_update})
+    
+    # Логирование операции размещения
+    placement_log = {
+        "id": str(uuid.uuid4()),
+        "transport_id": transport_id,
+        "transport_number": transport["transport_number"],
+        "cargo_id": cargo_id,
+        "cargo_number": cargo["cargo_number"],
+        "cargo_weight": cargo_weight,
+        "operator_id": current_user.id,
+        "operator_name": current_user.full_name,
+        "placed_at": datetime.utcnow(),
+        "warehouse_location_removed": cargo.get("warehouse_location", ""),
+        "operation_type": "qr_placement"
+    }
+    
+    db.placement_logs.insert_one(placement_log)
+    
+    return {
+        "success": True,
+        "transport": {
+            "id": transport_id,
+            "transport_number": transport["transport_number"],
+            "current_load_kg": new_load,
+            "capacity_kg": capacity,
+            "status": new_status,
+            "cargo_count": len(cargo_list)
+        },
+        "cargo": {
+            "id": cargo_id,
+            "cargo_number": cargo["cargo_number"],
+            "weight": cargo_weight,
+            "warehouse_location_removed": cargo.get("warehouse_location", "")
+        },
+        "placement_log": placement_log,
+        "message": f"Груз {cargo['cargo_number']} успешно размещен на транспорт {transport['transport_number']}"
+    }
+
+@app.get("/api/placement/transport-cargo/{transport_id}")
+async def get_transport_cargo_for_placement(
+    transport_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Получить список грузов размещенных на транспорт через QR-размещение"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Получить данные транспорта
+    transport = db.transports.find_one({"id": transport_id})
+    if not transport:
+        raise HTTPException(status_code=404, detail="Транспорт не найден")
+    
+    # Получить логи размещения для этого транспорта
+    placement_logs = list(db.placement_logs.find(
+        {"transport_id": transport_id},
+        sort=[("placed_at", -1)]
+    ))
+    
+    cargo_list = transport.get("cargo_list", [])
+    
+    return {
+        "success": True,
+        "transport": {
+            "id": transport_id,
+            "transport_number": transport["transport_number"],
+            "current_load_kg": transport.get("current_load_kg", 0),
+            "capacity_kg": transport.get("capacity_kg", 0),
+            "status": transport.get("status", ""),
+            "cargo_count": len(cargo_list)
+        },
+        "cargo_list": cargo_list,
+        "placement_logs": placement_logs,
+        "message": f"Данные о размещении грузов на транспорт {transport['transport_number']}"
+    }
+
 # === УПРАВЛЕНИЕ ЯЧЕЙКАМИ СКЛАДА ===
 
 @app.get("/api/warehouse/{warehouse_id}/cell/{location_code}/cargo")
