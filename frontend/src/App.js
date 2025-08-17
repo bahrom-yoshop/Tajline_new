@@ -84,6 +84,9 @@ function App() {
   const [pickupRequestsHistory, setPickupRequestsHistory] = useState([]);
   const [showCargoAcceptanceModal, setShowCargoAcceptanceModal] = useState(false);
   const [currentCargoNotification, setCurrentCargoNotification] = useState(null);
+  
+  // НОВОЕ: Состояние для режима редактирования оплаты
+  const [isPaymentEditMode, setIsPaymentEditMode] = useState(false);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const [showAllNewRequests, setShowAllNewRequests] = useState(false);
   const [showAllAcceptedRequests, setShowAllAcceptedRequests] = useState(false);
