@@ -12596,7 +12596,7 @@ async def place_cargo_on_transport_via_qr(
             "transport_number": transport["transport_number"],
             "current_load_kg": new_load,
             "capacity_kg": capacity,
-            "status": new_status,
+            "status": new_status.value if hasattr(new_status, 'value') else str(new_status),
             "cargo_count": len(cargo_list)
         },
         "cargo": {
