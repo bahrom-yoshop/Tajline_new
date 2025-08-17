@@ -334,7 +334,7 @@ class CargoQRGenerationTester:
         
         if response.status_code == 200:
             data = response.json()
-            test_cargo_id = data.get('cargo_id')
+            test_cargo_id = data.get('id')  # Changed from cargo_id to id
             test_cargo_number = data.get('cargo_number')
             self.test_cargo_ids.append(test_cargo_id)
             
