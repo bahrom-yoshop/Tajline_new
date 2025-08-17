@@ -1516,6 +1516,9 @@ function App() {
       console.log('🏢 Отправка формы приёма груза через оператора');
       
       // Подготовить данные для приёма груза напрямую на склад
+      const selectedDestWarehouseId = operatorCargoForm.warehouse_id || user?.warehouse_id || '';
+      const selectedDestWarehouseName = (operatorWarehouses.find(w => w.id === selectedDestWarehouseId) || warehouses.find(w => w.id === selectedDestWarehouseId))?.name;
+
       const operatorCargoData = {
         // Основные данные груза
         sender_full_name: operatorCargoForm.sender_full_name,
@@ -1531,8 +1534,10 @@ function App() {
         total_cost: parseFloat(operatorCargoForm.total_cost) || 0,
         
         // Специфичные данные для приёма через оператора
-        warehouse_id: operatorCargoForm.warehouse_id || user?.warehouse_id,
-        processing_status: 'paid', // Статус оплаченного груза
+        // ВАЖНО: backend трактует destination_warehouse_id | warehouse_id как склад назначения.
+        destination_warehouse_id: selectedDestWarehouseId,
+        destination_warehouse_name: selectedDestWarehouseName,
+        processing_status: 'paid', // Статус оплаченного груза (backend всё равно установит accepted)
         status: 'awaiting_placement', // Готов к размещению
         received_by_operator: user?.full_name || user?.user_number,
         received_at: new Date().toISOString(),
