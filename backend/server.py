@@ -15467,6 +15467,110 @@ async def update_courier_request(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating request: {str(e)}")
 
+# НОВЫЕ ENDPOINTS: Обновление данных оплаты
+@app.put("/api/courier/pickup-requests/{request_id}/payment")
+async def update_pickup_request_payment(
+    request_id: str,
+    payment_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Обновить данные оплаты для заявки на забор груза"""
+    try:
+        # Проверяем что заявка существует
+        request = db.courier_pickup_requests.find_one({"id": request_id}, {"_id": 0})
+        if not request:
+            raise HTTPException(status_code=404, detail="Pickup request not found")
+
+        current_time = datetime.utcnow()
+        
+        # Подготавливаем данные для обновления
+        update_fields = {
+            "updated_at": current_time,
+            "payment_updated_by": current_user.full_name,
+            "payment_updated_by_id": current_user.id
+        }
+        
+        # Обновляем поля оплаты
+        if "payment_status" in payment_data:
+            update_fields["payment_status"] = payment_data["payment_status"]
+        if "payment_method" in payment_data:
+            update_fields["payment_method"] = payment_data["payment_method"]
+        if "amount_paid" in payment_data:
+            update_fields["amount_paid"] = float(payment_data["amount_paid"]) if payment_data["amount_paid"] else 0
+        
+        # Обновляем заявку
+        result = db.courier_pickup_requests.update_one(
+            {"id": request_id},
+            {"$set": update_fields}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="No changes were made")
+        
+        return {
+            "message": "Payment data updated successfully",
+            "request_id": request_id,
+            "updated_fields": list(update_fields.keys())
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating payment data: {str(e)}")
+
+@app.put("/api/admin/warehouse-notifications/{notification_id}/payment")
+async def update_warehouse_notification_payment(
+    notification_id: str,
+    payment_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Обновить данные оплаты для уведомления склада"""
+    if current_user.role not in [UserRole.WAREHOUSE_OPERATOR, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Access denied: Only operators and admins")
+    
+    try:
+        # Проверяем что уведомление существует
+        notification = db.warehouse_notifications.find_one({"id": notification_id}, {"_id": 0})
+        if not notification:
+            raise HTTPException(status_code=404, detail="Warehouse notification not found")
+
+        current_time = datetime.utcnow()
+        
+        # Подготавливаем данные для обновления
+        update_fields = {
+            "updated_at": current_time,
+            "payment_updated_by": current_user.full_name,
+            "payment_updated_by_id": current_user.id
+        }
+        
+        # Обновляем поля оплаты
+        if "payment_status" in payment_data:
+            update_fields["payment_status"] = payment_data["payment_status"]
+        if "payment_method" in payment_data:
+            update_fields["payment_method"] = payment_data["payment_method"]
+        if "amount_paid" in payment_data:
+            update_fields["amount_paid"] = float(payment_data["amount_paid"]) if payment_data["amount_paid"] else 0
+        
+        # Обновляем уведомление
+        result = db.warehouse_notifications.update_one(
+            {"id": notification_id},
+            {"$set": update_fields}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="No changes were made")
+        
+        return {
+            "message": "Payment data updated successfully",
+            "notification_id": notification_id,
+            "updated_fields": list(update_fields.keys())
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating payment data: {str(e)}")
+
 @app.put("/api/courier/requests/{request_id}/restore")
 async def restore_cancelled_request(
     request_id: str,
