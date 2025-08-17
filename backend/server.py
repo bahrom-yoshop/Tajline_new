@@ -12105,6 +12105,94 @@ async def delete_transport(
     
     return {"message": "Transport deleted and moved to history"}
 
+# === ГЕНЕРАЦИЯ QR КОДОВ ДЛЯ ТРАНСПОРТА ===
+
+@app.post("/api/transport/{transport_id}/generate-qr")
+async def generate_transport_qr_code(
+    transport_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Генерация QR кода для заполненного транспорта"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Получить данные транспорта
+    transport = db.transports.find_one({"id": transport_id})
+    if not transport:
+        raise HTTPException(status_code=404, detail="Transport not found")
+    
+    # Проверить, что транспорт заполнен (принят)
+    if transport["status"] != TransportStatus.FILLED:
+        raise HTTPException(
+            status_code=400, 
+            detail="QR код можно генерировать только для заполненных транспортов"
+        )
+    
+    # Генерировать уникальный числовой QR код для транспорта
+    transport_number = transport.get("transport_number", "N/A")
+    transport_counter = transport.get("sequence_number", 1)
+    
+    # Создать числовой QR код: ТТТТПППССС
+    # ТТТТ - номер транспорта (первые 4 цифры)
+    # ППП - порядковый номер (3 цифры)  
+    # ССС - случайный суффикс для уникальности (3 цифры)
+    
+    # Извлекаем числа из номера транспорта
+    transport_digits = ''.join(filter(str.isdigit, str(transport_number)))
+    if len(transport_digits) < 4:
+        transport_digits = transport_digits.ljust(4, '0')
+    else:
+        transport_digits = transport_digits[:4]
+    
+    # Порядковый номер (от 1 до 999)
+    sequence = str(transport_counter).zfill(3)
+    
+    # Случайный суффикс для уникальности
+    import random
+    suffix = str(random.randint(100, 999))
+    
+    # Итоговый числовой код
+    numeric_qr_code = f"{transport_digits}{sequence}{suffix}"
+    
+    # Создать QR код
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(numeric_qr_code)
+    qr.make(fit=True)
+
+    # Создать изображение QR кода
+    qr_image = qr.make_image(fill_color="black", back_color="white")
+    
+    # Конвертировать в base64
+    buffered = BytesIO()
+    qr_image.save(buffered, format="PNG")
+    qr_base64 = base64.b64encode(buffered.getvalue()).decode()
+    qr_code_url = f"data:image/png;base64,{qr_base64}"
+    
+    # Обновить транспорт с информацией о QR коде
+    db.transports.update_one(
+        {"id": transport_id},
+        {"$set": {
+            "qr_code": qr_code_url,
+            "qr_data": numeric_qr_code,
+            "qr_generated_at": datetime.utcnow(),
+            "qr_generated_by": current_user.id
+        }}
+    )
+    
+    return {
+        "success": True,
+        "transport_id": transport_id,
+        "transport_number": transport_number,
+        "qr_code": qr_code_url,
+        "qr_data": numeric_qr_code,
+        "message": f"QR код для транспорта {transport_number} успешно сгенерирован"
+    }
+
 # === УПРАВЛЕНИЕ ЯЧЕЙКАМИ СКЛАДА ===
 
 @app.get("/api/warehouse/{warehouse_id}/cell/{location_code}/cargo")
