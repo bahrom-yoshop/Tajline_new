@@ -9341,6 +9341,115 @@ function App() {
     }
   };
 
+  // Transport QR Code Generation Functions
+  const handleGenerateTransportQR = async (transport) => {
+    if (transport.status !== 'filled') {
+      showAlert('QR код можно генерировать только для заполненных транспортов', 'error');
+      return;
+    }
+
+    try {
+      setGeneratingTransportQR(true);
+      const response = await apiCall(`/api/transport/${transport.id}/generate-qr`, 'POST');
+      
+      if (response.success) {
+        showAlert(`QR код для транспорта ${transport.transport_number} успешно сгенерирован!`, 'success');
+        
+        // Обновить список транспортов
+        await fetchTransportsList();
+        
+        // Показать QR код для печати
+        openTransportQRPrintModal(response);
+      }
+    } catch (error) {
+      console.error('Error generating transport QR:', error);
+      showAlert('Ошибка генерации QR кода: ' + error.message, 'error');
+    } finally {
+      setGeneratingTransportQR(false);
+    }
+  };
+
+  const openTransportQRPrintModal = (qrData) => {
+    // Открыть окно печати QR кода
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>QR код транспорта ${qrData.transport_number}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                text-align: center; 
+                margin: 0;
+                padding: 20px;
+                background: white;
+              }
+              .qr-container { 
+                display: inline-block;
+                border: 2px solid #333;
+                padding: 20px;
+                background: white;
+                margin: 20px;
+              }
+              .transport-info { 
+                font-size: 18px; 
+                font-weight: bold; 
+                margin-bottom: 10px;
+                color: #333;
+              }
+              .qr-code { 
+                margin: 15px 0;
+              }
+              .qr-data {
+                font-size: 16px;
+                color: #666;
+                margin-top: 10px;
+                font-family: monospace;
+              }
+              .print-btn {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 20px;
+              }
+              @media print {
+                body { margin: 0; padding: 10px; }
+                .print-btn { display: none; }
+                .qr-container { border: 2px solid #000; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="qr-container">
+              <div class="transport-info">Транспорт: ${qrData.transport_number}</div>
+              <div class="qr-code">
+                <img src="${qrData.qr_code}" alt="QR код транспорта" style="width: 250px; height: 250px;" />
+              </div>
+              <div class="qr-data">Код: ${qrData.qr_data}</div>
+            </div>
+            <button class="print-btn" onclick="window.print()">Печать QR кода</button>
+            <script>
+              // Автоматически открыть диалог печати через 1 секунду
+              setTimeout(function() {
+                // window.print();
+              }, 1000);
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+
+  const getFilledTransports = () => {
+    return transports.filter(transport => transport.status === 'filled');
+  };
+
   // Contact functions
   const handleWhatsAppContact = () => {
     // Открыть WhatsApp с предустановленным сообщением
