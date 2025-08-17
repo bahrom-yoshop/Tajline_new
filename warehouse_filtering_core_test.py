@@ -11,7 +11,7 @@ import os
 from datetime import datetime
 
 # Получаем URL backend из переменной окружения
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://115d3eaa-ee86-43cd-a3c2-5f678c029aa4.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tajline-manager-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class WarehouseFilteringCoreTester:

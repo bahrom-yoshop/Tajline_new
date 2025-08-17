@@ -7,7 +7,7 @@ import requests
 import json
 
 def test_notification_acceptance():
-    base_url = "https://freight-hub-6.preview.emergentagent.com"
+    base_url = "https://tajline-manager-1.preview.emergentagent.com"
     
     # Login as operator
     print("🔍 Logging in as operator...")

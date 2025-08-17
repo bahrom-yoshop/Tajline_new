@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 
 # Используем точно тот же URL что и frontend
-FRONTEND_BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com"
+FRONTEND_BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com"
 API_BASE = f"{FRONTEND_BACKEND_URL}/api"
 
 class FrontendSimulationTester:

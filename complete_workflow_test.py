@@ -6,7 +6,7 @@ COMPLETE WORKFLOW TEST: Test the full recipient information workflow
 import requests
 import json
 
-BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com/api"
 
 WAREHOUSE_OPERATOR = {
     "phone": "+79777888999",

@@ -29,7 +29,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 
 # Конфигурация
-BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com/api"
 
 # Учетные данные оператора склада
 WAREHOUSE_OPERATOR = {

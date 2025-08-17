@@ -7,7 +7,7 @@ import requests
 import json
 
 # Конфигурация
-BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com/api"
 
 def test_specific_cargo_deletion():
     """Тестирование конкретного удаления груза 100008/02"""

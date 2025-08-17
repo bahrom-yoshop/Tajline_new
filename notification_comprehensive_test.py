@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class NotificationComprehensiveTester:
-    def __init__(self, base_url="https://freight-hub-6.preview.emergentagent.com"):
+    def __init__(self, base_url="https://tajline-manager-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.operator_token = None
         self.admin_token = None

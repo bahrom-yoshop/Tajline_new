@@ -24,7 +24,7 @@ import json
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com/api"
 
 def log_test_step(step_name, details=""):
     """Логирование шагов тестирования"""

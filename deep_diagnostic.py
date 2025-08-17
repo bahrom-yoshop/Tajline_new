@@ -8,7 +8,7 @@ import requests
 import json
 
 def deep_diagnostic():
-    base_url = "https://freight-hub-6.preview.emergentagent.com"
+    base_url = "https://tajline-manager-1.preview.emergentagent.com"
     
     # Login as admin
     admin_login = {

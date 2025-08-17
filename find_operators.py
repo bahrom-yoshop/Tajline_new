@@ -7,7 +7,7 @@ import requests
 import json
 
 # Конфигурация
-BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {
     "phone": "+79999888777",
     "password": "admin123"
