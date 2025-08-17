@@ -297,8 +297,10 @@ class CargoDestinationLogicTester:
             response = self.session.get(f"{API_BASE}/operator/cargo/available-for-placement", headers=headers)
             
             if response.status_code == 200:
-                cargo_list = response.json()
-                print_success(f"Получен список из {len(cargo_list)} доступных грузов")
+                response_data = response.json()
+                cargo_list = response_data.get("items", [])
+                total_count = response_data.get("pagination", {}).get("total_count", 0)
+                print_success(f"Получен список из {len(cargo_list)} доступных грузов (всего: {total_count})")
                 
                 # Ищем наши тестовые грузы
                 test_cargos_found = []
