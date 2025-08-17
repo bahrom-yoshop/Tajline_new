@@ -8707,27 +8707,40 @@ async def admin_set_warehouse_city(warehouse_id: str, body: WarehouseCityRequest
 # ====== PUBLIC: СПИСОК ГОРОДОВ НАЗНАЧЕНИЯ (1:1 СО СКЛАДОМ) ======
 @app.get("/api/destinations/cities")
 async def get_destination_cities(current_user: User = Depends(get_current_user)):
-    """Вернуть список городов для выдачи груза (city) c 1:1 соответствием складу.
-    Если у склада нет явного поля city, используется поле location."""
+    """Вернуть список городов для выдачи груза. Один склад может иметь много городов.
+    Если у склада нет cities, используем location как fallback."""
     whs = list(db.warehouses.find({"is_active": True}, {"_id": 0}))
-    raw = []
+    items = []
     for w in whs:
-        city = (w.get("city") or w.get("location") or "").strip()
-        if city:
-            raw.append({
-                "city": city,
+        cities = w.get("cities") or []
+        if not cities:
+            # fallback на одно значение из location
+            loc = (w.get("city") or w.get("location") or "").strip()
+            if loc:
+                items.append({
+                    "city": loc,
+                    "warehouse_id": w.get("id"),
+                    "warehouse_name": w.get("name")
+                })
+            continue
+        for c in cities:
+            name = str(c).strip()
+            if not name:
+                continue
+            items.append({
+                "city": name,
                 "warehouse_id": w.get("id"),
                 "warehouse_name": w.get("name")
             })
-    # Убираем дубли по city (берем первый встретившийся для 1:1)
+    # Убираем точные дубли (одинаковые пары город-склад) на всякий случай
     seen = set()
-    items = []
-    for r in raw:
-        key = r["city"].strip().lower()
-        if key and key not in seen:
+    deduped = []
+    for it in items:
+        key = f"{it['city'].lower()}::{it['warehouse_id']}"
+        if key not in seen:
             seen.add(key)
-            items.append(r)
-    return {"items": items, "count": len(items)}
+            deduped.append(it)
+    return {"items": deduped, "count": len(deduped)}
 
 # ====== ADMIN: МАССОВОЕ НАЗНАЧЕНИЕ ГОРОДОВ ДЛЯ СКЛАДОВ (1:1) ======
 class BulkWarehouseCitiesRequest(BaseModel):
