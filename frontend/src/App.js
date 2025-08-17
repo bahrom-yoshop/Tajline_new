@@ -19034,13 +19034,13 @@ function App() {
                                   </Label>
                                   <select
                                     id="destination_warehouse"
-                                    value={operatorCargoForm.warehouse_id || user?.warehouse_id || ''}
+                                    value={operatorCargoForm.warehouse_id || ''}
                                     onChange={(e) => setOperatorCargoForm({...operatorCargoForm, warehouse_id: e.target.value})}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     required
                                   >
                                     <option value="">Выберите склад назначения</option>
-                                    {operatorWarehouses.map((warehouse) => (
+                                    {warehouses.filter(w => w.is_active).map((warehouse) => (
                                       <option key={warehouse.id} value={warehouse.id}>
                                         {warehouse.name} - {warehouse.location}
                                       </option>
