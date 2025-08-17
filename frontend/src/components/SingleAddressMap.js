@@ -117,6 +117,13 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
         if (!mountedRef.current) return;
 
         // Создаем карту
+        setInitStatus('Создание экземпляра карты...');
+        console.log('🗺️ Создаем новую карту SingleAddressMap...');
+        
+        if (!mapRef.current) {
+          throw new Error('Контейнер карты не найден');
+        }
+        
         const newMap = new window.ymaps.Map(mapRef.current, {
           center: [38.5598, 68.7870], // Душанбе по умолчанию
           zoom: 10,
@@ -124,6 +131,7 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
         });
 
         if (!mountedRef.current) {
+          console.log('⚠️ Компонент размонтирован во время создания карты');
           newMap.destroy();
           return;
         }
@@ -131,7 +139,8 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
         console.log('✅ SingleAddressMap создана успешно');
         mapInstanceRef.current = newMap;
         setMapReady(true);
-        setInitStatus('Карта готова!');
+        setInitStatus('Карта готова к использованию!');
+        console.log('🎉 SingleAddressMap полностью готова для отображения адресов');
 
       } catch (error) {
         if (!mountedRef.current) return;
