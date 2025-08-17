@@ -58,7 +58,7 @@ class Cargo250107FixTest:
         headers = {"Authorization": f"Bearer {self.admin_token}"}
         
         try:
-            response = requests.get(f"{BACKEND_URL}/warehouses/list", headers=headers)
+            response = requests.get(f"{BACKEND_URL}/warehouses", headers=headers)
             if response.status_code == 200:
                 warehouses = response.json()
                 self.log(f"📦 Найдено складов: {len(warehouses)}")
