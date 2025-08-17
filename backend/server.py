@@ -10399,7 +10399,8 @@ async def direct_accept_cargo_by_operator(
                 "declared_value": cargo_document["declared_value"],
                 "base_request_number": base_request_number,
                 "item_sequence": index,
-                "warehouse_id": cargo_document["warehouse_id"]
+                "current_warehouse_id": cargo_document["warehouse_id"],  # Склад где груз сейчас находится
+                "destination_warehouse_id": cargo_document["destination_warehouse_id"]  # Склад назначения
             })
             
             print(f"✅ Груз {cargo_number} (груз {index} из {len(cargo_items)}) успешно принят через оператора {current_user.full_name}")
