@@ -25514,6 +25514,57 @@ function App() {
                 </div>
               </div>
 
+              {/* Связанные грузы на этом складе */}
+              {relatedCargoInWarehouse.length > 0 && (
+                <div className="p-4 bg-orange-50 rounded-lg">
+                  <h3 className="font-bold text-lg text-orange-700 mb-3">
+                    🔗 Связанные грузы на складе ({relatedCargoInWarehouse.length})
+                  </h3>
+                  <p className="text-sm text-orange-600 mb-4">
+                    Другие грузы этого отправителя или получателя, размещенные на данном складе
+                  </p>
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {relatedCargoInWarehouse.map((relatedCargo, index) => (
+                      <div key={relatedCargo.id} className="p-3 bg-white rounded-lg border border-orange-200">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-semibold text-orange-800">
+                              📦 {relatedCargo.cargo_number}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {relatedCargo.cargo_name}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="text-orange-600 border-orange-600">
+                            {relatedCargo.weight} кг
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-2">
+                          <div>
+                            <strong>📍 Ячейка:</strong> {relatedCargo.formatted_location}
+                          </div>
+                          <div>
+                            <strong>💰 Стоимость:</strong> {relatedCargo.declared_value} ₽
+                          </div>
+                        </div>
+                        
+                        <div className="text-xs text-gray-500">
+                          <p><strong>📞 Отправитель:</strong> {relatedCargo.sender_full_name} ({relatedCargo.sender_phone})</p>
+                          <p><strong>📧 Получатель:</strong> {relatedCargo.recipient_full_name} ({relatedCargo.recipient_phone})</p>
+                        </div>
+                        
+                        {relatedCargo.description && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            <strong>📋 Описание:</strong> {relatedCargo.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Кнопки действий */}
               <div className="flex justify-between items-center pt-4 border-t">
                 <Button 
