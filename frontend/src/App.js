@@ -1651,7 +1651,7 @@ function App() {
               processedCargoItems = [{
                 name: cargoInfo.cargo_name,
                 weight: cargoInfo.weight ? String(cargoInfo.weight) : '',
-                price: cargoInfo.total_value ? String(cargoInfo.total_value) : cargoInfo.declared_value ? String(cargoInfo.declared_value) : ''
+                price: cargoInfo.price_per_kg ? String(cargoInfo.price_per_kg) : '' // ИСПРАВЛЕНИЕ: Используем price_per_kg вместо total_value
               }];
             }
           } else if (cargoInfo.destination) {
