@@ -344,10 +344,30 @@ class CourierRequestFilteringTester:
                 return False
             success_count += 1
             
-            # 4. Авторизация существующих курьеров (пропускаем создание)
-            self.log("\n📋 ЭТАП 4: Авторизация существующих тестовых курьеров")
-            self.courier_a_token, self.courier_a_id = self.authenticate_courier("+79991111111", "courier123")
-            self.courier_b_token, self.courier_b_id = self.authenticate_courier("+79992222222", "courier123")
+            # 4. Создание новых тестовых курьеров с уникальными номерами
+            self.log("\n📋 ЭТАП 4: Создание новых тестовых курьеров")
+            import random
+            phone_suffix_a = random.randint(1000, 9999)
+            phone_suffix_b = random.randint(1000, 9999)
+            phone_a = f"+7999{phone_suffix_a}111"
+            phone_b = f"+7999{phone_suffix_b}222"
+            
+            courier_a_id, courier_a_user_id = self.create_test_courier(
+                f"Тестовый Курьер А {phone_suffix_a}", phone_a, "courier123", warehouse_id
+            )
+            courier_b_id, courier_b_user_id = self.create_test_courier(
+                f"Тестовый Курьер Б {phone_suffix_b}", phone_b, "courier123", warehouse_id
+            )
+            
+            if not courier_a_id or not courier_b_id:
+                self.log("❌ Критическая ошибка: не удалось создать тестовых курьеров")
+                return False
+            success_count += 1
+            
+            # 5. Авторизация созданных курьеров
+            self.log("\n📋 ЭТАП 5: Авторизация созданных курьеров")
+            self.courier_a_token, self.courier_a_id = self.authenticate_courier(phone_a, "courier123")
+            self.courier_b_token, self.courier_b_id = self.authenticate_courier(phone_b, "courier123")
             
             if not self.courier_a_token or not self.courier_b_token:
                 self.log("❌ Критическая ошибка: не удалось авторизовать курьеров")
