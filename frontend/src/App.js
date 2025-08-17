@@ -20470,12 +20470,12 @@ function App() {
                                         {/* Кнопки действий */}
                                         <div className="ml-6 flex flex-col space-y-2">
                                           <Button
-                                            onClick={() => handleViewCargo(item)}
+                                            onClick={() => openRequestItemsModalByBase(item.base_request_number)}
                                             variant="outline"
                                             className="flex items-center text-orange-600 border-orange-300 hover:bg-orange-50"
                                           >
                                             <Eye className="mr-2 h-4 w-4" />
-                                            Просмотр груза
+                                            Просмотр заявки
                                           </Button>
                                           
                                           <Button
