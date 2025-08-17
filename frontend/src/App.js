@@ -26551,7 +26551,7 @@ function App() {
               Генерация QR кодов для транспорта
             </DialogTitle>
             <DialogDescription>
-              Генерация QR кодов для принятых (заполненных) транспортов. QR коды содержат только цифры.
+              Генерация QR кодов для транспортов любого статуса. QR коды содержат только цифры.
             </DialogDescription>
           </DialogHeader>
           
@@ -26560,20 +26560,20 @@ function App() {
               <div className="flex items-center">
                 <Truck className="h-5 w-5 text-orange-600 mr-2" />
                 <h5 className="font-medium text-orange-800">
-                  Доступные транспорты для генерации QR кодов
+                  Все доступные транспорты для генерации QR кодов
                 </h5>
               </div>
               <p className="text-sm text-orange-700 mt-2">
-                Показаны только заполненные транспорты, готовые к отправке. QR коды содержат уникальный числовой код транспорта.
+                Показаны все транспорты независимо от статуса (пустые, заполненные, загружается, разгружается и т.д.). QR коды содержат уникальный числовой код транспорта.
               </p>
             </div>
 
             {getFilledTransports().length === 0 ? (
               <div className="text-center py-8">
                 <Truck className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-500">Нет заполненных транспортов для генерации QR кодов</p>
+                <p className="text-gray-500">Нет доступных транспортов для генерации QR кодов</p>
                 <p className="text-sm text-gray-400 mt-2">
-                  QR коды можно генерировать только для транспортов со статусом "Заполнено"
+                  Добавьте транспорты для генерации QR кодов
                 </p>
               </div>
             ) : (
