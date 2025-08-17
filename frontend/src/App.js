@@ -14258,6 +14258,17 @@ function App() {
 
   // Если открыта страница QR размещения, показываем её вместо основного интерфейса
   if (qrPlacementPage) {
+    // Автоматический фокус при открытии страницы
+    React.useEffect(() => {
+      const timer = setTimeout(() => {
+        const input = document.getElementById('qr-input');
+        if (input) {
+          input.focus();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }, []);
+
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Заголовок страницы */}
