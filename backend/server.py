@@ -14016,32 +14016,16 @@ async def get_courier_new_requests(
     if not courier:
         raise HTTPException(status_code=404, detail="Courier profile not found")
     
-    # ИСПРАВЛЕНИЕ ПРОБЛЕМЫ №1: Заявки принятые одним курьером не должны видеть другие курьеры
-    # Получаем обычные заявки курьера - только свои заявки или неназначенные pending
+    # ИСПРАВЛЕНИЕ: Получаем ТОЛЬКО НОВЫЕ заявки - неназначенные с статусом pending
     courier_requests = list(db.courier_requests.find({
-        "$or": [
-            {"assigned_courier_id": courier["id"], "request_status": {"$in": ["assigned", "pending"]}},
-            {"assigned_courier_id": None, "request_status": "pending", 
-             "$and": [
-                 {"request_status": {"$ne": "accepted"}},  # Исключаем принятые другими
-                 {"request_status": {"$ne": "completed"}}  # Исключаем завершенные
-             ]
-            }
-        ]
+        "assigned_courier_id": None, 
+        "request_status": "pending"
     }, {"_id": 0}).sort("created_at", -1))
     
-    # Получаем заявки на забор груза - только свои или действительно новые
+    # ИСПРАВЛЕНИЕ: Получаем ТОЛЬКО НОВЫЕ заявки на забор груза - неназначенные с статусом pending
     pickup_requests = list(db.courier_pickup_requests.find({
-        "$or": [
-            {"assigned_courier_id": courier["id"], "request_status": {"$in": ["accepted", "pending"]}},
-            {"assigned_courier_id": None, "request_status": "pending",
-             "$and": [
-                 {"request_status": {"$ne": "accepted"}},  # Исключаем принятые другими
-                 {"request_status": {"$ne": "completed"}}, # Исключаем завершенные
-                 {"request_status": {"$ne": "picked_up"}} # Исключаем уже забранные
-             ]
-            }
-        ]
+        "assigned_courier_id": None,
+        "request_status": "pending"
     }, {"_id": 0}).sort("created_at", -1))
     
     # Добавляем тип заявки для различения в интерфейсе
