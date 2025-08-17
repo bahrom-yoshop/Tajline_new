@@ -43,9 +43,12 @@ def debug_auth_and_warehouses():
             
             if response.status_code == 200:
                 warehouses = response.json()
-                print(f"✅ Получено {len(warehouses)} складов")
-                for i, warehouse in enumerate(warehouses[:2], 1):
-                    print(f"   {i}. {warehouse.get('name')} (ID: {warehouse.get('id')})")
+                if isinstance(warehouses, list):
+                    print(f"✅ Получено {len(warehouses)} складов")
+                    for i, warehouse in enumerate(warehouses[:3], 1):
+                        print(f"   {i}. {warehouse.get('name')} (ID: {warehouse.get('id')})")
+                else:
+                    print(f"   Данные: {warehouses}")
             else:
                 print(f"❌ Ошибка: {response.text}")
     else:
