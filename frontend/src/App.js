@@ -17425,7 +17425,9 @@ function App() {
                               {console.log('🔧 Отладка карты (режим забора):', {
                                 pickup_address: operatorCargoForm.pickup_address,
                                 operatorWarehouses: operatorWarehouses.length,
-                                warehouseData: operatorWarehouses[0] // ОТЛАДКА: все данные склада
+                                warehouseData: operatorWarehouses[0], // ОТЛАДКА: все данные склада
+                                toAddress: operatorWarehouses[0]?.address || operatorWarehouses[0]?.location || 'Душанбе',
+                                fromAddress: operatorCargoForm.pickup_address
                               })}
                               {operatorCargoForm.pickup_address && operatorWarehouses.length > 0 && (
                                 <div className="mt-4">
@@ -17437,8 +17439,17 @@ function App() {
                                     <p className="text-xs text-gray-600 mt-1">
                                       🔧 Отладка адреса склада: location="{operatorWarehouses[0]?.location}", 
                                       address="{operatorWarehouses[0]?.address}",
-                                      full_address="{operatorWarehouses[0]?.full_address}"
+                                      full_address="{operatorWarehouses[0]?.full_address}",
+                                      final_toAddress="{operatorWarehouses[0]?.address || operatorWarehouses[0]?.location || 'Душанбе'}"
                                     </p>
+                                    {(!operatorWarehouses[0]?.address && !operatorWarehouses[0]?.location) && (
+                                      <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded">
+                                        <p className="text-sm text-red-700">
+                                          ⚠️ <strong>ПРОБЛЕМА:</strong> У склада нет адреса для построения маршрута!
+                                          Обратитесь к администратору для заполнения адреса склада.
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
                                   {/* ТЕСТОВАЯ ПРОСТАЯ КАРТА */}
                                   <SimpleRouteMap
