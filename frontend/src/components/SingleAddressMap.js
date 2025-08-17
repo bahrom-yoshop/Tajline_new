@@ -165,12 +165,16 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
       
       setLoading(true);
       setError('');
+      
+      console.log(`🔍 SingleAddressMap: Начинаем поиск адреса "${address}"`);
 
       try {
         const ymaps = window.ymaps;
-        if (!ymaps || !mountedRef.current) return;
+        if (!ymaps || !mountedRef.current) {
+          throw new Error('Yandex Maps API недоступен');
+        }
 
-        console.log(`🗺️ Показываем адрес на карте: "${address}"`);
+        console.log(`🗺️ Геокодируем адрес: "${address}"`);
         
         // Проверяем валидность адреса
         if (!address || address.length < 3) {
@@ -179,19 +183,28 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
 
         // Очищаем карту
         mapInstanceRef.current.geoObjects.removeAll();
+        console.log('🧹 Очистили карту от предыдущих маркеров');
 
         // Геокодируем адрес
+        console.log('🔍 Запрос к Yandex Geocoder...');
         const geocodeResult = await ymaps.geocode(address);
+        
+        if (!geocodeResult) {
+          throw new Error('Геокодирование не вернуло результат');
+        }
+        
         const firstGeoObject = geocodeResult.geoObjects.get(0);
+        console.log('📍 Результат геокодирования:', firstGeoObject ? 'найден' : 'не найден');
 
         if (!firstGeoObject) {
-          throw new Error('Адрес не найден');
+          throw new Error('Адрес не найден на карте');
         }
 
         if (!mountedRef.current) return;
 
         // Получаем координаты
         const coords = firstGeoObject.geometry.getCoordinates();
+        console.log(`📍 Координаты найдены: [${coords[0]}, ${coords[1]}]`);
         
         // Создаем маркер
         const placemark = new ymaps.Placemark(coords, {
@@ -201,15 +214,20 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
           preset: 'islands#blueStretchyIcon'
         });
 
-        if (!mountedRef.current || !mapInstanceRef.current) return;
+        if (!mountedRef.current || !mapInstanceRef.current) {
+          console.log('⚠️ Компонент размонтирован во время создания маркера');
+          return;
+        }
 
         // Добавляем маркер на карту
         mapInstanceRef.current.geoObjects.add(placemark);
+        console.log('📍 Маркер добавлен на карту');
         
         // Центрируем карту на адресе
         mapInstanceRef.current.setCenter(coords, 15);
+        console.log('🎯 Карта центрирована на найденном адресе');
         
-        console.log('✅ Адрес успешно отображен на карте');
+        console.log('✅ Адрес успешно отображен на SingleAddressMap');
 
       } catch (error) {
         if (mountedRef.current) {
