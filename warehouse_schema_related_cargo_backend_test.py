@@ -94,7 +94,7 @@ class WarehouseSchemaRelatedCargoTester:
         self.log("🏭 ПОИСК СКЛАДА С РАЗМЕЩЕННЫМИ ГРУЗАМИ")
         
         # Получаем список всех складов
-        response = self.make_request("GET", "/admin/warehouses", token=self.admin_token)
+        response = self.make_request("GET", "/warehouses", token=self.admin_token)
         
         if not response or response.status_code != 200:
             self.log(f"❌ Ошибка получения списка складов: {response.status_code if response else 'No response'}")
