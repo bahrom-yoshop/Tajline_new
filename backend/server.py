@@ -15087,7 +15087,11 @@ async def get_pickup_request_by_id(
                 "total_value": pickup_request.get("total_value"),
                 "declared_value": pickup_request.get("declared_value"),
                 "price_per_kg": pickup_request.get("price_per_kg"),  # Добавлено: цена за кг от курьера
-                "cargo_items": pickup_request.get("cargo_items", [])
+                "cargo_items": pickup_request.get("cargo_items", []),
+                
+                # ИСПРАВЛЕНИЕ: Рассчитываем общий вес и стоимость на основе cargo_items
+                "total_weight": sum(item.get("weight", 0) for item in pickup_request.get("cargo_items", [])) if pickup_request.get("cargo_items") else pickup_request.get("weight"),
+                "total_cost": sum(item.get("weight", 0) * item.get("price_per_kg", 0) for item in pickup_request.get("cargo_items", [])) if pickup_request.get("cargo_items") else (pickup_request.get("weight", 0) * pickup_request.get("price_per_kg", 0) if pickup_request.get("price_per_kg") else pickup_request.get("total_value", 0))
             },
             
             # Информация об оплате
