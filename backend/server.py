@@ -13494,6 +13494,103 @@ async def create_cargo_tracking(
         "client_phone": tracking_data.client_phone
     }
 
+# ===== DEBUG: Найти груз по номеру (cargo_number или base_request_number) =====
+@app.get("/api/debug/find-cargo-by-number/{number}")
+async def debug_find_cargo_by_number(number: str, current_user: User = Depends(get_current_user)):
+    """Диагностический endpoint: ищет груз(ы) по номеру.
+    Ищет:
+    - cargo_number === number (например, 250103)
+    - cargo_number начинается с "{number}/" (например, 250103/01)
+    - base_request_number === number
+    Во всех коллекциях: cargo и operator_cargo.
+    Возвращает диагностическую информацию, включая возможную причину отсутствия в списке размещения.
+    """
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+    try:
+        exact_match = {"cargo_number": number}
+        prefix_match = {"cargo_number": {"$regex": f"^{number}/"}}
+        base_match = {"base_request_number": number}
+
+        def normalize(doc, collection_name: str):
+            d = serialize_mongo_document(doc)
+            # Подтянем имена складов
+            wh_id = d.get("warehouse_id")
+            dest_id = d.get("destination_warehouse_id")
+            wh_name = None
+            dest_name = None
+            if wh_id:
+                wh = db.warehouses.find_one({"id": wh_id})
+                if wh:
+                    wh_name = wh.get("name")
+            if dest_id:
+                dwh = db.warehouses.find_one({"id": dest_id})
+                if dwh:
+                    dest_name = dwh.get("name")
+            # Определим признаки размещения/скрытия
+            has_location = any([
+                bool(d.get("warehouse_location")),
+                d.get("block_number") is not None,
+                d.get("shelf_number") is not None,
+                d.get("cell_number") is not None,
+            ])
+            hidden_reason = None
+            if d.get("status") in ["placed_in_warehouse", "removed_from_placement"]:
+                hidden_reason = f"status={d.get('status')}"
+            elif has_location:
+                hidden_reason = "has_cell_coordinates_or_location"
+            elif d.get("warehouse_id") is None:
+                hidden_reason = "no_warehouse_id"
+
+            return {
+                "collection": collection_name,
+                "id": d.get("id"),
+                "cargo_number": d.get("cargo_number"),
+                "base_request_number": d.get("base_request_number"),
+                "warehouse_id": wh_id,
+                "warehouse_name": wh_name,
+                "destination_warehouse_id": dest_id,
+                "destination_warehouse_name": dest_name,
+                "status": d.get("status"),
+                "processing_status": d.get("processing_status"),
+                "warehouse_location": d.get("warehouse_location"),
+                "block_number": d.get("block_number"),
+                "shelf_number": d.get("shelf_number"),
+                "cell_number": d.get("cell_number"),
+                "created_at": d.get("created_at"),
+                "updated_at": d.get("updated_at"),
+                "hidden_reason": hidden_reason
+            }
+
+        cargo_results = list(db.cargo.find({"$or": [exact_match, prefix_match, base_match]}))
+        operator_results = list(db.operator_cargo.find({"$or": [exact_match, prefix_match, base_match]}))
+
+        normalized = [normalize(doc, "cargo") for doc in cargo_results] + \
+                     [normalize(doc, "operator_cargo") for doc in operator_results]
+
+        # Сводка
+        summary = {
+            "query": number,
+            "total_found": len(normalized),
+            "by_collection": {
+                "cargo": len(cargo_results),
+                "operator_cargo": len(operator_results)
+            },
+            "hidden_status_counts": {}
+        }
+        for item in normalized:
+            key = item.get("hidden_reason") or "visible_candidate"
+            summary["hidden_status_counts"][key] = summary["hidden_status_counts"].get(key, 0) + 1
+
+        return {
+            "success": True,
+            "data": normalized,
+            "summary": summary
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Debug search error: {str(e)}")
+
 @app.get("/api/debug/tracking/{tracking_code}")
 async def debug_tracking(tracking_code: str):
     """Debug tracking lookup"""
