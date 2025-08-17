@@ -90,12 +90,18 @@ def test_transport_qr_generation():
             return False
             
         transport_data = transport_response.json()
-        transports = transport_data.get("transports", [])
+        
+        # Проверяем структуру ответа
+        if isinstance(transport_data, list):
+            transports = transport_data
+        else:
+            transports = transport_data.get("transports", transport_data.get("items", []))
         
         print(f"✅ Получено транспортов: {len(transports)}")
         
         if not transports:
             print("❌ ОШИБКА: Список транспортов пуст")
+            print(f"📋 Структура ответа: {transport_data}")
             return False
             
         # Показываем статистику по статусам
