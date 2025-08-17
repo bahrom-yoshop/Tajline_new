@@ -146,27 +146,39 @@ class TransportQRGenerationTester:
             self.log(f"❌ Ошибка создания тестового транспорта: {response.status_code} - {response.text}")
             return None
             
-    def manually_set_transport_filled(self, transport_id):
-        """Manually set transport status to filled for testing purposes"""
-        self.log(f"🔧 Manually setting transport {transport_id} to 'filled' status...")
+    def get_available_cargo(self):
+        """Получить список доступного груза для размещения на транспорте"""
+        self.log("📦 Поиск доступного груза в системе...")
         
-        # We'll use a direct database update approach through an admin endpoint if available
-        # For now, let's try to find if there's an endpoint to update transport status
         headers = {"Authorization": f"Bearer {self.admin_token}"}
         
-        # Try to get transport details first
-        response = self.session.get(f"{API_BASE}/transport/{transport_id}", headers=headers)
-        if response.status_code == 200:
-            transport_data = response.json()
-            self.log(f"✅ Transport details retrieved: {transport_data.get('transport_number')} (status: {transport_data.get('status')})")
-            
-            # For testing purposes, we'll simulate a filled transport by trying to place some cargo
-            # But since we can't create cargo easily, let's try a different approach
-            # We'll test with an empty transport and expect the error, which is also valid testing
-            return True
-        else:
-            self.log(f"❌ Could not retrieve transport details: {response.status_code} - {response.text}")
-            return False
+        # Попробуем получить список грузов через разные endpoints
+        endpoints_to_try = [
+            "/api/operator/cargo/available-for-transport",
+            "/api/cargo/list",
+            "/api/operator/cargo/list"
+        ]
+        
+        for endpoint in endpoints_to_try:
+            try:
+                response = self.session.get(f"{API_BASE}{endpoint}", headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    if isinstance(data, list) and data:
+                        self.log(f"✅ Найдено {len(data)} грузов через {endpoint}")
+                        return data[:5]  # Возвращаем первые 5 грузов
+                    elif isinstance(data, dict) and data.get('items'):
+                        items = data.get('items', [])
+                        if items:
+                            self.log(f"✅ Найдено {len(items)} грузов через {endpoint}")
+                            return items[:5]
+                else:
+                    self.log(f"⚠️ Endpoint {endpoint} вернул {response.status_code}")
+            except Exception as e:
+                self.log(f"⚠️ Ошибка при обращении к {endpoint}: {e}")
+                
+        self.log("❌ Не удалось найти доступный груз")
+        return []
             
     def generate_qr_code(self, transport_id, transport_number, expect_success=True):
         """Генерация QR кода для транспорта"""
