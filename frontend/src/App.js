@@ -25339,7 +25339,7 @@ function App() {
               </Card>
 
               {/* Действия с транспортом */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 {/* Отправить транспорт */}
                 <Card className="p-4">
@@ -25354,6 +25354,52 @@ function App() {
                   >
                     {selectedTransport.status === 'in_transit' ? 'Транспорт уже в пути' : 'Отправить транспорт'}
                   </Button>
+                </Card>
+
+                {/* Генерировать QR код */}
+                <Card className="p-4">
+                  <h4 className="font-semibold mb-3">QR код транспорта</h4>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Сгенерировать уникальный QR код для данного транспорта (только цифры)
+                  </p>
+                  <Button 
+                    onClick={() => handleGenerateTransportQR(selectedTransport)}
+                    disabled={generatingTransportQR}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                  >
+                    {generatingTransportQR ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Генерация...
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        {selectedTransport?.qr_code ? 'Перегенерировать QR' : 'Генерировать QR'}
+                      </>
+                    )}
+                  </Button>
+                  {selectedTransport?.qr_code && (
+                    <div className="mt-3 p-2 bg-green-50 rounded text-center">
+                      <Badge variant="outline" className="text-green-600 border-green-600 mb-2">
+                        QR код создан
+                      </Badge>
+                      <p className="text-xs text-gray-600">Код: {selectedTransport.qr_data}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openTransportQRPrintModal({
+                          transport_number: selectedTransport.transport_number,
+                          qr_code: selectedTransport.qr_code,
+                          qr_data: selectedTransport.qr_data
+                        })}
+                        className="mt-2 w-full"
+                      >
+                        <Printer className="h-4 w-4 mr-1" />
+                        Печать QR
+                      </Button>
+                    </div>
+                  )}
                 </Card>
 
                 {/* Удалить транспорт */}
