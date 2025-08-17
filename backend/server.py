@@ -8679,27 +8679,30 @@ class WarehouseCityRequest(BaseModel):
 @app.patch("/api/admin/warehouses/{warehouse_id}/set-city")
 async def admin_set_warehouse_city(warehouse_id: str, body: WarehouseCityRequest, current_user: User = Depends(get_current_user)):
     if current_user.role != UserRole.ADMIN:
-        raise HTTPException(status_code=403, detail="Only administrators can set city for warehouse")
-    if not body.city or not body.city.strip():
-        raise HTTPException(status_code=400, detail="City is required")
+        raise HTTPException(status_code=403, detail="Only administrators can set cities for warehouse")
+    if not body.cities or not isinstance(body.cities, list):
+        raise HTTPException(status_code=400, detail="Cities list is required")
     wh = db.warehouses.find_one({"id": warehouse_id})
     if not wh:
         raise HTTPException(status_code=404, detail="Warehouse not found")
-    # Политика 1:1 — город должен быть уникальным для активных складов
-    existing = db.warehouses.find_one({
-        "city": body.city.strip(),
-        "is_active": True,
-        "id": {"$ne": warehouse_id}
-    })
-    if existing:
-        raise HTTPException(status_code=409, detail="City already assigned to another active warehouse (1:1 policy)")
+
+    # Записываем массив городов (у склада может быть много городов)
+    cities_norm = []
+    for c in body.cities:
+        if not c:
+            continue
+        name = str(c).strip()
+        if not name:
+            continue
+        if name.lower() not in [x.lower() for x in cities_norm]:
+            cities_norm.append(name)
 
     db.warehouses.update_one(
         {"id": warehouse_id},
-        {"$set": {"city": body.city.strip(), "updated_at": datetime.utcnow()}}
+        {"$set": {"cities": cities_norm, "updated_at": datetime.utcnow()}}
     )
 
-    return {"success": True, "warehouse_id": warehouse_id, "city": body.city.strip()}
+    return {"success": True, "warehouse_id": warehouse_id, "cities": cities_norm}
 
 # ====== PUBLIC: СПИСОК ГОРОДОВ НАЗНАЧЕНИЯ (1:1 СО СКЛАДОМ) ======
 @app.get("/api/destinations/cities")
