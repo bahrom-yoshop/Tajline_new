@@ -24383,12 +24383,13 @@ function App() {
                 </div>
               </div>
 
-              {/* Статус оплаты и принятие оплаты */}
-              <div className="border rounded-lg p-4 bg-green-50">
-                <h3 className="font-medium text-lg mb-3 flex items-center">
-                  <CreditCard className="mr-2 h-5 w-5 text-green-600" />
-                  Принятие оплаты
-                </h3>
+              {/* Статус оплаты и принятие оплаты - НЕ показываем для заявок на забор груза */}
+              {!currentCargoNotification?.pickup_request_id && (
+                <div className="border rounded-lg p-4 bg-green-50">
+                  <h3 className="font-medium text-lg mb-3 flex items-center">
+                    <CreditCard className="mr-2 h-5 w-5 text-green-600" />
+                    Принятие оплаты
+                  </h3>
                 
                 {/* Общая сумма из калькулятора */}
                 <div className="bg-blue-100 border border-blue-300 rounded p-3 mb-4">
