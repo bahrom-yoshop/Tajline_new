@@ -4009,6 +4009,7 @@ function App() {
   const [warehouseDetailedAnalytics, setWarehouseDetailedAnalytics] = useState({}); // Детальная аналитика складов
   const [interwarehouseTransportModal, setInterwarehouseTransportModal] = useState(false);
   const [transportQRGenerationModal, setTransportQRGenerationModal] = useState(false);
+  const [qrPlacementPage, setQrPlacementPage] = useState(false);
   const [cargoQRGenerationModal, setCargoQRGenerationModal] = useState(false);
   const [selectedCargoForQR, setSelectedCargoForQR] = useState([]);
   const [generatingCargoQR, setGeneratingCargoQR] = useState(false);
