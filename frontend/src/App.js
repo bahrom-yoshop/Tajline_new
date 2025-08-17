@@ -9731,14 +9731,23 @@ function App() {
         setQrPlacementData(prev => ({
           ...prev,
           selectedTransport: response.transport,
-          scanMode: 'cargo',
-          lastScanResult: `Транспорт ${response.transport.transport_number} выбран`
+          scanMode: 'cargo', // Автоматически переходим к сканированию грузов
+          lastScanResult: `Транспорт ${response.transport.transport_number} выбран. Теперь сканируйте грузы.`
         }));
         
-        showAlert(response.message, 'success');
+        showAlert(response.message + '. Теперь сканируйте грузы для размещения.', 'success');
         
         // Загрузить данные о размещенных грузах
         await loadTransportCargoData(response.transport.id);
+        
+        // Автоматически фокусируемся на поле ввода для продолжения сканирования
+        setTimeout(() => {
+          const input = document.getElementById('qr-input');
+          if (input) {
+            input.focus();
+            input.select();
+          }
+        }, 100);
       }
     } catch (error) {
       console.error('Error scanning transport QR:', error);
@@ -9765,6 +9774,14 @@ function App() {
         
         if (isAlreadyScanned) {
           showAlert('Этот груз уже отсканирован', 'warning');
+          // Очищаем поле и фокусируемся для следующего сканирования
+          setTimeout(() => {
+            const input = document.getElementById('qr-input');
+            if (input) {
+              input.value = '';
+              input.focus();
+            }
+          }, 100);
           return;
         }
         
@@ -9772,14 +9789,32 @@ function App() {
         setQrPlacementData(prev => ({
           ...prev,
           scannedCargo: [...prev.scannedCargo, response.cargo],
-          lastScanResult: `Груз ${response.cargo.cargo_number} отсканирован`
+          lastScanResult: `Груз ${response.cargo.cargo_number} отсканирован. Продолжайте сканирование.`
         }));
         
-        showAlert(response.message, 'success');
+        showAlert(response.message + '. Продолжайте сканирование или нажмите "Разместить".', 'success');
+        
+        // Автоматически очищаем поле и фокусируемся для следующего сканирования
+        setTimeout(() => {
+          const input = document.getElementById('qr-input');
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+        }, 100);
       }
     } catch (error) {
       console.error('Error scanning cargo QR:', error);
       showAlert('Ошибка сканирования QR кода груза: ' + error.message, 'error');
+      
+      // Очищаем поле и фокусируемся для повторного сканирования
+      setTimeout(() => {
+        const input = document.getElementById('qr-input');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
+      }, 100);
     }
   };
 
