@@ -24408,7 +24408,15 @@ function App() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setIsPaymentEditMode(!isPaymentEditMode)}
+                    onClick={() => {
+                      if (isPaymentEditMode) {
+                        // Если в режиме редактирования - сохраняем изменения
+                        handleSavePaymentChanges();
+                      } else {
+                        // Если не в режиме редактирования - включаем режим редактирования
+                        setIsPaymentEditMode(true);
+                      }
+                    }}
                     className="text-blue-600 hover:text-blue-800"
                   >
                     {isPaymentEditMode ? 'Сохранить' : 'Редактировать'}
