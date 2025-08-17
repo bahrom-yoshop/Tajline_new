@@ -9709,6 +9709,142 @@ function App() {
     }
   };
 
+  // QR Placement Functions
+  const resetQRPlacementData = () => {
+    setQrPlacementData({
+      selectedTransport: null,
+      scannedCargo: [],
+      isScanning: false,
+      scanMode: 'transport',
+      lastScanResult: null,
+      placementHistory: []
+    });
+  };
+
+  const handleScanTransportQR = async (qrData) => {
+    try {
+      const response = await apiCall('/api/placement/scan-transport-qr', 'POST', {
+        qr_data: qrData
+      });
+      
+      if (response.success) {
+        setQrPlacementData(prev => ({
+          ...prev,
+          selectedTransport: response.transport,
+          scanMode: 'cargo',
+          lastScanResult: `Транспорт ${response.transport.transport_number} выбран`
+        }));
+        
+        showAlert(response.message, 'success');
+        
+        // Загрузить данные о размещенных грузах
+        await loadTransportCargoData(response.transport.id);
+      }
+    } catch (error) {
+      console.error('Error scanning transport QR:', error);
+      showAlert('Ошибка сканирования QR кода транспорта: ' + error.message, 'error');
+    }
+  };
+
+  const handleScanCargoQR = async (qrData) => {
+    if (!qrPlacementData.selectedTransport) {
+      showAlert('Сначала отсканируйте QR код транспорта', 'error');
+      return;
+    }
+    
+    try {
+      const response = await apiCall('/api/placement/scan-cargo-qr', 'POST', {
+        qr_data: qrData
+      });
+      
+      if (response.success) {
+        // Проверить, не добавлен ли уже этот груз
+        const isAlreadyScanned = qrPlacementData.scannedCargo.some(
+          cargo => cargo.id === response.cargo.id
+        );
+        
+        if (isAlreadyScanned) {
+          showAlert('Этот груз уже отсканирован', 'warning');
+          return;
+        }
+        
+        // Добавить груз в список отсканированных
+        setQrPlacementData(prev => ({
+          ...prev,
+          scannedCargo: [...prev.scannedCargo, response.cargo],
+          lastScanResult: `Груз ${response.cargo.cargo_number} отсканирован`
+        }));
+        
+        showAlert(response.message, 'success');
+      }
+    } catch (error) {
+      console.error('Error scanning cargo QR:', error);
+      showAlert('Ошибка сканирования QR кода груза: ' + error.message, 'error');
+    }
+  };
+
+  const handlePlaceCargoViaQR = async (cargoId) => {
+    if (!qrPlacementData.selectedTransport) {
+      showAlert('Транспорт не выбран', 'error');
+      return;
+    }
+    
+    try {
+      const response = await apiCall('/api/placement/place-cargo-on-transport', 'POST', {
+        transport_id: qrPlacementData.selectedTransport.id,
+        cargo_id: cargoId
+      });
+      
+      if (response.success) {
+        // Обновить данные транспорта
+        setQrPlacementData(prev => ({
+          ...prev,
+          selectedTransport: {
+            ...prev.selectedTransport,
+            current_load_kg: response.transport.current_load_kg,
+            status: response.transport.status,
+            cargo_count: response.transport.cargo_count
+          },
+          scannedCargo: prev.scannedCargo.filter(cargo => cargo.id !== cargoId),
+          placementHistory: [response.placement_log, ...prev.placementHistory],
+          lastScanResult: `Груз ${response.cargo.cargo_number} размещен на транспорт`
+        }));
+        
+        showAlert(response.message, 'success');
+        
+        // Обновить общий список транспортов
+        await fetchTransportsList();
+      }
+    } catch (error) {
+      console.error('Error placing cargo on transport:', error);
+      showAlert('Ошибка размещения груза: ' + error.message, 'error');
+    }
+  };
+
+  const loadTransportCargoData = async (transportId) => {
+    try {
+      const response = await apiCall(`/api/placement/transport-cargo/${transportId}`);
+      
+      if (response.success) {
+        setQrPlacementData(prev => ({
+          ...prev,
+          placementHistory: response.placement_logs || []
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading transport cargo data:', error);
+    }
+  };
+
+  const simulateQRScan = (qrData) => {
+    // Функция для тестирования - симуляция сканирования QR кода
+    if (qrPlacementData.scanMode === 'transport') {
+      handleScanTransportQR(qrData);
+    } else {
+      handleScanCargoQR(qrData);
+    }
+  };
+
   // Contact functions
   const handleWhatsAppContact = () => {
     // Открыть WhatsApp с предустановленным сообщением
