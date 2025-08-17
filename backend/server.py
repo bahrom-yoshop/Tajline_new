@@ -12447,41 +12447,72 @@ async def scan_cargo_qr_for_placement(
     if not qr_data:
         raise HTTPException(status_code=400, detail="QR данные не предоставлены")
     
-    # Поиск груза по QR коду в обеих коллекциях - поддержка любых форматов
+    # Поиск груза по QR коду в обеих коллекциях - улучшенная логика
     cargo = None
+    search_attempts = []
     
-    # Сначала ищем точное совпадение по qr_data
+    # 1. Точное совпадение по qr_data в cargo
     cargo = db.cargo.find_one({"qr_data": qr_data})
+    search_attempts.append(f"cargo.qr_data={qr_data}: {'найден' if cargo else 'не найден'}")
+    
+    # 2. Точное совпадение по qr_data в operator_cargo
     if not cargo:
         cargo = db.operator_cargo.find_one({"qr_data": qr_data})
+        search_attempts.append(f"operator_cargo.qr_data={qr_data}: {'найден' if cargo else 'не найден'}")
     
-    # Если не найден, ищем по qr_code (base64 изображение может содержать те же данные)
-    if not cargo:
-        cargo = db.cargo.find_one({"qr_code": {"$regex": qr_data, "$options": "i"}})
-    if not cargo:
-        cargo = db.operator_cargo.find_one({"qr_code": {"$regex": qr_data, "$options": "i"}})
-    
-    # Если не найден, ищем по cargo_number (может совпадать с QR данными)
+    # 3. Поиск по cargo_number в cargo
     if not cargo:
         cargo = db.cargo.find_one({"cargo_number": qr_data})
+        search_attempts.append(f"cargo.cargo_number={qr_data}: {'найден' if cargo else 'не найден'}")
+    
+    # 4. Поиск по cargo_number в operator_cargo  
     if not cargo:
         cargo = db.operator_cargo.find_one({"cargo_number": qr_data})
-    
-    # Если не найден, ищем по cargo_number как подстроку
+        search_attempts.append(f"operator_cargo.cargo_number={qr_data}: {'найден' if cargo else 'не найден'}")
+        
+    # 5. Поиск по cargo_number с regex в cargo (подстроки)
     if not cargo:
         cargo = db.cargo.find_one({"cargo_number": {"$regex": qr_data, "$options": "i"}})
+        search_attempts.append(f"cargo.cargo_number regex {qr_data}: {'найден' if cargo else 'не найден'}")
+        
+    # 6. Поиск по cargo_number с regex в operator_cargo (подстроки)
     if not cargo:
         cargo = db.operator_cargo.find_one({"cargo_number": {"$regex": qr_data, "$options": "i"}})
+        search_attempts.append(f"operator_cargo.cargo_number regex {qr_data}: {'найден' if cargo else 'не найден'}")
+    
+    # 7. Поиск среди всех грузов с qr_data (отладка)
+    if not cargo:
+        # Найдем все грузы с qr_data чтобы понять что есть в базе
+        all_cargo_with_qr = list(db.cargo.find({"qr_data": {"$exists": True, "$ne": None}}, {"cargo_number": 1, "qr_data": 1, "warehouse_location": 1}).limit(5))
+        all_operator_cargo_with_qr = list(db.operator_cargo.find({"qr_data": {"$exists": True, "$ne": None}}, {"cargo_number": 1, "qr_data": 1, "warehouse_location": 1}).limit(5))
+        
+        search_attempts.append(f"Найдено грузов cargo с QR: {len(all_cargo_with_qr)}")
+        search_attempts.append(f"Найдено грузов operator_cargo с QR: {len(all_operator_cargo_with_qr)}")
+        
+        # Показать примеры для отладки
+        for i, cargo_ex in enumerate(all_cargo_with_qr[:3]):
+            search_attempts.append(f"  cargo[{i}]: {cargo_ex.get('cargo_number')} -> QR: {cargo_ex.get('qr_data')} -> Ячейка: {cargo_ex.get('warehouse_location')}")
+            
+        for i, op_cargo_ex in enumerate(all_operator_cargo_with_qr[:3]):
+            search_attempts.append(f"  operator_cargo[{i}]: {op_cargo_ex.get('cargo_number')} -> QR: {op_cargo_ex.get('qr_data')} -> Ячейка: {op_cargo_ex.get('warehouse_location')}")
     
     if not cargo:
-        raise HTTPException(status_code=404, detail=f"Груз с QR кодом '{qr_data}' не найден. Проверьте правильность кода.")
+        error_message = f"Груз с QR кодом '{qr_data}' не найден.\n\nПопытки поиска:\n" + "\n".join(search_attempts)
+        raise HTTPException(status_code=404, detail=error_message)
     
     # Проверить, что груз доступен для размещения (находится в ячейке склада)
-    if not cargo.get("warehouse_location"):
-        raise HTTPException(status_code=400, detail=f"Груз {cargo.get('cargo_number', 'неизвестен')} не находится в ячейке склада и не может быть размещен")
+    warehouse_location = cargo.get("warehouse_location")
+    if not warehouse_location:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Груз {cargo.get('cargo_number', 'неизвестен')} не находится в ячейке склада.\nТекущее расположение: {warehouse_location}\nДля размещения на транспорт груз должен быть в ячейке склада."
+        )
     
     if cargo.get("transport_id"):
-        raise HTTPException(status_code=400, detail=f"Груз {cargo.get('cargo_number', 'неизвестен')} уже размещен на транспорт")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Груз {cargo.get('cargo_number', 'неизвестен')} уже размещен на транспорт {cargo.get('transport_id')}"
+        )
     
     return {
         "success": True,
@@ -12496,7 +12527,8 @@ async def scan_cargo_qr_for_placement(
             "status": cargo.get("status", ""),
             "qr_data": cargo.get("qr_data", qr_data)
         },
-        "message": f"Груз {cargo['cargo_number']} найден и готов к размещению"
+        "search_info": search_attempts,
+        "message": f"Груз {cargo['cargo_number']} найден в ячейке {warehouse_location} и готов к размещению"
     }
 
 @app.post("/api/placement/place-cargo-on-transport")
