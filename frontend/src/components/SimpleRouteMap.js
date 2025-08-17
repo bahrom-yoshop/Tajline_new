@@ -8,7 +8,7 @@ const SimpleRouteMap = ({ fromAddress, toAddress, warehouseName }) => {
   const [error, setError] = useState('');
   const mountedRef = useRef(true); // Отслеживаем mounted состояние
 
-  // Cleanup при размонтировании
+  // Cleanup при размонтировании - ИСПРАВЛЕНИЕ для removeChild ошибки
   useEffect(() => {
     return () => {
       mountedRef.current = false;
