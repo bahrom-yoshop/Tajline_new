@@ -18808,13 +18808,13 @@ function App() {
                                 {/* Описание груза */}
                                 <div>
                                   <Label htmlFor="cargo_description" className="font-medium">
-                                    Описание груза
+                                    Описание груза (необязательно)
                                   </Label>
                                   <Textarea
                                     id="cargo_description"
                                     value={operatorCargoForm.special_instructions || ''}
                                     onChange={(e) => setOperatorCargoForm({...operatorCargoForm, special_instructions: e.target.value})}
-                                    placeholder="Личные вещи, документы, подарки..."
+                                    placeholder="Личные вещи, документы, подарки... (необязательно)"
                                     rows={3}
                                   />
                                 </div>
