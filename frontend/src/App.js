@@ -8051,22 +8051,17 @@ function App() {
   };
 
   const fetchAvailableCargoForPlacement = async (page = availableCargoPage, perPage = availableCargoPerPage) => {
+    setAvailableCargoLoading(true);
     try {
-      const params = {
-        page: page,
-        per_page: perPage
-      };
-      
+      const params = { page, per_page: perPage };
       const response = await apiCall('/api/operator/cargo/available-for-placement', 'GET', null, params);
       
       // Проверяем новый формат ответа с пагинацией
       if (response.items) {
-        // Фильтруем невалидные элементы для предотвращения React ошибок
         const validItems = response.items.filter(item => item && item.id);
         setAvailableCargoForPlacement(validItems);
         setAvailableCargoPagination(response.pagination);
       } else {
-        // Обратная совместимость со старым форматом
         const cargoData = response.cargo_list || response || [];
         const validItems = cargoData.filter(item => item && item.id);
         setAvailableCargoForPlacement(validItems);
@@ -8076,6 +8071,8 @@ function App() {
       console.error('Error fetching available cargo for placement:', error);
       setAvailableCargoForPlacement([]);
       setAvailableCargoPagination({});
+    } finally {
+      setAvailableCargoLoading(false);
     }
   };
 
