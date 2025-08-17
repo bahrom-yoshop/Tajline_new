@@ -8674,7 +8674,7 @@ async def update_warehouse_address(
 
 # ====== ADMIN: УСТАНОВИТЬ ГОРОД ДЛЯ СКЛАДА ======
 class WarehouseCityRequest(BaseModel):
-    city: str
+    cities: List[str]
 
 @app.patch("/api/admin/warehouses/{warehouse_id}/set-city")
 async def admin_set_warehouse_city(warehouse_id: str, body: WarehouseCityRequest, current_user: User = Depends(get_current_user)):
