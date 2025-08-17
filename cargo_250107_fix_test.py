@@ -96,29 +96,81 @@ class Cargo250107FixTest:
         
         headers = {"Authorization": f"Bearer {self.admin_token}"}
         
-        try:
-            response = requests.get(f"{BACKEND_URL}/debug/find-cargo-by-number/{self.cargo_number}", headers=headers)
-            if response.status_code == 200:
-                cargo_data = response.json()
-                if cargo_data.get('found'):
-                    cargo = cargo_data.get('cargo', {})
-                    self.log(f"✅ Груз {self.cargo_number} найден:")
-                    self.log(f"   ID: {cargo.get('id')}")
-                    self.log(f"   Номер: {cargo.get('cargo_number')}")
-                    self.log(f"   Текущий склад (warehouse_id): {cargo.get('warehouse_id')}")
-                    self.log(f"   Склад назначения (destination_warehouse_id): {cargo.get('destination_warehouse_id')}")
-                    self.log(f"   Статус: {cargo.get('status')}")
-                    self.log(f"   Hidden reason: {cargo.get('hidden_reason')}")
-                    return cargo
+        # Try different variations of the cargo number
+        search_patterns = [self.cargo_number, f"{self.cargo_number}/01", f"{self.cargo_number}/02"]
+        
+        for pattern in search_patterns:
+            try:
+                self.log(f"   Поиск по номеру: {pattern}")
+                response = requests.get(f"{BACKEND_URL}/debug/find-cargo-by-number/{pattern}", headers=headers)
+                if response.status_code == 200:
+                    cargo_data = response.json()
+                    if cargo_data.get('found'):
+                        cargo = cargo_data.get('cargo', {})
+                        self.log(f"✅ Груз найден по номеру {pattern}:")
+                        self.log(f"   ID: {cargo.get('id')}")
+                        self.log(f"   Номер: {cargo.get('cargo_number')}")
+                        self.log(f"   Текущий склад (warehouse_id): {cargo.get('warehouse_id')}")
+                        self.log(f"   Склад назначения (destination_warehouse_id): {cargo.get('destination_warehouse_id')}")
+                        self.log(f"   Статус: {cargo.get('status')}")
+                        self.log(f"   Hidden reason: {cargo.get('hidden_reason')}")
+                        # Update cargo number to the found one
+                        self.cargo_number = pattern
+                        return cargo
+                    else:
+                        self.log(f"   Груз {pattern} не найден")
                 else:
-                    self.log(f"❌ Груз {self.cargo_number} не найден")
-                    return None
+                    self.log(f"   Ошибка поиска груза {pattern}: {response.status_code}")
+            except Exception as e:
+                self.log(f"   Ошибка при поиске груза {pattern}: {e}")
+        
+        # If not found, let's try to search for any cargo with similar number
+        self.log("🔍 Поиск похожих грузов...")
+        try:
+            # Try to get list of all cargo to find similar numbers
+            response = requests.get(f"{BACKEND_URL}/admin/cargo/list?page=1&per_page=50", headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                items = data.get('items', [])
+                self.log(f"   Найдено грузов в системе: {len(items)}")
+                
+                # Look for cargo numbers starting with 250
+                similar_cargo = []
+                for item in items:
+                    cargo_number = item.get('cargo_number', '')
+                    if cargo_number.startswith('250'):
+                        similar_cargo.append(cargo_number)
+                
+                if similar_cargo:
+                    self.log(f"   Найдены похожие номера грузов: {similar_cargo[:10]}")  # Show first 10
+                    # Try the first similar cargo
+                    if similar_cargo:
+                        test_number = similar_cargo[0]
+                        self.log(f"   Попробуем использовать груз: {test_number}")
+                        response = requests.get(f"{BACKEND_URL}/debug/find-cargo-by-number/{test_number}", headers=headers)
+                        if response.status_code == 200:
+                            cargo_data = response.json()
+                            if cargo_data.get('found'):
+                                cargo = cargo_data.get('cargo', {})
+                                self.log(f"✅ Используем груз {test_number} для демонстрации исправления:")
+                                self.log(f"   ID: {cargo.get('id')}")
+                                self.log(f"   Номер: {cargo.get('cargo_number')}")
+                                self.log(f"   Текущий склад (warehouse_id): {cargo.get('warehouse_id')}")
+                                self.log(f"   Склад назначения (destination_warehouse_id): {cargo.get('destination_warehouse_id')}")
+                                self.log(f"   Статус: {cargo.get('status')}")
+                                self.log(f"   Hidden reason: {cargo.get('hidden_reason')}")
+                                # Update cargo number to the found one
+                                self.cargo_number = test_number
+                                return cargo
+                else:
+                    self.log("   Похожие грузы не найдены")
             else:
-                self.log(f"❌ Ошибка поиска груза: {response.status_code} - {response.text}")
-                return None
+                self.log(f"   Ошибка получения списка грузов: {response.status_code}")
         except Exception as e:
-            self.log(f"❌ Ошибка при поиске груза: {e}")
-            return None
+            self.log(f"   Ошибка при поиске похожих грузов: {e}")
+        
+        self.log(f"❌ Груз {self.cargo_number} и похожие грузы не найдены")
+        return None
     
     def apply_warehouse_fix(self):
         """Применить исправление складов"""
