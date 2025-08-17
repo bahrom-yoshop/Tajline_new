@@ -4010,6 +4010,14 @@ function App() {
   const [interwarehouseTransportModal, setInterwarehouseTransportModal] = useState(false);
   const [transportQRGenerationModal, setTransportQRGenerationModal] = useState(false);
   const [qrPlacementPage, setQrPlacementPage] = useState(false);
+  const [qrPlacementData, setQrPlacementData] = useState({
+    selectedTransport: null,
+    scannedCargo: [],
+    isScanning: false,
+    scanMode: 'transport', // 'transport' или 'cargo'
+    lastScanResult: null,
+    placementHistory: []
+  });
   const [cargoQRGenerationModal, setCargoQRGenerationModal] = useState(false);
   const [selectedCargoForQR, setSelectedCargoForQR] = useState([]);
   const [generatingCargoQR, setGeneratingCargoQR] = useState(false);
