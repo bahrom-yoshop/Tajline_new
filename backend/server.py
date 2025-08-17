@@ -1393,7 +1393,7 @@ def generate_cell_id_number(warehouse_id_number: str, block_id_number: str, shel
         import random
         return f"{random.randint(1, 999):03d}"
 
-def generate_cargo_qr_code(cargo_data: dict) -> str:
+def generate_cargo_qr_code_data(cargo_data: dict) -> str:
     """Генерировать QR код для груза только с номером груза"""
     try:
         # Получаем только номер груза
