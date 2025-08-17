@@ -4034,6 +4034,8 @@ function App() {
     placementHistory: []
   });
   const [cargoQRGenerationModal, setCargoQRGenerationModal] = useState(false);
+  const [operatorQRGenerationModal, setOperatorQRGenerationModal] = useState(false);
+  const [operatorCargoResponse, setOperatorCargoResponse] = useState(null);
   const [selectedCargoForQR, setSelectedCargoForQR] = useState([]);
   const [generatingCargoQR, setGeneratingCargoQR] = useState(false);
   const [selectedTransportForQR, setSelectedTransportForQR] = useState(null);
