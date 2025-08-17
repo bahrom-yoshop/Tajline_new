@@ -66,19 +66,6 @@ function App() {
     };
   }, []);
 
-  // Автоматический фокус при открытии страницы QR-сканирования
-  useEffect(() => {
-    if (qrPlacementPage) {
-      const timer = setTimeout(() => {
-        const input = document.getElementById('qr-input');
-        if (input) {
-          input.focus();
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [qrPlacementPage]);
-
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   // Navigation states
