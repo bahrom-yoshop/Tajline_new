@@ -21564,6 +21564,15 @@ function App() {
                               <Plus className="mr-2 h-4 w-4" />
                               Межскладской
                             </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setTransportQRGenerationModal(true)}
+                              disabled={user?.role !== 'admin' && user?.role !== 'warehouse_operator'}
+                              className="bg-orange-600 text-white hover:bg-orange-700 border-orange-600"
+                            >
+                              <QrCode className="mr-2 h-4 w-4" />
+                              Генерация QR кодов
+                            </Button>
                             <Button onClick={() => fetchTransportsList()}>
                               Обновить
                             </Button>
