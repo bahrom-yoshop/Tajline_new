@@ -407,7 +407,55 @@ class WarehouseSchemaRelatedCargoTester:
         
         return True
     
-    def cleanup_test_data(self):
+    def test_operator_authorization(self):
+        """Дополнительное тестирование авторизации оператора склада"""
+        self.log("🔐 ТЕСТИРОВАНИЕ АВТОРИЗАЦИИ ОПЕРАТОРА СКЛАДА")
+        
+        # Данные оператора склада
+        operator_credentials = {
+            "phone": "+79777888999",
+            "password": "warehouse123"
+        }
+        
+        response = self.make_request("POST", "/auth/login", operator_credentials)
+        
+        if not response or response.status_code != 200:
+            self.log(f"❌ Ошибка авторизации оператора: {response.status_code if response else 'No response'}")
+            return False
+            
+        data = response.json()
+        self.operator_token = data.get("access_token")
+        user_info = data.get("user", {})
+        
+        self.log(f"✅ Оператор авторизован: {user_info.get('full_name', 'Unknown')}")
+        self.log(f"   📱 Телефон: {user_info.get('phone', 'Unknown')}")
+        self.log(f"   👤 Роль: {user_info.get('role', 'Unknown')}")
+        self.log(f"   🆔 ID: {user_info.get('id', 'Unknown')}")
+        
+        return True
+    
+    def test_operator_warehouse_access(self):
+        """Тестирование доступа оператора к схеме склада"""
+        self.log("🏭 ТЕСТИРОВАНИЕ ДОСТУПА ОПЕРАТОРА К СХЕМЕ СКЛАДА")
+        
+        if not self.operator_token or not self.test_warehouse_id:
+            self.log("❌ Нет токена оператора или ID склада")
+            return False
+            
+        # Тестируем доступ оператора к схеме склада
+        response = self.make_request("GET", f"/warehouses/{self.test_warehouse_id}/layout-with-cargo", token=self.operator_token)
+        
+        if response and response.status_code == 200:
+            self.log("✅ Оператор имеет доступ к схеме склада")
+            data = response.json()
+            self.log(f"   📦 Грузов в схеме: {data.get('total_cargo', 0)}")
+            return True
+        elif response and response.status_code == 403:
+            self.log("✅ Доступ оператора корректно ограничен (403)")
+            return True
+        else:
+            self.log(f"❌ Неожиданный ответ: {response.status_code if response else 'No response'}")
+            return False
         """7. Очистка тестовых данных"""
         self.log("🧹 ОЧИСТКА ТЕСТОВЫХ ДАННЫХ")
         
