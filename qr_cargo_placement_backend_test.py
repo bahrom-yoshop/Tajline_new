@@ -148,10 +148,13 @@ class QRCargoPlacementTester:
                 self.test_transport_id = transport_id
                 self.log(f"✅ Транспорт создан с QR: {transport_data['transport_number']} (ID: {transport_id}, QR: {qr_data.get('qr_data')})")
                 
-                # Получаем полные данные транспорта
+                # Получаем полные данные транспорта с QR кодом
                 transport_response = self.session.get(f"{API_BASE}/transport/{transport_id}", headers=headers)
                 if transport_response.status_code == 200:
-                    return transport_response.json()
+                    transport_full = transport_response.json()
+                    # Добавляем QR данные в объект транспорта
+                    transport_full["qr_data"] = qr_data.get('qr_data')
+                    return transport_full
                     
             self.log(f"❌ Ошибка генерации QR кода: {qr_response.status_code}")
             return None
