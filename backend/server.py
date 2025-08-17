@@ -3675,7 +3675,7 @@ async def create_cargo(cargo_data: CargoCreate, current_user: User = Depends(get
     }
     
     # Генерируем QR код для груза
-    cargo["qr_code"] = generate_cargo_qr_code(cargo)
+    cargo["qr_code"] = generate_cargo_qr_code_data(cargo)
     
     db.cargo.insert_one(cargo)
     
