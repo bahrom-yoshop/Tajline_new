@@ -12528,11 +12528,12 @@ async def place_cargo_on_transport_via_qr(
     
     # Размещение груза на транспорт
     cargo_list = transport.get("cargo_list", [])
+    placed_at = datetime.utcnow()
     cargo_list.append({
         "cargo_id": cargo_id,
         "cargo_number": cargo["cargo_number"],
         "weight": cargo_weight,
-        "placed_at": datetime.utcnow(),
+        "placed_at": placed_at.isoformat(),  # Конвертируем в строку для JSON
         "placed_by": current_user.id,
         "operator_name": current_user.full_name
     })
