@@ -20260,7 +20260,12 @@ function App() {
                           )}
                           
                           <div className="space-y-4">
-                            {availableCargoForPlacement.length === 0 ? (
+                            {availableCargoLoading ? (
+                              <div className="text-center py-8">
+                                <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+                                <p className="text-gray-600">Загрузка грузов для размещения...</p>
+                              </div>
+                            ) : availableCargoForPlacement.length === 0 ? (
                               <div className="text-center py-8">
                                 <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                                 <p className="text-gray-500">Нет грузов, ожидающих размещения</p>
