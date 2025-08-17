@@ -105,10 +105,11 @@ class QRCargoPlacementTester:
         
         if response.status_code == 200:
             data = response.json()
-            self.test_cargo_id = data.get('cargo_id')
-            self.test_cargo_qr = data.get('qr_data')
-            cargo_number = data.get('cargo_number')
-            warehouse_location = data.get('warehouse_location')
+            cargo = data.get('cargo', {})
+            self.test_cargo_id = cargo.get('id')
+            self.test_cargo_qr = cargo.get('qr_data')
+            cargo_number = cargo.get('cargo_number')
+            warehouse_location = cargo.get('warehouse_location')
             
             self.log(f"✅ Тестовый груз создан:")
             self.log(f"   ID: {self.test_cargo_id}")
