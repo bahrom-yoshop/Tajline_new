@@ -25611,30 +25611,46 @@ function App() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                  {/* Список складов */}
+                  {/* Выбор города выдачи (1:1 со складом) */}
                   <div>
-                    <Label htmlFor="warehouse_id">Склад для выдачи груза *</Label>
+                    <Label htmlFor="destination_city">Город для выдачи груза *</Label>
                     <div className="text-xs text-blue-600 mb-2">
-                      📍 Груз принимается на {operatorWarehouses[0]?.name || 'текущий склад'} и будет отправлен в выбранный склад
+                      📍 Груз принимается на {operatorWarehouses[0]?.name || 'текущий склад'} и будет отправлен в склад города, выбранного ниже
                     </div>
                     <Select 
-                      value={cargoAcceptanceForm.warehouse_id || ''} 
-                      onValueChange={(value) => setCargoAcceptanceForm({...cargoAcceptanceForm, warehouse_id: value})}
+                      value={cargoAcceptanceForm.destination_city || ''} 
+                      onValueChange={(city) => {
+                        // Находим соответствующий склад для города
+                        const cityMap = (destinationCities || []).find(c => c.city === city);
+                        setCargoAcceptanceForm({
+                          ...cargoAcceptanceForm,
+                          destination_city: city,
+                          warehouse_id: cityMap?.warehouse_id || '',
+                          destination_warehouse_name: cityMap?.warehouse_name || ''
+                        })
+                      }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Выберите склад" />
+                        <SelectValue placeholder="Выберите город" />
                       </SelectTrigger>
                       <SelectContent>
-                        {warehouses
-                          .filter(warehouse => warehouse.is_active)
-                          .map(warehouse => (
-                            <SelectItem key={warehouse.id} value={warehouse.id}>
-                              {warehouse.name} ({warehouse.location})
-                            </SelectItem>
-                          ))
-                        }
+                        {(destinationCities || []).map(c => (
+                          <SelectItem key={c.warehouse_id} value={c.city}>
+                            {c.city} — {c.warehouse_name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Склад для выдачи (только для чтения) */}
+                  <div>
+                    <Label>Склад для выдачи (назначается по городу)</Label>
+                    <div className="p-2 rounded border bg-gray-50 text-gray-700">
+                      {cargoAcceptanceForm.destination_warehouse_name || 
+                        warehouses.find(w => w.id === cargoAcceptanceForm.warehouse_id)?.name ||
+                        'Не выбран'}
+                    </div>
                   </div>
                   
                   {/* Статусы оплаты */}
