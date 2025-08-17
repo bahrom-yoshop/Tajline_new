@@ -5291,7 +5291,7 @@ async def create_cargo_for_courier_pickup(
         }
         
         # Генерируем QR код
-        cargo_qr_code = generate_cargo_qr_code(cargo)
+        cargo_qr_code = generate_cargo_qr_code_data(cargo)
         cargo["qr_code"] = cargo_qr_code
         
         # Сохраняем груз
