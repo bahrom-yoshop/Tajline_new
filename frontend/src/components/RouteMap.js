@@ -183,6 +183,16 @@ const RouteMap = ({ fromAddress, toAddress, warehouseName, onRouteCalculated }) 
         map.geoObjects.removeAll();
 
         console.log(`🗺️ Строим маршрут от "${fromAddress}" до "${toAddress}"`);
+        console.log(`🔧 Детали адресов: fromAddress="${fromAddress}" (длина: ${fromAddress?.length}), toAddress="${toAddress}" (длина: ${toAddress?.length})`);
+
+        // Проверяем валидность адресов
+        if (!fromAddress || fromAddress.length < 3) {
+          throw new Error('Адрес отправления слишком короткий или пустой');
+        }
+        
+        if (!toAddress || toAddress.length < 3) {
+          throw new Error('Адрес склада слишком короткий или пустой');
+        }
 
         // Создаем маршрут
         const multiRoute = new ymaps.multiRouter.MultiRoute({
