@@ -16478,6 +16478,9 @@ async def create_courier_pickup_request(
             "declared_value": float(request_data.get("declared_value", 0)) if request_data.get("declared_value") else None,
             "price_per_kg": float(request_data.get("price_per_kg", 0)) if request_data.get("price_per_kg") else None,  # Добавлено: цена за кг от курьера
             
+            # ИСПРАВЛЕНИЕ: Добавляем поддержку cargo_items для множественных грузов с индивидуальными ценами
+            "cargo_items": request_data.get("cargo_items", []),  # Массив грузов с индивидуальными ценами
+            
             # Курьерская служба
             "courier_fee": float(request_data.get("courier_fee", 0)),
             "payment_method": request_data.get("payment_method", "not_paid"),  # Исправлено: сохраняем как payment_method
