@@ -25642,8 +25642,7 @@ function App() {
                     <Select 
                       value={cargoAcceptanceForm.destination_city || ''} 
                       onValueChange={(city) => {
-                        // Находим соответствующий склад для города
-                        const cityMap = (destinationCities || []).find(c => c.city === city);
+                        const cityMap = (destinationCities || []).find(c => c.city.toLowerCase() === city.toLowerCase());
                         setCargoAcceptanceForm({
                           ...cargoAcceptanceForm,
                           destination_city: city,
@@ -25656,6 +25655,20 @@ function App() {
                         <SelectValue placeholder="Выберите город" />
                       </SelectTrigger>
                       <SelectContent>
+                        <div className="p-2">
+                          <input
+                            type="text"
+                            placeholder="Поиск города..."
+                            className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(e) => {
+                              const q = e.target.value.toLowerCase();
+                              const filtered = (destinationCities || []).filter(c => (
+                                c.city.toLowerCase().includes(q) || (c.warehouse_name || '').toLowerCase().includes(q)
+                              ));
+                              setDestinationCities(filtered.length > 0 ? filtered : (destinationCities || []));
+                            }}
+                          />
+                        </div>
                         {(destinationCities || []).map(c => (
                           <SelectItem key={c.warehouse_id} value={c.city}>
                             {c.city} — {c.warehouse_name}
