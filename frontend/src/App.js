@@ -17421,27 +17421,7 @@ function App() {
                                 />
                               </div>
 
-                              {/* УПРОЩЕННАЯ КАРТА: Показываем только адрес получения груза */}
-                              {console.log('🔧 Отладка карты (только адрес получения):', {
-                                pickup_address: operatorCargoForm.pickup_address,
-                                address_length: operatorCargoForm.pickup_address?.length || 0
-                              })}
-                              {operatorCargoForm.pickup_address && (
-                                <SingleAddressMap
-                                  address={operatorCargoForm.pickup_address}
-                                  title="Адрес получения груза"
-                                />
-                              )}
-                              
-                              {/* Показываем почему карта не отображается */}
-                              {!operatorCargoForm.pickup_address && (
-                                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                                  <p className="text-sm text-yellow-700">
-                                    🗺️ <strong>Карта адреса получения груза</strong><br/>
-                                    Заполните поле "Адрес получения груза" чтобы увидеть его на карте.
-                                  </p>
-                                </div>
-                              )}
+                              {/* Карта убрана по запросу пользователя */}
 
                               {/* Дата и время забора груза */}
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
