@@ -65,27 +65,41 @@ class WarehouseCargoFilteringTester:
         """Получение списка складов"""
         self.log("🏭 Получение списка складов...")
         
-        # Попробуем разные endpoints для получения складов
-        endpoints = [
-            "/api/warehouses/list",
-            "/api/admin/warehouses/list", 
-            "/api/operator/warehouses"
-        ]
+        # Сначала авторизуемся как админ для получения всех складов
+        admin_login_data = {
+            "phone": "+79999888777",
+            "password": "admin123"
+        }
         
-        for endpoint in endpoints:
-            try:
-                response = self.session.get(f"{API_BASE}{endpoint}")
-                if response.status_code == 200:
-                    warehouses = response.json()
-                    if isinstance(warehouses, list) and len(warehouses) > 0:
-                        self.warehouses = warehouses
-                        self.log(f"✅ Получено {len(warehouses)} складов через {endpoint}")
-                        for i, warehouse in enumerate(warehouses[:3], 1):  # Показываем первые 3
-                            self.log(f"   {i}. {warehouse.get('name')} (ID: {warehouse.get('id')})")
-                        return True
-            except Exception as e:
-                self.log(f"⚠️ Ошибка получения складов через {endpoint}: {e}")
-                continue
+        admin_response = self.session.post(f"{API_BASE}/auth/login", json=admin_login_data)
+        
+        if admin_response.status_code == 200:
+            admin_data = admin_response.json()
+            admin_token = admin_data.get('access_token')
+            
+            # Попробуем разные endpoints для получения складов
+            endpoints = [
+                "/api/warehouses",
+                "/api/operator/warehouses"
+            ]
+            
+            for endpoint in endpoints:
+                try:
+                    headers = {"Authorization": f"Bearer {admin_token}"}
+                    response = self.session.get(f"{API_BASE}{endpoint}", headers=headers)
+                    if response.status_code == 200:
+                        warehouses = response.json()
+                        if isinstance(warehouses, list) and len(warehouses) > 0:
+                            self.warehouses = warehouses
+                            self.log(f"✅ Получено {len(warehouses)} складов через {endpoint}")
+                            for i, warehouse in enumerate(warehouses[:3], 1):  # Показываем первые 3
+                                self.log(f"   {i}. {warehouse.get('name')} (ID: {warehouse.get('id')})")
+                            return True
+                except Exception as e:
+                    self.log(f"⚠️ Ошибка получения складов через {endpoint}: {e}")
+                    continue
+        else:
+            self.log("❌ Не удалось авторизоваться как админ для получения складов")
                 
         self.log("❌ Не удалось получить список складов")
         return False
