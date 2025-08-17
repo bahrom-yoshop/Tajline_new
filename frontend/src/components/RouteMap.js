@@ -307,7 +307,25 @@ const RouteMap = ({ fromAddress, toAddress, warehouseName, onRouteCalculated }) 
         multiRoute.model.events.add('requestfail', (e) => {
           if (mountedRef.current) {
             console.error('❌ Ошибка построения маршрута:', e);
-            setError('Не удалось построить маршрут. Проверьте адреса.');
+            
+            // Более детальная обработка ошибок
+            let errorMessage = 'Не удалось построить маршрут.';
+            
+            if (e && e.get && e.get('error')) {
+              const errorInfo = e.get('error');
+              console.error('❌ Детали ошибки маршрута:', errorInfo);
+              
+              if (errorInfo.message) {
+                if (errorInfo.message.includes('not found') || errorInfo.message.includes('не найден')) {
+                  errorMessage = 'Один из адресов не найден. Проверьте правильность адресов.';
+                } else if (errorInfo.message.includes('geocode') || errorInfo.message.includes('геокод')) {
+                  errorMessage = 'Ошибка геокодирования адресов. Попробуйте указать более точный адрес.';
+                }
+              }
+            }
+            
+            setError(errorMessage);
+            console.log(`🔧 Проблемные адреса: from="${fromAddress}", to="${toAddress}"`);
           }
         });
 
