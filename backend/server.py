@@ -5784,6 +5784,23 @@ async def get_available_cargo_for_placement(
                 cargo_data['warehouse_name'] = 'Склад не назначен'
                 cargo_data['warehouse_location'] = 'Не указано'
             
+            # НОВОЕ: Информация о складе назначения
+            destination_warehouse_id = cargo.get('destination_warehouse_id')
+            if destination_warehouse_id:
+                destination_warehouse = db.warehouses.find_one({"id": destination_warehouse_id})
+                if destination_warehouse:
+                    cargo_data['destination_warehouse_id'] = destination_warehouse_id
+                    cargo_data['destination_warehouse_name'] = destination_warehouse.get('name', 'Неизвестный склад')
+                    cargo_data['destination_warehouse_location'] = destination_warehouse.get('location', 'Не указано')
+                else:
+                    cargo_data['destination_warehouse_id'] = destination_warehouse_id
+                    cargo_data['destination_warehouse_name'] = f'Склад {destination_warehouse_id}'
+                    cargo_data['destination_warehouse_location'] = 'Не указано'
+            else:
+                cargo_data['destination_warehouse_id'] = None
+                cargo_data['destination_warehouse_name'] = None
+                cargo_data['destination_warehouse_location'] = None
+            
             # Добавляем статус готовности к размещению
             cargo_data['ready_for_placement'] = True
             cargo_data['placement_status'] = 'awaiting_placement'
