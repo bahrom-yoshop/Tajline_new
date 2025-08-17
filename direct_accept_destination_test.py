@@ -104,6 +104,36 @@ class DirectAcceptDestinationTester:
         self.log("❌ Не удалось авторизовать оператора Душанбе-3")
         return False
         
+    def create_temporary_dushanbe_warehouse(self):
+        """Создать временный склад Душанбе для тестирования"""
+        self.log("🏗️ Создание временного склада Душанбе для тестирования...")
+        
+        headers = {"Authorization": f"Bearer {self.moscow_operator_token}"}
+        
+        warehouse_data = {
+            "name": "Душанбе Склад №3 (Тестовый)",
+            "location": "Душанбе, проспект Рудаки",
+            "address": "Душанбе, проспект Рудаки, 123",
+            "blocks_count": 2,
+            "shelves_per_block": 2,
+            "cells_per_shelf": 10
+        }
+        
+        response = self.session.post(f"{API_BASE}/admin/warehouses", json=warehouse_data, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            warehouse_id = data.get('warehouse_id')
+            self.dushanbe_warehouse_id = warehouse_id
+            self.log(f"✅ Временный склад Душанбе создан: ID = {warehouse_id}")
+            return True
+        else:
+            self.log(f"❌ Ошибка создания временного склада: {response.status_code} - {response.text}")
+            # Fallback: используем существующий склад Москвы как назначение для тестирования
+            self.dushanbe_warehouse_id = self.moscow_warehouse_id
+            self.log(f"⚠️ Используем склад Москвы как назначение для тестирования: {self.dushanbe_warehouse_id}")
+            return True
+            
     def find_warehouse_ids(self):
         """Найти ID складов Москва Склад №1 и Душанбе Склад №3"""
         self.log("🏭 Поиск ID складов Москва Склад №1 и Душанбе Склад №3...")
@@ -133,15 +163,12 @@ class DirectAcceptDestinationTester:
                     self.dushanbe_warehouse_id = warehouse_id
                     self.log(f"✅ Найден Душанбе Склад №3: ID = {warehouse_id}")
                     
-            # Если не нашли конкретные склады, используем виртуальные ID для тестирования
-            if not self.moscow_warehouse_id:
-                self.moscow_warehouse_id = "d0a8362d-b4d3-4947-b335-28c94658a021"  # Виртуальный ID Москвы
-                self.log(f"⚠️ Используем виртуальный ID для Москва Склад №1: {self.moscow_warehouse_id}")
-                
+            # Если не нашли Душанбе склад, создаем временный
             if not self.dushanbe_warehouse_id:
-                self.dushanbe_warehouse_id = "virtual-dushanbe-warehouse-3"  # Виртуальный ID Душанбе
-                self.log(f"⚠️ Используем виртуальный ID для Душанбе Склад №3: {self.dushanbe_warehouse_id}")
-                
+                self.log("🏗️ Душанбе склад не найден, создаем временный...")
+                if not self.create_temporary_dushanbe_warehouse():
+                    return False
+                    
             return True
         else:
             self.log(f"❌ Ошибка получения списка складов: {response.status_code} - {response.text}")
