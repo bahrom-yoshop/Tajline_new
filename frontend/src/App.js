@@ -22326,8 +22326,9 @@ function App() {
                                             const city = prompt(`Задать город для склада: ${warehouse.name}`, warehouse.city || warehouse.location || '');
                                             if (!city) return;
                                             try {
-                                              const res = await apiCall(`/api/admin/warehouses/${warehouse.id}/set-city`, 'PATCH', { city });
-                                              showAlert(`Город установлен: ${res.city}`, 'success');
+                                              const cities = city.split(',').map(s => s.trim()).filter(Boolean);
+                                              const res = await apiCall(`/api/admin/warehouses/${warehouse.id}/set-city`, 'PATCH', { cities });
+                                              showAlert(`Города установлены: ${(res.cities||[]).join(', ')}`, 'success');
                                               fetchWarehouses();
                                             } catch (e) {
                                               showAlert(e?.detail || 'Ошибка установки города', 'error');
