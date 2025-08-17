@@ -153,15 +153,22 @@ class Cargo250107FixTest:
                         
                         if similar_cargo:
                             self.log(f"   Найдены похожие номера грузов: {similar_cargo[:10]}")  # Show first 10
-                            # Try the first similar cargo
-                            test_number = similar_cargo[0]
-                            self.log(f"   Попробуем использовать груз: {test_number}")
+                            
+                            # Look for exact match first
+                            if "250107" in similar_cargo:
+                                test_number = "250107"
+                                self.log(f"   Найден точный номер груза: {test_number}")
+                            else:
+                                # Try the first similar cargo
+                                test_number = similar_cargo[0]
+                                self.log(f"   Попробуем использовать груз: {test_number}")
+                            
                             response = requests.get(f"{BACKEND_URL}/debug/find-cargo-by-number/{test_number}", headers=headers)
                             if response.status_code == 200:
                                 cargo_data = response.json()
                                 if cargo_data.get('found'):
                                     cargo = cargo_data.get('cargo', {})
-                                    self.log(f"✅ Используем груз {test_number} для демонстрации исправления:")
+                                    self.log(f"✅ Используем груз {test_number} для исправления:")
                                     self.log(f"   ID: {cargo.get('id')}")
                                     self.log(f"   Номер: {cargo.get('cargo_number')}")
                                     self.log(f"   Текущий склад (warehouse_id): {cargo.get('warehouse_id')}")
@@ -171,6 +178,10 @@ class Cargo250107FixTest:
                                     # Update cargo number to the found one
                                     self.cargo_number = test_number
                                     return cargo
+                                else:
+                                    self.log(f"   Груз {test_number} найден в списке, но не найден через debug endpoint")
+                            else:
+                                self.log(f"   Ошибка поиска груза {test_number} через debug endpoint: {response.status_code}")
                             break
                         else:
                             self.log("   Похожие грузы не найдены в этом endpoint")
