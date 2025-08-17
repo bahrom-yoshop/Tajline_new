@@ -9912,6 +9912,26 @@ function App() {
     }
   };
 
+  const findRelatedCargoInWarehouse = async (selectedCargo, warehouseId) => {
+    try {
+      // Ищем связанные грузы по отправителю, получателю или заявке
+      const response = await apiCall(`/api/warehouses/${warehouseId}/related-cargo`, 'POST', {
+        cargo_id: selectedCargo.id,
+        sender_phone: selectedCargo.sender_phone,
+        recipient_phone: selectedCargo.recipient_phone,
+        sender_full_name: selectedCargo.sender_full_name,
+        recipient_full_name: selectedCargo.recipient_full_name
+      });
+      
+      if (response.success) {
+        setRelatedCargoInWarehouse(response.related_cargo || []);
+      }
+    } catch (error) {
+      console.error('Error finding related cargo:', error);
+      setRelatedCargoInWarehouse([]);
+    }
+  };
+
   // Contact functions
   const handleWhatsAppContact = () => {
     // Открыть WhatsApp с предустановленным сообщением
