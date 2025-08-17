@@ -17859,6 +17859,7 @@ function App() {
                                   </select>
                                 </div>
                               </div>
+                              )}
 
                               {/* Кнопки действий */}
                               <div className="flex space-x-4 pt-6 border-t">
