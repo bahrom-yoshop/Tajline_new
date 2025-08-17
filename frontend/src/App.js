@@ -27015,6 +27015,105 @@ function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Operator QR Generation Modal */}
+      <Dialog open={operatorQRGenerationModal} onOpenChange={setOperatorQRGenerationModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              <QrCode className="mr-2 h-5 w-5 inline" />
+              Генерация QR кодов для заявки
+            </DialogTitle>
+            <DialogDescription>
+              Создайте QR коды для всех грузов принятой заявки
+            </DialogDescription>
+          </DialogHeader>
+          
+          {operatorCargoResponse && (
+            <div className="space-y-4">
+              {/* Информация о заявке */}
+              <div className="p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                  <h5 className="font-medium text-green-800">
+                    Заявка успешно принята
+                  </h5>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
+                  <div>
+                    <strong>Номер заявки:</strong> {operatorCargoResponse.base_request_number}
+                  </div>
+                  <div>
+                    <strong>Создано грузов:</strong> {operatorCargoResponse.total_cargo_count}
+                  </div>
+                  <div>
+                    <strong>Оператор:</strong> {operatorCargoResponse.received_by}
+                  </div>
+                  <div>
+                    <strong>Дата:</strong> {new Date(operatorCargoResponse.received_at).toLocaleString('ru-RU')}
+                  </div>
+                </div>
+              </div>
+
+              {/* Список созданных грузов */}
+              <div className="space-y-2">
+                <h4 className="font-semibold">Созданные грузы:</h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {operatorCargoResponse.created_cargo.map((cargo, index) => (
+                    <div key={cargo.cargo_id} className="p-3 border rounded-lg bg-gray-50">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="font-medium text-blue-800">
+                            📦 {cargo.cargo_number}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {cargo.cargo_name} • {cargo.weight} кг • {cargo.declared_value} ₽
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-blue-600 border-blue-600">
+                          Груз {index + 1}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Кнопки действий */}
+              <div className="flex space-x-2 pt-4">
+                <Button 
+                  onClick={handleGenerateOperatorCargoQR}
+                  disabled={generatingCargoQR}
+                  className="flex-1 bg-orange-600 hover:bg-orange-700"
+                >
+                  {generatingCargoQR ? (
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <QrCode className="mr-2 h-4 w-4" />
+                  )}
+                  Генерировать и печатать QR коды для всех грузов
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setOperatorQRGenerationModal(false);
+                    setOperatorCargoResponse(null);
+                  }}
+                >
+                  Пропустить
+                </Button>
+              </div>
+
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  💡 <strong>Совет:</strong> QR коды помогут быстро находить и размещать грузы на складе. 
+                  Рекомендуется сгенерировать их сразу после приёма заявки.
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Transport Visualization Modal */}
       <Dialog open={transportVisualizationModal} onOpenChange={setTransportVisualizationModal}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
