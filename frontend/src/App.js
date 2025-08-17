@@ -19030,7 +19030,7 @@ function App() {
                                 {/* Склад для выдачи груза */}
                                 <div>
                                   <Label htmlFor="destination_warehouse" className="font-medium">
-                                    Склад назначения *
+                                    Склад для выдачи груза *
                                   </Label>
                                   <select
                                     id="destination_warehouse"
