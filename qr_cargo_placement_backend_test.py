@@ -165,22 +165,11 @@ class QRCargoPlacementTester:
         
         headers = {"Authorization": f"Bearer {self.admin_token}"}
         
-        # Проверяем коллекцию cargo
-        cargo_response = self.session.get(f"{API_BASE}/cargo/list", headers=headers)
-        if cargo_response.status_code == 200:
-            cargo_list = cargo_response.json()
-            for cargo in cargo_list:
-                if cargo.get("warehouse_location") and not cargo.get("transport_id"):
-                    self.test_cargo_id = cargo["id"]
-                    self.test_cargo_collection = "cargo"
-                    self.original_warehouse_location = cargo["warehouse_location"]
-                    self.log(f"✅ Найден груз в ячейке: {cargo['cargo_number']} (ячейка: {cargo['warehouse_location']})")
-                    return cargo
-                    
-        # Проверяем коллекцию operator_cargo
+        # Проверяем коллекцию operator_cargo (основная коллекция)
         operator_cargo_response = self.session.get(f"{API_BASE}/operator/cargo/list", headers=headers)
         if operator_cargo_response.status_code == 200:
-            operator_cargo_list = operator_cargo_response.json()
+            operator_cargo_data = operator_cargo_response.json()
+            operator_cargo_list = operator_cargo_data.get("items", [])
             for cargo in operator_cargo_list:
                 if cargo.get("warehouse_location") and not cargo.get("transport_id"):
                     self.test_cargo_id = cargo["id"]
