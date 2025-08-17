@@ -8208,6 +8208,55 @@ function App() {
     }
   };
 
+  // НОВАЯ ФУНКЦИЯ: Сохранение изменений оплаты
+  const handleSavePaymentChanges = async () => {
+    try {
+      if (!currentCargoNotification?.id && !currentCargoNotification?.pickup_request_id) {
+        showAlert('Ошибка: Невозможно определить ID заявки для сохранения', 'error');
+        return;
+      }
+
+      // Определяем URL endpoint в зависимости от типа заявки
+      const requestId = currentCargoNotification.pickup_request_id || currentCargoNotification.id;
+      const isPickupRequest = !!currentCargoNotification.pickup_request_id;
+      
+      const updateUrl = isPickupRequest 
+        ? `/api/courier/pickup-requests/${requestId}/payment`
+        : `/api/admin/warehouse-notifications/${requestId}/payment`;
+
+      const paymentData = {
+        payment_status: cargoAcceptanceForm.payment_status,
+        payment_method: cargoAcceptanceForm.payment_method,
+        amount_paid: parseFloat(cargoAcceptanceForm.amount_paid) || 0
+      };
+
+      console.log('💰 Сохраняем изменения оплаты:', {
+        requestId,
+        isPickupRequest,
+        updateUrl,
+        paymentData
+      });
+
+      await apiCall(updateUrl, 'PUT', paymentData);
+      
+      showAlert('Данные оплаты успешно обновлены!', 'success');
+      setIsPaymentEditMode(false); // Выходим из режима редактирования
+      
+      // Обновляем данные заявки
+      if (isPickupRequest) {
+        // Обновляем pickup requests если необходимо
+        fetchCourierNewRequests();
+      } else {
+        // Обновляем warehouse notifications если необходимо
+        fetchWarehouseNotifications();
+      }
+
+    } catch (error) {
+      console.error('Ошибка сохранения оплаты:', error);
+      showAlert('Ошибка сохранения данных оплаты: ' + error.message, 'error');
+    }
+  };
+
   // Новые функции для улучшенного размещения
 
   // Получение аналитики по складам
