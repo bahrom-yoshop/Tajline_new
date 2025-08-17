@@ -12235,8 +12235,10 @@ async def generate_cargo_qr_code(
     if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    # Получить данные груза
+    # Получить данные груза из обеих коллекций
     cargo = db.cargo.find_one({"id": cargo_id})
+    if not cargo:
+        cargo = db.operator_cargo.find_one({"id": cargo_id})
     if not cargo:
         raise HTTPException(status_code=404, detail="Cargo not found")
     
