@@ -510,7 +510,13 @@ class WarehouseSchemaRelatedCargoTester:
         # 6. Проверка статистики
         test_results.append(("Статистика склада", self.test_warehouse_statistics()))
         
-        # 7. Очистка данных
+        # 7. Тестирование оператора склада
+        test_results.append(("Авторизация оператора склада", self.test_operator_authorization()))
+        
+        # 8. Тестирование доступа оператора
+        test_results.append(("Доступ оператора к схеме склада", self.test_operator_warehouse_access()))
+        
+        # 9. Очистка данных
         test_results.append(("Очистка тестовых данных", self.cleanup_test_data()))
         
         # Подведение итогов
