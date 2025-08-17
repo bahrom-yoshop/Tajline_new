@@ -310,8 +310,31 @@ class TransportQRGenerationTester:
                 self.log("📦 Создание тестового транспорта для демонстрации...")
                 test_transport_id = self.create_test_transport_if_needed()
                 if test_transport_id:
-                    # Попробуем установить статус filled вручную для тестирования
-                    if self.manually_set_transport_filled(test_transport_id):
+                    # Попробуем найти доступный груз
+                    available_cargo = self.get_available_cargo()
+                    if available_cargo:
+                        # Попробуем разместить груз на транспорте
+                        cargo_numbers = []
+                        total_weight = 0
+                        for cargo in available_cargo:
+                            cargo_number = cargo.get('cargo_number')
+                            weight = cargo.get('weight', 0)
+                            if cargo_number and weight:
+                                cargo_numbers.append(cargo_number)
+                                total_weight += weight
+                                # Если набрали достаточно веса, останавливаемся
+                                if total_weight >= 900:  # Достаточно для заполнения транспорта 1000кг
+                                    break
+                        
+                        if cargo_numbers:
+                            self.log(f"🚛 Попытка размещения {len(cargo_numbers)} грузов (общий вес: {total_weight}кг)")
+                            if self.place_cargo_on_transport(test_transport_id, cargo_numbers):
+                                # Получаем обновленный список транспортов
+                                transports = self.get_transport_list()
+                                filled_transport = self.find_filled_transport(transports)
+                    
+                    # Если не удалось создать заполненный, используем созданный для демонстрации
+                    if not filled_transport:
                         # Получаем обновленный список транспортов
                         transports = self.get_transport_list()
                         # Для демонстрации, будем использовать созданный транспорт
