@@ -10346,6 +10346,19 @@ async def direct_accept_cargo_by_operator(
                 "description": cargo_data.get("special_instructions", "")
             }]
         
+        # Подготовим служебные значения до цикла
+        operator_warehouse_ids = get_operator_warehouse_ids(current_user.id)
+        current_wh_id = operator_warehouse_ids[0] if operator_warehouse_ids else None
+        # Поддержка разных имен полей из формы для склада назначения
+        dest_wh_id_from_form = (
+            cargo_data.get("destination_warehouse_id")
+            or cargo_data.get("warehouse_id")
+            or cargo_data.get("destination_id")
+        )
+        # Валидация: если ID склада назначения не найден в БД, оставим None
+        valid_dest_wh = db.warehouses.find_one({"id": dest_wh_id_from_form}) if dest_wh_id_from_form else None
+        destination_wh_id = dest_wh_id_from_form if valid_dest_wh else None
+
         # Создаем отдельный груз для каждого элемента
         for index, cargo_item in enumerate(cargo_items, 1):
             cargo_id = str(uuid.uuid4())
@@ -10378,10 +10391,10 @@ async def direct_accept_cargo_by_operator(
                 "route": cargo_data.get("route", "moscow_to_tajikistan"),
                 
                 # ВАЖНО: warehouse_id - это ТЕКУЩИЙ склад где находится груз (склад оператора который принял)
-                "warehouse_id": get_operator_warehouse_ids(current_user.id)[0] if get_operator_warehouse_ids(current_user.id) else None,
+                "warehouse_id": current_wh_id,
                 
                 # destination_warehouse_id - это склад НАЗНАЧЕНИЯ (выбранный в форме)
-                "destination_warehouse_id": cargo_data.get("warehouse_id"),
+                "destination_warehouse_id": destination_wh_id,
                 
                 "payment_method": cargo_data.get("payment_method", "not_paid"),
                 
@@ -10412,6 +10425,16 @@ async def direct_accept_cargo_by_operator(
             }
             db.operator_cargo.insert_one(operator_cargo_document)
             
+            # Найдем человекочитаемые названия складов для ответа
+            current_wh_name = None
+            dest_wh_name = None
+            if current_wh_id:
+                wh = db.warehouses.find_one({"id": current_wh_id})
+                current_wh_name = wh.get("name") if wh else None
+            if destination_wh_id:
+                dwh = db.warehouses.find_one({"id": destination_wh_id})
+                dest_wh_name = dwh.get("name") if dwh else None
+
             created_cargo_list.append({
                 "id": cargo_id,
                 "cargo_id": cargo_id,  # For backward compatibility
@@ -10422,7 +10445,9 @@ async def direct_accept_cargo_by_operator(
                 "base_request_number": base_request_number,
                 "item_sequence": index,
                 "current_warehouse_id": cargo_document["warehouse_id"],  # Склад где груз сейчас находится
-                "destination_warehouse_id": cargo_document["destination_warehouse_id"]  # Склад назначения
+                "current_warehouse_name": current_wh_name,
+                "destination_warehouse_id": cargo_document["destination_warehouse_id"],  # Склад назначения
+                "destination_warehouse_name": dest_wh_name
             })
             
             print(f"✅ Груз {cargo_number} (груз {index} из {len(cargo_items)}) успешно принят через оператора {current_user.full_name}")
@@ -10433,8 +10458,8 @@ async def direct_accept_cargo_by_operator(
             "base_request_number": base_request_number,
             "created_cargo": created_cargo_list,
             "total_cargo_count": len(created_cargo_list),
-            "current_warehouse_id": get_operator_warehouse_ids(current_user.id)[0] if get_operator_warehouse_ids(current_user.id) else None,
-            "destination_warehouse_id": cargo_data.get("warehouse_id"),
+            "current_warehouse_id": current_wh_id,
+            "destination_warehouse_id": destination_wh_id,
             "received_by": current_user.full_name,
             "received_at": datetime.utcnow().isoformat()
         }
