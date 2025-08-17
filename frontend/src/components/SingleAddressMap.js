@@ -54,31 +54,64 @@ const SingleAddressMap = ({ address, title = "Адрес получения гр
         
         // Получаем API ключ
         const apiKey = process.env.REACT_APP_YANDEX_MAPS_API_KEY;
-        console.log('🔑 API ключ для SingleAddressMap:', apiKey ? 'найден' : 'НЕ НАЙДЕН');
+        console.log('🔑 SingleAddressMap API ключ:', apiKey ? 'найден' : 'НЕ НАЙДЕН');
 
-        // Загружаем скрипт если нужно
+        // Проверяем, загружен ли уже скрипт
         if (!window.ymaps) {
           setInitStatus('Загружаем скрипт Yandex Maps...');
+          console.log('📦 Загружаем новый скрипт Yandex Maps для SingleAddressMap');
           
-          const script = document.createElement('script');
-          script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apiKey}&lang=ru_RU`;
-          script.async = true;
+          const existingScript = document.querySelector('script[src*="api-maps.yandex.ru"]');
+          if (existingScript) {
+            console.log('📦 Скрипт Yandex Maps уже существует, ждем загрузки...');
+            // Ждем пока загрузится существующий скрипт
+            let attempts = 0;
+            while (!window.ymaps && attempts < 50) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              attempts++;
+            }
+            if (!window.ymaps) {
+              throw new Error('Скрипт Yandex Maps не загрузился за отведенное время');
+            }
+          } else {
+            const script = document.createElement('script');
+            script.src = `https://api-maps.yandex.ru/2.1/?apikey=${apiKey}&lang=ru_RU`;
+            script.async = true;
 
-          const scriptPromise = new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-          });
+            const scriptPromise = new Promise((resolve, reject) => {
+              script.onload = () => {
+                console.log('✅ Скрипт Yandex Maps загружен успешно');
+                resolve();
+              };
+              script.onerror = (error) => {
+                console.error('❌ Ошибка загрузки скрипта Yandex Maps:', error);
+                reject(error);
+              };
+            });
 
-          document.head.appendChild(script);
-          await scriptPromise;
+            document.head.appendChild(script);
+            await scriptPromise;
+          }
+        } else {
+          console.log('✅ Yandex Maps API уже доступен');
         }
 
         if (!mountedRef.current) return;
 
         // Ждем готовности API
         setInitStatus('Инициализация карты...');
-        await new Promise((resolve) => {
-          window.ymaps.ready(resolve);
+        console.log('🗺️ Инициализируем Yandex Maps API...');
+        
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Timeout при инициализации Yandex Maps'));
+          }, 10000);
+          
+          window.ymaps.ready(() => {
+            clearTimeout(timeout);
+            console.log('✅ Yandex Maps API готов');
+            resolve();
+          });
         });
 
         if (!mountedRef.current) return;
