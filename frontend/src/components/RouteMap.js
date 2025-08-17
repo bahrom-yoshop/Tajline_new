@@ -13,25 +13,40 @@ const RouteMap = ({ fromAddress, toAddress, warehouseName, onRouteCalculated }) 
   const [initStatus, setInitStatus] = useState('Начинаем инициализацию...');
   const mountedRef = useRef(true); // Отслеживаем mounted состояние
 
-  // Cleanup при размонтировании
+  // Cleanup при размонтировании - ИСПРАВЛЕНИЕ для removeChild ошибки
   useEffect(() => {
     return () => {
       mountedRef.current = false;
       console.log('🧹 Cleanup RouteMap component');
       
-      // Очищаем карту перед размонтированием
-      if (map) {
+      // Добавляем задержку для безопасной очистки
+      setTimeout(() => {
         try {
-          map.destroy();
-        } catch (e) {
-          console.warn('Ошибка при destroy карты:', e);
+          // Очищаем карту перед размонтированием
+          if (map) {
+            try {
+              // Сначала удаляем все geoObjects если есть
+              if (map.geoObjects) {
+                map.geoObjects.removeAll();
+              }
+              map.destroy();
+            } catch (e) {
+              console.warn('Предупреждение при destroy карты:', e);
+            }
+          }
+          
+          // Безопасная очистка mapRef
+          if (mapRef.current && mapRef.current.parentNode) {
+            try {
+              mapRef.current.innerHTML = '';
+            } catch (e) {
+              console.warn('Предупреждение при очистке контейнера:', e);
+            }
+          }
+        } catch (error) {
+          console.warn('Предупреждение при cleanup RouteMap:', error);
         }
-      }
-      
-      // Очищаем mapRef
-      if (mapRef.current) {
-        mapRef.current.innerHTML = '';
-      }
+      }, 0);
     };
   }, [map]);
 
