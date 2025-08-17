@@ -109,7 +109,7 @@ class DirectAcceptDestinationTester:
         self.log("🏭 Поиск ID складов Москва Склад №1 и Душанбе Склад №3...")
         
         headers = {"Authorization": f"Bearer {self.moscow_operator_token}"}
-        response = self.session.get(f"{API_BASE}/warehouses/list", headers=headers)
+        response = self.session.get(f"{API_BASE}/warehouses", headers=headers)
         
         if response.status_code == 200:
             warehouses = response.json()
