@@ -150,7 +150,7 @@ class CargoDestinationLogicTester:
         try:
             # Получаем все склады (админ)
             headers = {"Authorization": f"Bearer {self.admin_token}"}
-            response = self.session.get(f"{API_BASE}/admin/warehouses", headers=headers)
+            response = self.session.get(f"{API_BASE}/warehouses", headers=headers)
             
             if response.status_code == 200:
                 self.all_warehouses = response.json()
