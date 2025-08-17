@@ -5619,13 +5619,7 @@ async def get_available_cargo_for_placement(
             operator_warehouse_bindings = list(db.operator_warehouse_bindings.find(
                 {"operator_id": current_user.id}
             ))
-            
-            if operator_warehouse_bindings:
-                operator_warehouse_ids = [binding["warehouse_id"] for binding in operator_warehouse_bindings]
-            else:
-                # Если нет привязок, оператор может видеть все склады (для упрощения)
-                warehouses = list(db.warehouses.find({"is_active": True}))
-                operator_warehouse_ids = [w["id"] for w in warehouses]
+            operator_warehouse_ids = [binding["warehouse_id"] for binding in operator_warehouse_bindings]
         else:
             # Админ видит все склады
             warehouses = list(db.warehouses.find({"is_active": True}))
