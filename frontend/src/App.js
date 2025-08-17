@@ -26668,6 +26668,184 @@ function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Cargo QR Generation Modal */}
+      <Dialog open={cargoQRGenerationModal} onOpenChange={setCargoQRGenerationModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              <QrCode className="mr-2 h-5 w-5 inline" />
+              Генерация QR кодов для грузов
+            </DialogTitle>
+            <DialogDescription>
+              Генерация QR кодов для грузов, готовых к размещению на транспорт. QR коды содержат только цифры.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-orange-50 rounded-lg">
+              <div className="flex items-center">
+                <Package className="h-5 w-5 text-orange-600 mr-2" />
+                <h5 className="font-medium text-orange-800">
+                  Доступные грузы для генерации QR кодов
+                </h5>
+              </div>
+              <p className="text-sm text-orange-700 mt-2">
+                Показаны грузы, готовые к размещению на транспорт. QR коды содержат уникальный числовой код в формате ГГГГВВВССС.
+              </p>
+            </div>
+
+            {getAvailableCargoForQR().length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500">Нет доступных грузов для генерации QR кодов</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  QR коды можно генерировать для грузов со статусом "принят", "размещен" или "ожидает размещения"
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Массовые действия */}
+                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedCargoForQR.length === getAvailableCargoForQR().length}
+                      onChange={(e) => handleSelectAllCargoForQR(e.target.checked)}
+                      className="rounded border-gray-300"
+                    />
+                    <label className="text-sm font-medium text-gray-700">
+                      Выбрать все ({getAvailableCargoForQR().length})
+                    </label>
+                  </div>
+                  
+                  {selectedCargoForQR.length > 0 && (
+                    <Button
+                      onClick={handleBatchGenerateCargoQR}
+                      disabled={generatingCargoQR}
+                      size="sm"
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      {generatingCargoQR ? (
+                        <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <QrCode className="h-4 w-4 mr-1" />
+                      )}
+                      Генерировать для выбранных ({selectedCargoForQR.length})
+                    </Button>
+                  )}
+                </div>
+
+                {/* Список грузов */}
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {getAvailableCargoForQR().map((cargo) => (
+                    <div key={cargo.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-start space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedCargoForQR.includes(cargo.id)}
+                            onChange={(e) => handleCargoQRSelect(cargo.id, e.target.checked)}
+                            className="mt-1 rounded border-gray-300"
+                          />
+                          <div>
+                            <h3 className="font-semibold text-lg">Груз №{cargo.cargo_number}</h3>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              <p><strong>Наименование:</strong> {cargo.cargo_name || 'Не указано'}</p>
+                              <p><strong>Вес:</strong> {cargo.weight || 'Не указан'} кг</p>
+                              <p><strong>Отправитель:</strong> {cargo.sender_full_name}</p>
+                              <p><strong>Получатель:</strong> {cargo.recipient_full_name}</p>
+                              <p><strong>Склад:</strong> {cargo.warehouse_name || 'Не указан'}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end space-y-2">
+                          <Badge variant={cargo.status === 'accepted' ? 'default' : 'secondary'}>
+                            {cargo.status === 'accepted' ? 'Принят' : 
+                             cargo.status === 'placed_in_warehouse' ? 'Размещен' : 
+                             cargo.status === 'awaiting_placement' ? 'Ожидает размещения' : cargo.status}
+                          </Badge>
+                          {cargo.pickup_request_id && (
+                            <Badge variant="outline" className="text-blue-600 border-blue-600">
+                              🚚 Забор груза
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        {cargo.qr_code ? (
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className="text-green-600 border-green-600">
+                              QR код создан
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              Код: {cargo.qr_data}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500">QR код не создан</span>
+                        )}
+                        
+                        <div className="flex space-x-2">
+                          {cargo.qr_code && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openCargoQRPrintModal({
+                                cargo_number: cargo.cargo_number,
+                                qr_code: cargo.qr_code,
+                                qr_data: cargo.qr_data
+                              })}
+                            >
+                              <Printer className="h-4 w-4 mr-1" />
+                              Печать
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => handleGenerateCargoQR(cargo)}
+                            disabled={generatingCargoQR}
+                            className="bg-orange-600 hover:bg-orange-700"
+                          >
+                            {generatingCargoQR ? (
+                              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <QrCode className="h-4 w-4 mr-1" />
+                            )}
+                            {cargo.qr_code ? 'Перегенерировать' : 'Генерировать'} QR
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div className="flex space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setCargoQRGenerationModal(false);
+                  setSelectedCargoForQR([]);
+                }}
+                className="flex-1"
+              >
+                Закрыть
+              </Button>
+              <Button 
+                onClick={() => fetchAvailableCargoForPlacement()}
+                variant="outline"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Обновить список
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* НОВЫЕ МОДАЛЫ ДЛЯ УПРАВЛЕНИЯ ЗАКАЗАМИ КЛИЕНТОВ */}
 
       {/* Модальное окно детального просмотра заказа клиента */}
