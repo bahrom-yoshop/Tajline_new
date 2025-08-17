@@ -3972,6 +3972,7 @@ function App() {
   const [arrivedCargoList, setArrivedCargoList] = useState([]);
   const [cargoPlacementModal, setCargoPlacementModal] = useState(false);
   const [selectedCargoForWarehouse, setSelectedCargoForWarehouse] = useState(null);
+  const [relatedCargoInWarehouse, setRelatedCargoInWarehouse] = useState([]);
   const [placementForm, setPlacementForm] = useState({
     warehouse_id: '',
     block_number: 1,
