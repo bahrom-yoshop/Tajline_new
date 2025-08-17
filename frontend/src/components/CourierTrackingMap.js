@@ -322,14 +322,26 @@ const CourierTrackingMap = ({ userRole, apiCall }) => {
     }
   }, [isMapOpen, courierLocations, statusFilter]);
 
-  // Очистка при размонтировании
+  // Очистка при размонтировании - ИСПРАВЛЕНИЕ для removeChild ошибки
   useEffect(() => {
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.destroy();
-        mapInstanceRef.current = null;
-      }
-      stopAutoRefresh();
+      // Добавляем задержку для безопасной очистки
+      setTimeout(() => {
+        try {
+          if (mapInstanceRef.current) {
+            // Сначала удаляем все geoObjects
+            if (mapInstanceRef.current.geoObjects) {
+              mapInstanceRef.current.geoObjects.removeAll();
+            }
+            mapInstanceRef.current.destroy();
+            mapInstanceRef.current = null;
+          }
+          
+          stopAutoRefresh();
+        } catch (error) {
+          console.warn('Предупреждение при очистке CourierTrackingMap:', error);
+        }
+      }, 0);
     };
   }, []);
 
