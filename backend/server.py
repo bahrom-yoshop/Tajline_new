@@ -12578,7 +12578,7 @@ async def place_cargo_on_transport_via_qr(
         "cargo_weight": cargo_weight,
         "operator_id": current_user.id,
         "operator_name": current_user.full_name,
-        "placed_at": datetime.utcnow(),
+        "placed_at": placed_at,  # Используем ту же дату
         "warehouse_location_removed": cargo.get("warehouse_location", ""),
         "operation_type": "qr_placement"
     }
@@ -12587,7 +12587,7 @@ async def place_cargo_on_transport_via_qr(
     
     # Создаем копию для возврата с сериализованной датой
     placement_log_response = placement_log.copy()
-    placement_log_response["placed_at"] = placement_log["placed_at"].isoformat()
+    placement_log_response["placed_at"] = placed_at.isoformat()
     
     return {
         "success": True,
