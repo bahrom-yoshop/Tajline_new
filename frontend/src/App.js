@@ -20319,6 +20319,13 @@ function App() {
                                                   📍 {item.route_info.from?.warehouse_name || 'Неизвестно'} → {item.route_info.to?.warehouse_name || item.warehouse_name}
                                                 </Badge>
                                               )}
+                                              
+                                              {/* НОВОЕ: Информация о складе назначения */}
+                                              {item.destination_warehouse_name && item.destination_warehouse_name !== item.warehouse_name && (
+                                                <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                                                  🎯 Назначение: {item.destination_warehouse_name}
+                                                </Badge>
+                                              )}
                                             </div>
                                           
                                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
