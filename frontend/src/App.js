@@ -20,7 +20,7 @@ import CourierGPSTracker from './components/CourierGPSTracker'; // Компон�
 import CourierTrackingMap from './components/CourierTrackingMap'; // Компонент карты отслеживания курьеров
 import CourierHistoryAnalytics from './components/CourierHistoryAnalytics'; // Компонент истории и аналитики курьеров
 import RouteMap from './components/RouteMap'; // Компонент карты маршрута для оформления груза
-import SimpleRouteMap from './components/SimpleRouteMap'; // Простая тестовая карта
+import SingleAddressMap from './components/SingleAddressMap'; // Простая тестовая карта
 import { 
   Truck, Package, Users, Bell, Search, Plus, Edit, Trash2, CheckCircle, 
   Clock, MapPin, User, Shield, Warehouse, Menu, X, Building, 
