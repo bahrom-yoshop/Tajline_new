@@ -14327,21 +14327,27 @@ function App() {
                     </p>
                   </div>
 
-                  {/* Поле для ручного ввода QR кода (для тестирования) */}
+                  {/* Поле для сканирования QR кода */}
                   <div className="space-y-2">
-                    <Label htmlFor="qr-input">Введите QR код или отсканируйте</Label>
+                    <Label htmlFor="qr-input">
+                      {qrPlacementData.scanMode === 'transport' 
+                        ? '📱 Сканируйте QR код транспорта' 
+                        : '📦 Сканируйте QR коды грузов'}
+                    </Label>
                     <div className="flex space-x-2">
                       <Input
                         id="qr-input"
                         placeholder={qrPlacementData.scanMode === 'transport' 
-                          ? 'QR код транспорта (10 цифр)' 
-                          : 'QR код груза (10 цифр)'}
+                          ? 'QR код транспорта' 
+                          : 'QR код груза (любой формат)'}
+                        autoFocus={true}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && e.target.value.trim()) {
                             simulateQRScan(e.target.value.trim());
                             e.target.value = '';
                           }
                         }}
+                        className="text-lg font-mono"
                       />
                       <Button 
                         variant="outline"
@@ -14350,15 +14356,23 @@ function App() {
                           if (input.value.trim()) {
                             simulateQRScan(input.value.trim());
                             input.value = '';
+                            input.focus();
                           }
                         }}
                       >
-                        Сканировать
+                        📷 Сканировать
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500">
-                      Введите QR код и нажмите Enter или кнопку "Сканировать"
-                    </p>
+                    <div className="text-xs space-y-1">
+                      <p className="text-green-600">
+                        🔄 Автосканирование активно - просто введите код и нажмите Enter
+                      </p>
+                      {qrPlacementData.scanMode === 'cargo' && (
+                        <p className="text-blue-600">
+                          ✨ Поддерживаются любые форматы QR: цифры, буквы, символы
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Последний результат сканирования */}
