@@ -17859,64 +17859,9 @@ function App() {
                                   </select>
                                 </div>
                               </div>
-
-                              {/* Кнопки действий */}
-                              <div className="flex space-x-4 pt-6 border-t">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="flex-1"
-                                  onClick={() => {
-                                    // Логика для печати накладной
-                                    showAlert('Функция печати накладной будет реализована', 'info');
-                                  }}
-                                >
-                                  <FileText className="mr-2 h-4 w-4" />
-                                  Печать накладной
-                                </Button>
-                                
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="flex-1"
-                                  onClick={() => {
-                                    // Логика для штрих-кода
-                                    showAlert('Функция генерации штрих-кода будет реализована', 'info');
-                                  }}
-                                >
-                                  <QrCode className="mr-2 h-4 w-4" />
-                                  Штрих-код
-                                </Button>
-                                
-                                <Button
-                                  type="submit"
-                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                                  disabled={!operatorCargoForm.sender_full_name || 
-                                           !operatorCargoForm.sender_phone || 
-                                           !operatorCargoForm.recipient_full_name ||
-                                           !operatorCargoForm.recipient_phone ||
-                                           !operatorCargoForm.cargo_items?.[0]?.name ||
-                                           !operatorCargoForm.cargo_items?.[0]?.weight ||
-                                           !operatorCargoForm.cargo_items?.[0]?.declared_value}
-                                >
-                                  <Package className="mr-2 h-4 w-4" />
-                                  Принять груз
-                                </Button>
-                              </div>
-
-                              {/* Информационное сообщение */}
-                              <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
-                                <div className="flex items-center">
-                                  <Eye className="h-4 w-4 text-blue-600 mr-2" />
-                                  <p className="text-sm text-blue-700">
-                                    <strong>После приема груз поступит в:</strong> Касса → Не оплачено → Переданный в "Размещение грузов"
-                                  </p>
-                                </div>
-                              </div>
                             </>
-                          )}
-
-                          {/* Кнопки действий */}
+                          ) : (
+                            /* ОБЫЧНЫЙ РЕЖИМ - все поля как было */
                             <>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
