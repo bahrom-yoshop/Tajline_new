@@ -25653,6 +25653,8 @@ function App() {
                                   onClick={() => {
                                     if (cell.is_occupied && cell.cargo) {
                                       setSelectedCargoForWarehouse(cell.cargo);
+                                      // Ищем связанные грузы на этом складе
+                                      findRelatedCargoInWarehouse(cell.cargo, selectedWarehouseForLayout);
                                       setCargoDetailsModal(true);
                                     } else {
                                       showAlert('Ячейка свободна', 'info');
