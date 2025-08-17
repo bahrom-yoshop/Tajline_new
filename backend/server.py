@@ -12439,7 +12439,7 @@ async def scan_cargo_qr_for_placement(
     request: dict,
     current_user: User = Depends(get_current_user)
 ):
-    """Сканирование QR кода груза для размещения на транспорт"""
+    """Сканирование QR кода груза для размещения на транспорт - поддержка любых форматов"""
     if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -12447,20 +12447,41 @@ async def scan_cargo_qr_for_placement(
     if not qr_data:
         raise HTTPException(status_code=400, detail="QR данные не предоставлены")
     
-    # Поиск груза по QR коду в обеих коллекциях
+    # Поиск груза по QR коду в обеих коллекциях - поддержка любых форматов
+    cargo = None
+    
+    # Сначала ищем точное совпадение по qr_data
     cargo = db.cargo.find_one({"qr_data": qr_data})
     if not cargo:
         cargo = db.operator_cargo.find_one({"qr_data": qr_data})
     
+    # Если не найден, ищем по qr_code (base64 изображение может содержать те же данные)
     if not cargo:
-        raise HTTPException(status_code=404, detail="Груз с таким QR кодом не найден")
+        cargo = db.cargo.find_one({"qr_code": {"$regex": qr_data, "$options": "i"}})
+    if not cargo:
+        cargo = db.operator_cargo.find_one({"qr_code": {"$regex": qr_data, "$options": "i"}})
+    
+    # Если не найден, ищем по cargo_number (может совпадать с QR данными)
+    if not cargo:
+        cargo = db.cargo.find_one({"cargo_number": qr_data})
+    if not cargo:
+        cargo = db.operator_cargo.find_one({"cargo_number": qr_data})
+    
+    # Если не найден, ищем по cargo_number как подстроку
+    if not cargo:
+        cargo = db.cargo.find_one({"cargo_number": {"$regex": qr_data, "$options": "i"}})
+    if not cargo:
+        cargo = db.operator_cargo.find_one({"cargo_number": {"$regex": qr_data, "$options": "i"}})
+    
+    if not cargo:
+        raise HTTPException(status_code=404, detail=f"Груз с QR кодом '{qr_data}' не найден. Проверьте правильность кода.")
     
     # Проверить, что груз доступен для размещения (находится в ячейке склада)
     if not cargo.get("warehouse_location"):
-        raise HTTPException(status_code=400, detail="Груз не находится в ячейке склада и не может быть размещен")
+        raise HTTPException(status_code=400, detail=f"Груз {cargo.get('cargo_number', 'неизвестен')} не находится в ячейке склада и не может быть размещен")
     
     if cargo.get("transport_id"):
-        raise HTTPException(status_code=400, detail="Груз уже размещен на транспорт")
+        raise HTTPException(status_code=400, detail=f"Груз {cargo.get('cargo_number', 'неизвестен')} уже размещен на транспорт")
     
     return {
         "success": True,
@@ -12473,7 +12494,7 @@ async def scan_cargo_qr_for_placement(
             "recipient_full_name": cargo.get("recipient_full_name", ""),
             "warehouse_location": cargo.get("warehouse_location", ""),
             "status": cargo.get("status", ""),
-            "qr_data": cargo.get("qr_data", "")
+            "qr_data": cargo.get("qr_data", qr_data)
         },
         "message": f"Груз {cargo['cargo_number']} найден и готов к размещению"
     }
