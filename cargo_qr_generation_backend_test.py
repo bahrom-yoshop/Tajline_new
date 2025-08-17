@@ -330,7 +330,7 @@ class CargoQRGenerationTester:
         }
         
         headers = {"Authorization": f"Bearer {self.operator_token}"}
-        response = self.session.post(f"{API_BASE}/operator/cargo/create", json=cargo_data, headers=headers)
+        response = self.session.post(f"{API_BASE}/operator/cargo/accept", json=cargo_data, headers=headers)
         
         if response.status_code == 200:
             data = response.json()
