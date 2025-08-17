@@ -14494,23 +14494,46 @@ function App() {
                       {/* Отсканированные грузы */}
                       {qrPlacementData.scannedCargo.length > 0 && (
                         <div>
-                          <h4 className="font-semibold mb-2">Отсканированные грузы ({qrPlacementData.scannedCargo.length})</h4>
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="font-semibold">Отсканированные грузы ({qrPlacementData.scannedCargo.length})</h4>
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                for (const cargo of qrPlacementData.scannedCargo) {
+                                  await handlePlaceCargoViaQR(cargo.id);
+                                }
+                              }}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              📦 Разместить все ({qrPlacementData.scannedCargo.length})
+                            </Button>
+                          </div>
                           <div className="space-y-2 max-h-40 overflow-y-auto">
                             {qrPlacementData.scannedCargo.map((cargo) => (
-                              <div key={cargo.id} className="flex justify-between items-center p-2 border rounded">
+                              <div key={cargo.id} className="flex justify-between items-center p-3 border rounded bg-green-50">
                                 <div>
-                                  <p className="font-medium">{cargo.cargo_number}</p>
-                                  <p className="text-xs text-gray-500">{cargo.weight} кг • {cargo.warehouse_location}</p>
+                                  <p className="font-medium text-green-800">📦 {cargo.cargo_number}</p>
+                                  <p className="text-xs text-green-600">
+                                    {cargo.weight} кг • 📍 {cargo.warehouse_location}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {cargo.sender_full_name} → {cargo.recipient_full_name}
+                                  </p>
                                 </div>
                                 <Button
                                   size="sm"
                                   onClick={() => handlePlaceCargoViaQR(cargo.id)}
                                   className="bg-green-600 hover:bg-green-700"
                                 >
-                                  Разместить
+                                  ✅ Разместить
                                 </Button>
                               </div>
                             ))}
+                          </div>
+                          <div className="mt-2 p-2 bg-blue-50 rounded text-center">
+                            <p className="text-xs text-blue-700">
+                              💡 Продолжайте сканировать или нажмите "Разместить" для каждого груза
+                            </p>
                           </div>
                         </div>
                       )}
