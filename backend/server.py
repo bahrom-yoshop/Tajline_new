@@ -19,6 +19,7 @@ import math  # Добавляем для пагинации
 from bson import ObjectId
 import json
 import asyncio
+import random  # Добавляем для генерации номеров
 
 app = FastAPI()
 
