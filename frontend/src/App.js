@@ -1644,7 +1644,7 @@ function App() {
               processedCargoItems = cargoNames.map((name, index) => ({
                 name: name,
                 weight: index === 0 && cargoInfo.weight ? String(cargoInfo.weight) : '', // Вес только для первого груза
-                price: index === 0 && (cargoInfo.total_value || cargoInfo.declared_value) ? String(cargoInfo.total_value || cargoInfo.declared_value) : '' // Цена только для первого груза
+                price: index === 0 && cargoInfo.price_per_kg ? String(cargoInfo.price_per_kg) : '' // ИСПРАВЛЕНИЕ: Используем price_per_kg вместо total_value
               }));
             } else {
               // Один груз
