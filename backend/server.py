@@ -12629,10 +12629,24 @@ async def get_transport_cargo_for_placement(
         raise HTTPException(status_code=404, detail="Транспорт не найден")
     
     # Получить логи размещения для этого транспорта
-    placement_logs = list(db.placement_logs.find(
+    placement_logs_raw = list(db.placement_logs.find(
         {"transport_id": transport_id},
         sort=[("placed_at", -1)]
     ))
+    
+    # Конвертируем логи в JSON-сериализуемый формат
+    placement_logs = []
+    for log in placement_logs_raw:
+        log_item = {
+            "id": log.get("id"),
+            "cargo_id": log.get("cargo_id"),
+            "cargo_number": log.get("cargo_number"),
+            "operation_type": log.get("operation_type"),
+            "operator_name": log.get("operator_name"),
+            "warehouse_location_removed": log.get("warehouse_location_removed"),
+            "placed_at": log.get("placed_at").isoformat() if log.get("placed_at") else None
+        }
+        placement_logs.append(log_item)
     
     cargo_list = transport.get("cargo_list", [])
     
