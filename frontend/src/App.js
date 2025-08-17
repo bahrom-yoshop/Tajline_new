@@ -24350,10 +24350,21 @@ function App() {
 
               {/* Статус оплаты и принятие оплаты - ПОКАЗЫВАЕМ ВО ВСЕХ СЛУЧАЯХ */}
               <div className="border rounded-lg p-4 bg-green-50">
-                <h3 className="font-medium text-lg mb-3 flex items-center">
-                  <CreditCard className="mr-2 h-5 w-5 text-green-600" />
-                  Принятие оплаты
-                </h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-medium text-lg flex items-center">
+                    <CreditCard className="mr-2 h-5 w-5 text-green-600" />
+                    Принятие оплаты
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsPaymentEditMode(!isPaymentEditMode)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    {isPaymentEditMode ? 'Сохранить' : 'Редактировать'}
+                  </Button>
+                </div>
                 
                 {/* Общая сумма из калькулятора */}
                 <div className="bg-blue-100 border border-blue-300 rounded p-3 mb-4">
