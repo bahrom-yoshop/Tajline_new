@@ -12112,7 +12112,7 @@ async def generate_transport_qr_code(
     transport_id: str,
     current_user: User = Depends(get_current_user)
 ):
-    """Генерация QR кода для заполненного транспорта"""
+    """Генерация QR кода для транспорта любого статуса"""
     if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -12121,13 +12121,7 @@ async def generate_transport_qr_code(
     if not transport:
         raise HTTPException(status_code=404, detail="Transport not found")
     
-    # Проверить, что транспорт заполнен (принят)
-    if transport["status"] != TransportStatus.FILLED:
-        raise HTTPException(
-            status_code=400, 
-            detail="QR код можно генерировать только для заполненных транспортов"
-        )
-    
+    # Убираем проверку статуса - теперь можно генерировать для любого транспорта
     # Генерировать уникальный числовой QR код для транспорта
     transport_number = transport.get("transport_number", "N/A")
     transport_counter = transport.get("sequence_number", 1)
