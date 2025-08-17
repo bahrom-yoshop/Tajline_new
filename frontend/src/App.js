@@ -19543,28 +19543,19 @@ function App() {
                             >
                               <SelectTrigger key="warehouse-trigger">
                                 <SelectValue placeholder={
-                                  !operatorCargoForm.route 
-                                    ? "Сначала выберите маршрут" 
-                                    : routeWarehouses.length === 0 
-                                      ? "Загрузка складов..." 
-                                      : "Выберите склад назначения"
+                                  warehouses.length === 0 
+                                    ? "Загрузка складов..." 
+                                    : "Выберите склад назначения"
                                 } />
                               </SelectTrigger>
                               <SelectContent key="warehouse-content">
-                                {routeWarehouses.map((warehouse) => (
+                                {warehouses.filter(w => w.is_active).map((warehouse) => (
                                   <SelectItem key={`warehouse-${warehouse.id}`} value={warehouse.id}>
                                     {warehouse.name} - {warehouse.location}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            {operatorCargoForm.route && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {operatorCargoForm.route === 'moscow_to_tajikistan' 
-                                  ? 'Склады в Таджикистане для доставки из Москвы' 
-                                  : 'Склады в Москве для доставки из Таджикистана'}
-                              </p>
-                            )}
                           </div>
 
                           {/* Способ оплаты */}
