@@ -86,8 +86,11 @@ def debug_auth_and_warehouses():
             if response.status_code == 200:
                 cargo_list = response.json()
                 print(f"✅ Получено {len(cargo_list)} грузов для размещения")
-                for i, cargo in enumerate(cargo_list[:3], 1):
-                    print(f"   {i}. {cargo.get('cargo_number')} (warehouse_id: {cargo.get('warehouse_id')}, destination: {cargo.get('destination_warehouse_id', 'не указан')})")
+                if isinstance(cargo_list, list):
+                    for i, cargo in enumerate(cargo_list[:3], 1):
+                        print(f"   {i}. {cargo.get('cargo_number')} (warehouse_id: {cargo.get('warehouse_id')}, destination: {cargo.get('destination_warehouse_id', 'не указан')})")
+                else:
+                    print(f"   Данные: {cargo_list}")
             else:
                 print(f"❌ Ошибка получения грузов: {response.text}")
         else:
