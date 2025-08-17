@@ -255,7 +255,7 @@ class CargoDestinationLogicTester:
                 for i, cargo in enumerate(created_cargo):
                     cargo_id = cargo.get("id")
                     cargo_number = cargo.get("cargo_number")
-                    warehouse_id = cargo.get("warehouse_id")
+                    warehouse_id = cargo.get("warehouse_id") or cargo.get("current_warehouse_id")  # Проверяем оба поля
                     destination_warehouse_id = cargo.get("destination_warehouse_id")
                     
                     self.test_cargo_ids.append(cargo_id)
@@ -263,7 +263,7 @@ class CargoDestinationLogicTester:
                     print_info(f"Груз {i+1}:")
                     print_info(f"  ID: {cargo_id}")
                     print_info(f"  Номер: {cargo_number}")
-                    print_info(f"  warehouse_id: {warehouse_id}")
+                    print_info(f"  warehouse_id/current_warehouse_id: {warehouse_id}")
                     print_info(f"  destination_warehouse_id: {destination_warehouse_id}")
                     
                     # КРИТИЧЕСКАЯ ПРОВЕРКА: warehouse_id должен быть складом оператора
