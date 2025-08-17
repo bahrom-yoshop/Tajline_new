@@ -384,8 +384,8 @@ class CourierRequestFilteringTester:
                 return False
             success_count += 1
             
-            # 6. Проверка видимости заявок ДО принятия
-            self.log("\n📋 ЭТАП 6: Проверка видимости заявок ДО принятия")
+            # 7. Проверка видимости заявок ДО принятия
+            self.log("\n📋 ЭТАП 7: Проверка видимости заявок ДО принятия")
             requests_a_before, count_a_before = self.get_courier_new_requests(self.courier_a_token, "Курьер А")
             requests_b_before, count_b_before = self.get_courier_new_requests(self.courier_b_token, "Курьер Б")
             
