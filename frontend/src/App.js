@@ -141,6 +141,9 @@ function App() {
   const [usersPage, setUsersPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(25);
   const [warehouses, setWarehouses] = useState([]);
+  // Поля для массового назначения городов
+  const [bulkCitiesText, setBulkCitiesText] = useState('');
+  const [bulkCitiesPreview, setBulkCitiesPreview] = useState(null);
   const [warehousesStatistics, setWarehousesStatistics] = useState({}); // Статистика складов
   const [warehouseCargo, setWarehouseCargo] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
