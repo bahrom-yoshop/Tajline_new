@@ -8102,15 +8102,43 @@ function App() {
   };
 
   const fetchWarehouseLayoutWithCargo = async (warehouseId) => {
+    if (!warehouseId) {
+      showAlert('ID склада не указан', 'error');
+      return;
+    }
+
     try {
-      console.log('Fetching warehouse layout for ID:', warehouseId);
+      setLoadingWarehouseLayout(true);
       const response = await apiCall(`/api/warehouses/${warehouseId}/layout-with-cargo`);
-      console.log('Warehouse layout response:', response);
-      setWarehouseLayout(response);
-      setSelectedWarehouseForLayout(warehouseId);
+      
+      if (response.success) {
+        setWarehouseLayout(response.layout);
+        setSelectedWarehouseForLayout(warehouseId);
+        setWarehouseSchemaModal(true);
+        
+        // Показать статистику занятости
+        const { blocks } = response.layout;
+        let totalCells = 0;
+        let occupiedCells = 0;
+        
+        blocks.forEach(block => {
+          block.shelves.forEach(shelf => {
+            shelf.cells.forEach(cell => {
+              totalCells++;
+              if (cell.is_occupied) {
+                occupiedCells++;
+              }
+            });
+          });
+        });
+        
+        showAlert(`Схема склада загружена. Занято: ${occupiedCells}/${totalCells} ячеек (${Math.round((occupiedCells/totalCells)*100)}%)`, 'success');
+      }
     } catch (error) {
-      console.error('Error fetching warehouse layout with cargo:', error);
+      console.error('Error fetching warehouse layout:', error);
       showAlert('Ошибка при загрузке схемы склада: ' + error.message, 'error');
+    } finally {
+      setLoadingWarehouseLayout(false);
     }
   };
 
