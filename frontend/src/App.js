@@ -1516,7 +1516,13 @@ function App() {
       console.log('🏢 Отправка формы приёма груза через оператора');
       
       // Подготовить данные для приёма груза напрямую на склад
-      const selectedDestWarehouseId = operatorCargoForm.warehouse_id || user?.warehouse_id || '';
+      // Обязательный выбор склада для выдачи
+      if (!operatorCargoForm.warehouse_id) {
+        showAlert('Выберите «Склад для выдачи груза»', 'error');
+        return;
+      }
+
+      const selectedDestWarehouseId = operatorCargoForm.warehouse_id;
       const selectedDestWarehouseName = (operatorWarehouses.find(w => w.id === selectedDestWarehouseId) || warehouses.find(w => w.id === selectedDestWarehouseId))?.name;
 
       const operatorCargoData = {
