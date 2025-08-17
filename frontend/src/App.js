@@ -593,6 +593,32 @@ function App() {
     }
   };
 
+  // Кнопка печати QR для конкретного груза
+  const printQRForCargo = async (cargoNumber) => {
+    try {
+      const response = await apiCall('/api/cargo/generate-qr-by-number', 'POST', { cargo_number: cargoNumber });
+      if (response && response.qr_code) {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <html>
+              <head><title>QR ${cargoNumber}</title></head>
+              <body style="font-family: Arial, sans-serif; padding: 16px;">
+                <h3>QR код для ${cargoNumber}</h3>
+                <img src="${response.qr_code}" style="max-width: 220px;" />
+                <script>window.print()</script>
+              </body>
+            </html>
+          `);
+          printWindow.document.close();
+        }
+      }
+    } catch (e) {
+      console.error('Ошибка печати QR для груза', cargoNumber, e);
+      showAlert('Не удалось сгенерировать QR для ' + cargoNumber, 'error');
+    }
+  };
+
   // НОВЫЕ ФУНКЦИИ ДЛЯ КУРЬЕРСКОЙ СЛУЖБЫ (ЭТАП 2)
   const fetchCouriers = async (page = 1, perPage = 25) => {
     try {
