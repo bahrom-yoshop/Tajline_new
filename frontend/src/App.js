@@ -3853,6 +3853,10 @@ function App() {
   
   const [selectedCargoForDetailView, setSelectedCargoForDetailView] = useState(null); // Выбранный груз для просмотра деталей
   const [cargoDetailsModal, setCargoDetailsModal] = useState(false); // Модальное окно деталей груза
+  // Новое: Модальное окно с подгрузами заявки (250103/01, /02, /03)
+  const [requestItemsModal, setRequestItemsModal] = useState(false);
+  const [selectedRequestBase, setSelectedRequestBase] = useState(null);
+  const [selectedRequestItems, setSelectedRequestItems] = useState([]);
   const [quickPlacementModal, setQuickPlacementModal] = useState(false); // Быстрое размещение
   const [warehouseNumbersUpdated, setWarehouseNumbersUpdated] = useState(false); // Флаг обновления номеров складов
   const [qrGenerationModal, setQrGenerationModal] = useState(false); // Модальное окно генерации QR кодов
