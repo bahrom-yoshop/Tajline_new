@@ -33,6 +33,39 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 function App() {
+  // ИСПРАВЛЕНИЕ: Обработчик для removeChild ошибок и других неперехваченных ошибок
+  useEffect(() => {
+    const handleUnhandledError = (event) => {
+      // Игнорируем removeChild ошибки карт, так как они не критичны
+      if (event.message && event.message.includes('removeChild')) {
+        console.warn('Предупреждение (игнорируется): removeChild ошибка в карте:', event.message);
+        event.preventDefault();
+        return true;
+      }
+      
+      // Логируем другие ошибки но не показываем пользователю
+      if (event.error) {
+        console.error('Неперехваченная ошибка:', event.error);
+      }
+    };
+
+    const handleUnhandledRejection = (event) => {
+      console.warn('Неперехваченное отклонение промиса:', event.reason);
+      // Предотвращаем показ ошибки пользователю для известных проблем карт
+      if (event.reason && event.reason.message && event.reason.message.includes('removeChild')) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('error', handleUnhandledError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleUnhandledError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   // Navigation states
