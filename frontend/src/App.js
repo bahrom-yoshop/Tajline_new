@@ -3939,6 +3939,23 @@ function App() {
   const [selectedWarehouseForLayout, setSelectedWarehouseForLayout] = useState(null);
   const [layoutModal, setLayoutModal] = useState(false);
   const [loadingWarehouseLayout, setLoadingWarehouseLayout] = useState(false);
+  // Открыть модальное окно состава заявки по base_request_number
+  const openRequestItemsModalByBase = async (baseRequestNumber) => {
+    try {
+      if (!baseRequestNumber) return;
+      let items = (availableCargoForPlacement || []).filter(it => it && it.base_request_number === baseRequestNumber);
+      if ((!items || items.length === 0) && Array.isArray(operatorCargo) && operatorCargo.length > 0) {
+        items = operatorCargo.filter(it => it && it.base_request_number === baseRequestNumber);
+      }
+      setSelectedRequestBase(baseRequestNumber);
+      setSelectedRequestItems(items || []);
+      setRequestItemsModal(true);
+    } catch (e) {
+      console.error('Ошибка открытия состава заявки:', e);
+      showAlert('Не удалось открыть состав заявки', 'error');
+    }
+  };
+
   const [warehouseSchemaModal, setWarehouseSchemaModal] = useState(false);
   const [usersByRole, setUsersByRole] = useState({
     user: [],
