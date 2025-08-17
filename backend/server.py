@@ -10354,7 +10354,13 @@ async def direct_accept_cargo_by_operator(
                 # Общие данные заявки
                 "total_items_in_request": len(cargo_items),
                 "route": cargo_data.get("route", "moscow_to_tajikistan"),
-                "warehouse_id": cargo_data.get("warehouse_id") or (get_operator_warehouse_ids(current_user.id)[0] if get_operator_warehouse_ids(current_user.id) else None),
+                
+                # ВАЖНО: warehouse_id - это ТЕКУЩИЙ склад где находится груз (склад оператора который принял)
+                "warehouse_id": get_operator_warehouse_ids(current_user.id)[0] if get_operator_warehouse_ids(current_user.id) else None,
+                
+                # destination_warehouse_id - это склад НАЗНАЧЕНИЯ (выбранный в форме)
+                "destination_warehouse_id": cargo_data.get("warehouse_id"),
+                
                 "payment_method": cargo_data.get("payment_method", "not_paid"),
                 
                 # Статусы
