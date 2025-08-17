@@ -179,6 +179,27 @@ class TransportQRGenerationTester:
                 
         self.log("❌ Не удалось найти доступный груз")
         return []
+        
+    def place_cargo_on_transport(self, transport_id, cargo_numbers):
+        """Разместить груз на транспорте чтобы сделать его заполненным"""
+        self.log(f"🚛 Размещение груза на транспорте {transport_id}...")
+        
+        placement_data = {
+            "transport_id": transport_id,
+            "cargo_numbers": cargo_numbers
+        }
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        response = self.session.post(f"{API_BASE}/transport/{transport_id}/place-cargo", json=placement_data, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            message = data.get('message', 'Cargo placed successfully')
+            self.log(f"✅ Груз размещен на транспорте: {message}")
+            return True
+        else:
+            self.log(f"❌ Ошибка размещения груза на транспорте: {response.status_code} - {response.text}")
+            return False
             
     def generate_qr_code(self, transport_id, transport_number, expect_success=True):
         """Генерация QR кода для транспорта"""
