@@ -274,6 +274,7 @@ class WarehouseSchemaRelatedCargoTester:
                     # Размещаем груз в разных ячейках
                     placement_data = {
                         "cargo_id": cargo_id,
+                        "warehouse_id": self.test_warehouse_id,
                         "block_number": i,  # Разные блоки
                         "shelf_number": 1,
                         "cell_number": i
