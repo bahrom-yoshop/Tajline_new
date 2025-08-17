@@ -412,8 +412,8 @@ class CourierRequestFilteringTester:
                 if courier_b_sees_request_1_after:
                     self.log("❌ ПРОБЛЕМА: Курьер Б все еще видит принятую заявку в новых")
             
-            # 10. Проверка принятых заявок
-            self.log("\n📋 ЭТАП 10: Проверка принятых заявок")
+            # 9. Проверка принятых заявок
+            self.log("\n📋 ЭТАП 9: Проверка принятых заявок")
             accepted_a, accepted_count_a = self.get_courier_accepted_requests(self.courier_a_token, "Курьер А")
             accepted_b, accepted_count_b = self.get_courier_accepted_requests(self.courier_b_token, "Курьер Б")
             
