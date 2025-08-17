@@ -12193,6 +12193,37 @@ async def generate_transport_qr_code(
         "message": f"QR код для транспорта {transport_number} успешно сгенерирован"
     }
 
+@app.post("/api/transport/{transport_id}/set-filled")
+async def set_transport_filled_for_testing(
+    transport_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """ТЕСТОВАЯ ФУНКЦИЯ: Принудительно установить транспорт как заполненный для тестирования QR кодов"""
+    if current_user.role not in [UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Only admins can use this testing function")
+    
+    # Получить данные транспорта
+    transport = db.transports.find_one({"id": transport_id})
+    if not transport:
+        raise HTTPException(status_code=404, detail="Transport not found")
+    
+    # Обновить статус на filled
+    db.transports.update_one(
+        {"id": transport_id},
+        {"$set": {
+            "status": TransportStatus.FILLED,
+            "current_load_kg": transport["capacity_kg"] * 0.95,  # 95% загрузки
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_user.id
+        }}
+    )
+    
+    return {
+        "success": True,
+        "transport_id": transport_id,
+        "message": f"Транспорт {transport.get('transport_number', 'N/A')} установлен как заполненный для тестирования"
+    }
+
 # === УПРАВЛЕНИЕ ЯЧЕЙКАМИ СКЛАДА ===
 
 @app.get("/api/warehouse/{warehouse_id}/cell/{location_code}/cargo")
