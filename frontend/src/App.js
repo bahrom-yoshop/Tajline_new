@@ -14287,19 +14287,6 @@ function App() {
     );
   }
 
-  // Автоматический фокус при открытии страницы QR-сканирования
-  useEffect(() => {
-    if (qrPlacementPage) {
-      const timer = setTimeout(() => {
-        const input = document.getElementById('qr-input');
-        if (input) {
-          input.focus();
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [qrPlacementPage]);
-
   // Если открыта страница QR размещения, показываем её вместо основного интерфейса
   if (qrPlacementPage) {
     return (
