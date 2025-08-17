@@ -24509,7 +24509,6 @@ function App() {
                   />
                 </div>
               </div>
-              )}
 
               {/* Кнопки действий */}
               <div className="flex justify-between items-center pt-4 border-t">
