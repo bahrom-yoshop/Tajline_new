@@ -19545,7 +19545,7 @@ function App() {
                                 <SelectValue placeholder={
                                   warehouses.length === 0 
                                     ? "Загрузка складов..." 
-                                    : "Выберите склад назначения"
+                                    : "Выберите склад для выдачи груза"
                                 } />
                               </SelectTrigger>
                               <SelectContent key="warehouse-content">
