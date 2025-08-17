@@ -12224,6 +12224,184 @@ async def set_transport_filled_for_testing(
         "message": f"Транспорт {transport.get('transport_number', 'N/A')} установлен как заполненный для тестирования"
     }
 
+# === ГЕНЕРАЦИЯ QR КОДОВ ДЛЯ ГРУЗОВ ===
+
+@app.post("/api/cargo/{cargo_id}/generate-qr")
+async def generate_cargo_qr_code(
+    cargo_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Генерация QR кода для груза для размещения на транспорт"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Получить данные груза
+    cargo = db.cargo.find_one({"id": cargo_id})
+    if not cargo:
+        raise HTTPException(status_code=404, detail="Cargo not found")
+    
+    # Проверить, что груз доступен для размещения на транспорт
+    valid_statuses = ["accepted", "placed_in_warehouse", "awaiting_placement"]
+    if cargo.get("status") not in valid_statuses:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"QR код можно генерировать только для грузов со статусом: {', '.join(valid_statuses)}"
+        )
+    
+    # Генерировать уникальный числовой QR код для груза
+    cargo_number = cargo.get("cargo_number", "N/A")
+    cargo_weight = cargo.get("weight", 0)
+    
+    # Создать числовой QR код: ГГГГВВВССС
+    # ГГГГ - номер груза (первые 4 цифры)
+    # ВВВ - вес в кг (3 цифры, без десятичных)
+    # ССС - случайный суффикс для уникальности (3 цифры)
+    
+    # Извлекаем числа из номера груза
+    cargo_digits = ''.join(filter(str.isdigit, str(cargo_number)))
+    if len(cargo_digits) < 4:
+        cargo_digits = cargo_digits.ljust(4, '0')
+    else:
+        cargo_digits = cargo_digits[:4]
+    
+    # Вес (округляем до целого числа и берем последние 3 цифры)
+    weight_int = int(float(cargo_weight)) if cargo_weight else 0
+    weight_str = str(weight_int).zfill(3)[-3:]  # Последние 3 цифры, дополненные нулями
+    
+    # Случайный суффикс для уникальности
+    import random
+    suffix = str(random.randint(100, 999))
+    
+    # Итоговый числовой код
+    numeric_qr_code = f"{cargo_digits}{weight_str}{suffix}"
+    
+    # Создать QR код
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(numeric_qr_code)
+    qr.make(fit=True)
+
+    # Создать изображение QR кода
+    qr_image = qr.make_image(fill_color="black", back_color="white")
+    
+    # Конвертировать в base64
+    buffered = BytesIO()
+    qr_image.save(buffered, format="PNG")
+    qr_base64 = base64.b64encode(buffered.getvalue()).decode()
+    qr_code_url = f"data:image/png;base64,{qr_base64}"
+    
+    # Обновить груз с информацией о QR коде
+    db.cargo.update_one(
+        {"id": cargo_id},
+        {"$set": {
+            "qr_code": qr_code_url,
+            "qr_data": numeric_qr_code,
+            "qr_generated_at": datetime.utcnow(),
+            "qr_generated_by": current_user.id
+        }}
+    )
+    
+    return {
+        "success": True,
+        "cargo_id": cargo_id,
+        "cargo_number": cargo_number,
+        "qr_code": qr_code_url,
+        "qr_data": numeric_qr_code,
+        "message": f"QR код для груза {cargo_number} успешно сгенерирован"
+    }
+
+@app.post("/api/cargo/batch-generate-qr")
+async def batch_generate_cargo_qr_codes(
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Массовая генерация QR кодов для нескольких грузов"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    cargo_ids = request.get("cargo_ids", [])
+    if not cargo_ids:
+        raise HTTPException(status_code=400, detail="Список ID грузов не предоставлен")
+    
+    results = []
+    errors = []
+    
+    for cargo_id in cargo_ids:
+        try:
+            # Генерируем QR код для каждого груза
+            cargo = db.cargo.find_one({"id": cargo_id})
+            if not cargo:
+                errors.append(f"Груз {cargo_id} не найден")
+                continue
+            
+            # Используем ту же логику генерации что и в одиночном endpoint
+            cargo_number = cargo.get("cargo_number", "N/A")
+            cargo_weight = cargo.get("weight", 0)
+            
+            # Создать числовой QR код: ГГГГВВВССС
+            cargo_digits = ''.join(filter(str.isdigit, str(cargo_number)))
+            if len(cargo_digits) < 4:
+                cargo_digits = cargo_digits.ljust(4, '0')
+            else:
+                cargo_digits = cargo_digits[:4]
+            
+            weight_int = int(float(cargo_weight)) if cargo_weight else 0
+            weight_str = str(weight_int).zfill(3)[-3:]
+            
+            import random
+            suffix = str(random.randint(100, 999))
+            numeric_qr_code = f"{cargo_digits}{weight_str}{suffix}"
+            
+            # Создать QR код
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(numeric_qr_code)
+            qr.make(fit=True)
+
+            qr_image = qr.make_image(fill_color="black", back_color="white")
+            buffered = BytesIO()
+            qr_image.save(buffered, format="PNG")
+            qr_base64 = base64.b64encode(buffered.getvalue()).decode()
+            qr_code_url = f"data:image/png;base64,{qr_base64}"
+            
+            # Обновить груз
+            db.cargo.update_one(
+                {"id": cargo_id},
+                {"$set": {
+                    "qr_code": qr_code_url,
+                    "qr_data": numeric_qr_code,
+                    "qr_generated_at": datetime.utcnow(),
+                    "qr_generated_by": current_user.id
+                }}
+            )
+            
+            results.append({
+                "cargo_id": cargo_id,
+                "cargo_number": cargo_number,
+                "qr_data": numeric_qr_code,
+                "success": True
+            })
+            
+        except Exception as e:
+            errors.append(f"Ошибка для груза {cargo_id}: {str(e)}")
+    
+    return {
+        "success": True,
+        "generated_count": len(results),
+        "error_count": len(errors),
+        "results": results,
+        "errors": errors,
+        "message": f"Успешно сгенерировано QR кодов: {len(results)}, ошибок: {len(errors)}"
+    }
+
 # === УПРАВЛЕНИЕ ЯЧЕЙКАМИ СКЛАДА ===
 
 @app.get("/api/warehouse/{warehouse_id}/cell/{location_code}/cargo")
