@@ -456,6 +456,8 @@ class WarehouseSchemaRelatedCargoTester:
         else:
             self.log(f"❌ Неожиданный ответ: {response.status_code if response else 'No response'}")
             return False
+    
+    def cleanup_test_data(self):
         """7. Очистка тестовых данных"""
         self.log("🧹 ОЧИСТКА ТЕСТОВЫХ ДАННЫХ")
         
