@@ -10410,7 +10410,8 @@ async def direct_accept_cargo_by_operator(
             "base_request_number": base_request_number,
             "created_cargo": created_cargo_list,
             "total_cargo_count": len(created_cargo_list),
-            "warehouse_id": cargo_data.get("warehouse_id") or (get_operator_warehouse_ids(current_user.id)[0] if get_operator_warehouse_ids(current_user.id) else None),
+            "current_warehouse_id": get_operator_warehouse_ids(current_user.id)[0] if get_operator_warehouse_ids(current_user.id) else None,
+            "destination_warehouse_id": cargo_data.get("warehouse_id"),
             "received_by": current_user.full_name,
             "received_at": datetime.utcnow().isoformat()
         }
