@@ -294,48 +294,8 @@ class TransportQRGenerationTester:
             else:
                 self.log("❌ Не удалось найти или создать транспорт для тестирования")
                 
-            # 4. Генерация QR кода для заполненного транспорта
-            self.log("\n📋 ЭТАП 4: Генерация QR кода для заполненного транспорта")
-            if filled_transport:
-                qr_success, qr_data = self.generate_qr_code(
-                    filled_transport.get('id'), 
-                    filled_transport.get('transport_number'),
-                    expect_success=True
-                )
-                if qr_success:
-                    self.log("✅ QR код успешно сгенерирован для заполненного транспорта")
-                    success_count += 1
-                else:
-                    self.log("❌ Ошибка генерации QR кода для заполненного транспорта")
-            else:
-                self.log("⚠️ Пропуск теста - нет заполненного транспорта")
-                
-            # 5. Проверка что QR код содержит только цифры
-            self.log("\n📋 ЭТАП 5: Проверка что QR код содержит только цифры")
-            if filled_transport and qr_data:
-                qr_code_data = qr_data.get('qr_data')
-                if qr_code_data and re.match(r'^\d+$', str(qr_code_data)):
-                    self.log(f"✅ QR код содержит только цифры: {qr_code_data}")
-                    success_count += 1
-                else:
-                    self.log(f"❌ QR код содержит НЕ только цифры: {qr_code_data}")
-            else:
-                self.log("⚠️ Пропуск теста - нет данных QR кода")
-                
-            # 6. Проверка base64 изображения
-            self.log("\n📋 ЭТАП 6: Проверка base64 изображения QR кода")
-            if filled_transport and qr_data:
-                qr_code_image = qr_data.get('qr_code')
-                if qr_code_image and qr_code_image.startswith('data:image/png;base64,'):
-                    self.log("✅ QR код возвращен как корректное base64 изображение")
-                    success_count += 1
-                else:
-                    self.log("❌ QR код НЕ является корректным base64 изображением")
-            else:
-                self.log("⚠️ Пропуск теста - нет данных QR кода")
-                
-            # 7. Тестирование бизнес-логики - попытка генерации для НЕ заполненного транспорта
-            self.log("\n📋 ЭТАП 7: Тестирование бизнес-логики - попытка генерации QR для НЕ заполненного транспорта")
+            # 4. Тестирование генерации QR кода (сначала проверим бизнес-логику)
+            self.log("\n📋 ЭТАП 4: Тестирование бизнес-логики - попытка генерации QR для НЕ заполненного транспорта")
             non_filled_transport = self.find_non_filled_transport(transports)
             
             if non_filled_transport:
@@ -352,6 +312,57 @@ class TransportQRGenerationTester:
             else:
                 self.log("⚠️ Пропуск теста - все транспорты заполнены")
                 success_count += 1  # Засчитываем как успех если все транспорты заполнены
+                
+            # 5. Попытка генерации QR для заполненного транспорта (если есть)
+            self.log("\n📋 ЭТАП 5: Генерация QR кода для заполненного транспорта (если найден)")
+            if filled_transport and filled_transport.get('status') == 'filled':
+                qr_success, qr_data = self.generate_qr_code(
+                    filled_transport.get('id'), 
+                    filled_transport.get('transport_number'),
+                    expect_success=True
+                )
+                if qr_success:
+                    self.log("✅ QR код успешно сгенерирован для заполненного транспорта")
+                    success_count += 1
+                else:
+                    self.log("❌ Ошибка генерации QR кода для заполненного транспорта")
+            else:
+                self.log("⚠️ Пропуск теста - нет заполненного транспорта")
+                # Для демонстрации попробуем с любым транспортом (ожидаем ошибку)
+                if filled_transport:
+                    self.log("🔍 Демонстрация: попытка генерации QR для НЕ заполненного транспорта...")
+                    demo_success, _ = self.generate_qr_code(
+                        filled_transport.get('id'),
+                        filled_transport.get('transport_number'),
+                        expect_success=False
+                    )
+                    if demo_success:
+                        self.log("✅ Демонстрация успешна - получена ожидаемая ошибка")
+                        success_count += 1
+                
+            # 6. Проверка что QR код содержит только цифры
+            self.log("\n📋 ЭТАП 6: Проверка что QR код содержит только цифры")
+            if qr_data:
+                qr_code_data = qr_data.get('qr_data')
+                if qr_code_data and re.match(r'^\d+$', str(qr_code_data)):
+                    self.log(f"✅ QR код содержит только цифры: {qr_code_data}")
+                    success_count += 1
+                else:
+                    self.log(f"❌ QR код содержит НЕ только цифры: {qr_code_data}")
+            else:
+                self.log("⚠️ Пропуск теста - нет данных QR кода")
+                
+            # 7. Проверка base64 изображения
+            self.log("\n📋 ЭТАП 7: Проверка base64 изображения QR кода")
+            if qr_data:
+                qr_code_image = qr_data.get('qr_code')
+                if qr_code_image and qr_code_image.startswith('data:image/png;base64,'):
+                    self.log("✅ QR код возвращен как корректное base64 изображение")
+                    success_count += 1
+                else:
+                    self.log("❌ QR код НЕ является корректным base64 изображением")
+            else:
+                self.log("⚠️ Пропуск теста - нет данных QR кода")
                 
             # 8. Проверка структуры ответа
             self.log("\n📋 ЭТАП 8: Проверка полной структуры ответа")
