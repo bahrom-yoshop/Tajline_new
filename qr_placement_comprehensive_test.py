@@ -129,8 +129,7 @@ class QRCargoPlacementTester:
         response = self.session.get(f"{API_BASE}/transport/list", headers=headers)
         
         if response.status_code == 200:
-            data = response.json()
-            transports = data.get('transports', [])
+            transports = response.json()  # API returns array directly
             
             # Ищем транспорт с QR кодом
             for transport in transports:
@@ -147,8 +146,35 @@ class QRCargoPlacementTester:
                     self.log(f"   Статус: {status}")
                     return True
                     
-            self.log("❌ Не найден транспорт с QR кодом")
-            return False
+            # Если нет транспорта с QR, используем первый доступный и создадим QR
+            if transports:
+                transport = transports[0]
+                self.test_transport_id = transport.get('id')
+                transport_number = transport.get('transport_number')
+                status = transport.get('status')
+                
+                # Генерируем QR для транспорта
+                qr_response = self.session.post(
+                    f"{API_BASE}/transport/{self.test_transport_id}/generate-qr", 
+                    headers=headers
+                )
+                
+                if qr_response.status_code == 200:
+                    qr_data = qr_response.json()
+                    self.test_transport_qr = qr_data.get('qr_data')
+                    
+                    self.log(f"✅ Создан QR код для транспорта:")
+                    self.log(f"   ID: {self.test_transport_id}")
+                    self.log(f"   Номер: {transport_number}")
+                    self.log(f"   QR данные: {self.test_transport_qr}")
+                    self.log(f"   Статус: {status}")
+                    return True
+                else:
+                    self.log(f"❌ Не удалось создать QR код для транспорта: {qr_response.status_code}")
+                    return False
+            else:
+                self.log("❌ Не найдено транспортов в системе")
+                return False
         else:
             self.log(f"❌ Ошибка получения списка транспортов: {response.status_code} - {response.text}")
             return False
