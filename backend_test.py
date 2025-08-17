@@ -113,10 +113,11 @@ class ImprovedQRScanningTester:
         
         if response.status_code == 200:
             data = response.json()
-            cargo_id = data.get('cargo_id')
-            cargo_number = data.get('cargo_number')
-            qr_data = data.get('qr_data')
-            warehouse_location = data.get('warehouse_location')
+            cargo_info = data.get('cargo', {})
+            cargo_id = cargo_info.get('id')
+            cargo_number = cargo_info.get('cargo_number')
+            qr_data = cargo_info.get('qr_data')
+            warehouse_location = cargo_info.get('warehouse_location')
             
             self.test_cargo_ids.append(cargo_id)
             self.log(f"✅ Тестовый груз создан:")
