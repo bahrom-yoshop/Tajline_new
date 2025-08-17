@@ -26293,6 +26293,129 @@ function App() {
         </DialogContent>
       </Dialog>
 
+      {/* Transport QR Generation Modal */}
+      <Dialog open={transportQRGenerationModal} onOpenChange={setTransportQRGenerationModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              <QrCode className="mr-2 h-5 w-5 inline" />
+              Генерация QR кодов для транспорта
+            </DialogTitle>
+            <DialogDescription>
+              Генерация QR кодов для принятых (заполненных) транспортов. QR коды содержат только цифры.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-orange-50 rounded-lg">
+              <div className="flex items-center">
+                <Truck className="h-5 w-5 text-orange-600 mr-2" />
+                <h5 className="font-medium text-orange-800">
+                  Доступные транспорты для генерации QR кодов
+                </h5>
+              </div>
+              <p className="text-sm text-orange-700 mt-2">
+                Показаны только заполненные транспорты, готовые к отправке. QR коды содержат уникальный числовой код транспорта.
+              </p>
+            </div>
+
+            {getFilledTransports().length === 0 ? (
+              <div className="text-center py-8">
+                <Truck className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500">Нет заполненных транспортов для генерации QR кодов</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  QR коды можно генерировать только для транспортов со статусом "Заполнено"
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {getFilledTransports().map((transport) => (
+                  <div key={transport.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-semibold text-lg">{transport.transport_number}</h3>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p><strong>Водитель:</strong> {transport.driver_name}</p>
+                          <p><strong>Телефон:</strong> {transport.driver_phone}</p>
+                          <p><strong>Направление:</strong> {transport.direction}</p>
+                          <p><strong>Загрузка:</strong> {transport.current_load_kg} / {transport.capacity_kg} кг</p>
+                        </div>
+                      </div>
+                      <Badge variant="default" className="bg-green-600">
+                        Заполнено
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      {transport.qr_code ? (
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            QR код создан
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            Код: {transport.qr_data}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-500">QR код не создан</span>
+                      )}
+                      
+                      <div className="flex space-x-2">
+                        {transport.qr_code && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openTransportQRPrintModal({
+                              transport_number: transport.transport_number,
+                              qr_code: transport.qr_code,
+                              qr_data: transport.qr_data
+                            })}
+                          >
+                            <Printer className="h-4 w-4 mr-1" />
+                            Печать
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          onClick={() => handleGenerateTransportQR(transport)}
+                          disabled={generatingTransportQR}
+                          className="bg-orange-600 hover:bg-orange-700"
+                        >
+                          {generatingTransportQR ? (
+                            <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                          ) : (
+                            <QrCode className="h-4 w-4 mr-1" />
+                          )}
+                          {transport.qr_code ? 'Перегенерировать' : 'Генерировать'} QR
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex space-x-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setTransportQRGenerationModal(false)}
+                className="flex-1"
+              >
+                Закрыть
+              </Button>
+              <Button 
+                onClick={() => fetchTransportsList()}
+                variant="outline"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Обновить список
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* НОВЫЕ МОДАЛЫ ДЛЯ УПРАВЛЕНИЯ ЗАКАЗАМИ КЛИЕНТОВ */}
 
       {/* Модальное окно детального просмотра заказа клиента */}
