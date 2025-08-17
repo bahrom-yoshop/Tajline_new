@@ -319,7 +319,7 @@ class CourierRequestFilteringTester:
         self.log("=" * 80)
         
         success_count = 0
-        total_tests = 10
+        total_tests = 9
         
         try:
             # 1. Авторизация администратора
