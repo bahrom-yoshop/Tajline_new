@@ -17859,10 +17859,8 @@ function App() {
                                   </select>
                                 </div>
                               </div>
-                            </>
-                          )}
 
-                          {/* Кнопки действий */}
+                              {/* Кнопки действий */}
                               <div className="flex space-x-4 pt-6 border-t">
                                 <Button
                                   type="button"
@@ -17916,8 +17914,9 @@ function App() {
                                 </div>
                               </div>
                             </>
-                          ) : (
-                            /* ОБЫЧНЫЙ РЕЖИМ - все поля как было */
+                          )}
+
+                          {/* Кнопки действий */}
                             <>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
