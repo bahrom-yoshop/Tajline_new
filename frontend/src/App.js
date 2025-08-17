@@ -14221,6 +14221,266 @@ function App() {
     );
   }
 
+  // Если открыта страница QR размещения, показываем её вместо основного интерфейса
+  if (qrPlacementPage) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Заголовок страницы */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-4">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setQrPlacementPage(false);
+                    resetQRPlacementData();
+                  }}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Назад к списку транспортов
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Размещение грузов на транспорт</h1>
+                  <p className="text-sm text-gray-500">Сканирование QR-кодов для размещения грузов</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="text-blue-600 border-blue-600">
+                  Оператор: {user?.full_name}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Левая колонка - QR Сканирование */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <QrCode className="mr-2 h-5 w-5" />
+                    QR Сканирование
+                  </CardTitle>
+                  <CardDescription>
+                    {qrPlacementData.scanMode === 'transport' 
+                      ? 'Отсканируйте QR код транспорта' 
+                      : 'Отсканируйте QR коды грузов для размещения'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  
+                  {/* Режим сканирования */}
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <div className={`w-3 h-3 rounded-full mr-2 ${
+                        qrPlacementData.scanMode === 'transport' ? 'bg-orange-500' : 'bg-green-500'
+                      }`}></div>
+                      <span className="font-medium">
+                        {qrPlacementData.scanMode === 'transport' 
+                          ? 'Режим: Сканирование транспорта' 
+                          : 'Режим: Сканирование грузов'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {qrPlacementData.scanMode === 'transport' 
+                        ? 'Отсканируйте QR код транспорта, чтобы выбрать его для размещения грузов' 
+                        : 'Отсканируйте QR коды грузов для размещения на выбранный транспорт'}
+                    </p>
+                  </div>
+
+                  {/* Поле для ручного ввода QR кода (для тестирования) */}
+                  <div className="space-y-2">
+                    <Label htmlFor="qr-input">Введите QR код или отсканируйте</Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="qr-input"
+                        placeholder={qrPlacementData.scanMode === 'transport' 
+                          ? 'QR код транспорта (10 цифр)' 
+                          : 'QR код груза (10 цифр)'}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && e.target.value.trim()) {
+                            simulateQRScan(e.target.value.trim());
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          const input = document.getElementById('qr-input');
+                          if (input.value.trim()) {
+                            simulateQRScan(input.value.trim());
+                            input.value = '';
+                          }
+                        }}
+                      >
+                        Сканировать
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Введите QR код и нажмите Enter или кнопку "Сканировать"
+                    </p>
+                  </div>
+
+                  {/* Последний результат сканирования */}
+                  {qrPlacementData.lastScanResult && (
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                        <span className="text-sm text-green-800">{qrPlacementData.lastScanResult}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Кнопки управления */}
+                  <div className="flex space-x-2">
+                    {qrPlacementData.selectedTransport && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setQrPlacementData(prev => ({
+                          ...prev,
+                          scanMode: prev.scanMode === 'transport' ? 'cargo' : 'transport'
+                        }))}
+                      >
+                        {qrPlacementData.scanMode === 'transport' ? 'Сканировать грузы' : 'Сменить транспорт'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={resetQRPlacementData}
+                    >
+                      Сбросить всё
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Центральная колонка - Информация о транспорте */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Truck className="mr-2 h-5 w-5" />
+                    Выбранный транспорт
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {qrPlacementData.selectedTransport ? (
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-lg">
+                        <h3 className="font-semibold text-lg">{qrPlacementData.selectedTransport.transport_number}</h3>
+                        <div className="text-sm text-gray-600 space-y-1 mt-2">
+                          <p><strong>Водитель:</strong> {qrPlacementData.selectedTransport.driver_name}</p>
+                          <p><strong>Телефон:</strong> {qrPlacementData.selectedTransport.driver_phone}</p>
+                          <p><strong>Направление:</strong> {qrPlacementData.selectedTransport.direction}</p>
+                          <p><strong>Загрузка:</strong> {qrPlacementData.selectedTransport.current_load_kg} / {qrPlacementData.selectedTransport.capacity_kg} кг</p>
+                        </div>
+                        <div className="mt-3">
+                          <Badge variant={
+                            qrPlacementData.selectedTransport.status === 'empty' ? 'secondary' :
+                            qrPlacementData.selectedTransport.status === 'loading' ? 'default' :
+                            qrPlacementData.selectedTransport.status === 'filled' ? 'destructive' : 'outline'
+                          }>
+                            {qrPlacementData.selectedTransport.status === 'empty' ? 'Пустой' :
+                             qrPlacementData.selectedTransport.status === 'loading' ? 'Загружается' :
+                             qrPlacementData.selectedTransport.status === 'filled' ? 'Заполнен' :
+                             qrPlacementData.selectedTransport.status}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* Отсканированные грузы */}
+                      {qrPlacementData.scannedCargo.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold mb-2">Отсканированные грузы ({qrPlacementData.scannedCargo.length})</h4>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {qrPlacementData.scannedCargo.map((cargo) => (
+                              <div key={cargo.id} className="flex justify-between items-center p-2 border rounded">
+                                <div>
+                                  <p className="font-medium">{cargo.cargo_number}</p>
+                                  <p className="text-xs text-gray-500">{cargo.weight} кг • {cargo.warehouse_location}</p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handlePlaceCargoViaQR(cargo.id)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  Разместить
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Truck className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p className="text-gray-500">Транспорт не выбран</p>
+                      <p className="text-sm text-gray-400 mt-2">
+                        Отсканируйте QR код транспорта для начала работы
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Правая колонка - История размещений */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Package className="mr-2 h-5 w-5" />
+                    История размещений
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {qrPlacementData.placementHistory.length > 0 ? (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {qrPlacementData.placementHistory.map((log, index) => (
+                        <div key={log.id || index} className="p-3 border rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <p className="font-medium">{log.cargo_number}</p>
+                            <Badge variant="outline" className="text-xs">
+                              {log.cargo_weight} кг
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-600">
+                            <strong>Оператор:</strong> {log.operator_name}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            <strong>Из ячейки:</strong> {log.warehouse_location_removed}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(log.placed_at).toLocaleString('ru-RU')}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p className="text-gray-500">История пуста</p>
+                      <p className="text-sm text-gray-400 mt-2">
+                        Размещенные грузы будут отображаться здесь
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Боковое меню */}
