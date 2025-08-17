@@ -14274,10 +14274,9 @@ function App() {
     );
   }
 
-  // Если открыта страница QR размещения, показываем её вместо основного интерфейса
-  if (qrPlacementPage) {
-    // Автоматический фокус при открытии страницы
-    React.useEffect(() => {
+  // Автоматический фокус при открытии страницы QR-сканирования
+  useEffect(() => {
+    if (qrPlacementPage) {
       const timer = setTimeout(() => {
         const input = document.getElementById('qr-input');
         if (input) {
@@ -14285,8 +14284,11 @@ function App() {
         }
       }, 500);
       return () => clearTimeout(timer);
-    }, []);
+    }
+  }, [qrPlacementPage]);
 
+  // Если открыта страница QR размещения, показываем её вместо основного интерфейса
+  if (qrPlacementPage) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Заголовок страницы */}
