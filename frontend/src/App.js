@@ -20374,9 +20374,9 @@ function App() {
                                               )}
                                               
                                               {/* НОВОЕ: Информация о складе назначения */}
-                                              {item.destination_warehouse_name && item.destination_warehouse_name !== item.warehouse_name && (
+                                              {item.destination_warehouse_name && (
                                                 <Badge className="bg-purple-100 text-purple-700 border-purple-200">
-                                                  🎯 Назначение: {item.destination_warehouse_name}
+                                                  🎯 Склад для выдачи груза: {item.destination_warehouse_name}
                                                 </Badge>
                                               )}
                                             </div>
