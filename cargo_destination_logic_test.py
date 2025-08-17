@@ -360,7 +360,8 @@ class CargoDestinationLogicTester:
             response = self.session.get(f"{API_BASE}/operator/cargo/available-for-placement", headers=headers)
             
             if response.status_code == 200:
-                operator_cargo_list = response.json()
+                response_data = response.json()
+                operator_cargo_list = response_data.get("items", [])
                 operator_test_cargos = [c for c in operator_cargo_list if c.get("id") in self.test_cargo_ids]
                 
                 print_success(f"На складе оператора найдено {len(operator_test_cargos)} наших тестовых грузов")
