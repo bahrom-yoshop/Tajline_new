@@ -386,6 +386,7 @@ When invoking testing agents, follow these rules:
 1. Backend testing для проверки что API endpoints работают корректно
 2. User manual testing для проверки исправления UI flickering при обновлении страницы
 3. Backend scenario: проверить, что груз, принятый оператором склада «Москва Склад №1» с назначением «Душанбе Склад №3», появляется в списке «Ожидают размещения/Размещение» у оператора Москвы (фильтр по warehouse_id оператора) и не появляется на складе назначения; допускается создание тестовых данных через существующие тест‑эндпоинты
+4. Backend диагностика: найти груз по номеру "250103" (или с суффиксами вида 250103/01, /02) в коллекциях cargo и operator_cargo, проверить поля warehouse_id, destination_warehouse_id, status и признаки размещения (warehouse_location, block/shelf/cell), чтобы понять почему он не отображается в списке размещения.
 
 # START - Testing Protocol - DO NOT EDIT OR REMOVE THIS SECTION
 #===================================================
