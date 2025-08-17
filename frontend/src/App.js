@@ -26590,8 +26590,21 @@ function App() {
                           <p><strong>Загрузка:</strong> {transport.current_load_kg} / {transport.capacity_kg} кг</p>
                         </div>
                       </div>
-                      <Badge variant="default" className="bg-green-600">
-                        Заполнено
+                      <Badge variant="default" className={
+                        transport.status === 'filled' ? 'bg-green-600' :
+                        transport.status === 'empty' ? 'bg-gray-600' :
+                        transport.status === 'loading' ? 'bg-blue-600' :
+                        transport.status === 'unloading' ? 'bg-yellow-600' :
+                        transport.status === 'in_transit' ? 'bg-purple-600' :
+                        'bg-orange-600'
+                      }>
+                        {transport.status === 'filled' ? 'Заполнено' :
+                         transport.status === 'empty' ? 'Пустой' :
+                         transport.status === 'loading' ? 'Загружается' :
+                         transport.status === 'unloading' ? 'Разгружается' :
+                         transport.status === 'in_transit' ? 'В пути' :
+                         transport.status === 'completed' ? 'Завершен' :
+                         transport.status || 'Неизвестно'}
                       </Badge>
                     </div>
                     
