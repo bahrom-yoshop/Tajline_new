@@ -18838,15 +18838,27 @@ function App() {
                                 {/* Склад назначения */}
                                 <div>
                                   <Label htmlFor="destination_warehouse" className="font-medium">
-                                    Склад назначения
+                                    Склад назначения *
                                   </Label>
-                                  <Input
+                                  <select
                                     id="destination_warehouse"
-                                    value={operatorCargoForm.destination_warehouse || 'Загрузка складов в Таджикистане для доставки из Москвы'}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, destination_warehouse: e.target.value})}
-                                    placeholder="Склад в Таджикистане для доставки из Москвы"
-                                    readOnly
-                                  />
+                                    value={operatorCargoForm.warehouse_id || user?.warehouse_id || ''}
+                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, warehouse_id: e.target.value})}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                  >
+                                    <option value="">Выберите склад назначения</option>
+                                    {operatorWarehouses.map((warehouse) => (
+                                      <option key={warehouse.id} value={warehouse.id}>
+                                        {warehouse.name} - {warehouse.location}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {operatorWarehouses.length === 0 && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                      Загрузка складов... Если список пуст, обратитесь к администратору.
+                                    </p>
+                                  )}
                                 </div>
 
                                 {/* Способ оплаты */}
