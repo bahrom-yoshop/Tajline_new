@@ -12584,6 +12584,10 @@ async def place_cargo_on_transport_via_qr(
     
     db.placement_logs.insert_one(placement_log)
     
+    # Создаем копию для возврата с сериализованной датой
+    placement_log_response = placement_log.copy()
+    placement_log_response["placed_at"] = placement_log["placed_at"].isoformat()
+    
     return {
         "success": True,
         "transport": {
@@ -12600,7 +12604,7 @@ async def place_cargo_on_transport_via_qr(
             "weight": cargo_weight,
             "warehouse_location_removed": cargo.get("warehouse_location", "")
         },
-        "placement_log": placement_log,
+        "placement_log": placement_log_response,
         "message": f"Груз {cargo['cargo_number']} успешно размещен на транспорт {transport['transport_number']}"
     }
 
