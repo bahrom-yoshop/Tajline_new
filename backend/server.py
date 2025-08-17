@@ -12569,8 +12569,9 @@ async def place_cargo_on_transport_via_qr(
         db.operator_cargo.update_one({"id": cargo_id}, {"$set": cargo_update})
     
     # Логирование операции размещения
+    placement_log_id = str(uuid.uuid4())
     placement_log = {
-        "id": str(uuid.uuid4()),
+        "id": placement_log_id,
         "transport_id": transport_id,
         "transport_number": transport["transport_number"],
         "cargo_id": cargo_id,
@@ -12585,9 +12586,13 @@ async def place_cargo_on_transport_via_qr(
     
     db.placement_logs.insert_one(placement_log)
     
-    # Создаем копию для возврата с сериализованной датой
-    placement_log_response = placement_log.copy()
-    placement_log_response["placed_at"] = placed_at.isoformat()
+    # Создаем простой объект для возврата
+    placement_log_response = {
+        "id": placement_log_id,
+        "operator_name": current_user.full_name,
+        "placed_at": placed_at.isoformat(),
+        "operation_type": "qr_placement"
+    }
     
     return {
         "success": True,
