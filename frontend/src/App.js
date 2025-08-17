@@ -25674,6 +25674,7 @@ function App() {
                                   onClick={() => {
                                     if (cell.is_occupied && cell.cargo) {
                                       setSelectedCargoForWarehouse(cell.cargo);
+                                      setSelectedCargoForDetailView(cell.cargo); // Используем существующее модальное окно
                                       // Ищем связанные грузы на этом складе
                                       findRelatedCargoInWarehouse(cell.cargo, selectedWarehouseForLayout);
                                       setCargoDetailsModal(true);
