@@ -2263,7 +2263,7 @@ async def generate_qr_by_cargo_number(
             raise HTTPException(status_code=403, detail="Access denied to this cargo")
         
         # Генерируем QR код
-        qr_code_data = generate_cargo_qr_code(cargo)
+        qr_code_data = generate_cargo_qr_code_data(cargo)
         
         if not qr_code_data:
             raise HTTPException(status_code=500, detail="Failed to generate QR code")
