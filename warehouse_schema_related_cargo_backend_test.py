@@ -259,7 +259,7 @@ class WarehouseSchemaRelatedCargoTester:
                 "payment_amount": cargo_data["declared_value"]
             }
             
-            response = self.make_request("POST", "/operator/cargo/create", full_cargo_data, token=self.admin_token)
+            response = self.make_request("POST", "/operator/cargo/direct-accept", full_cargo_data, token=self.admin_token)
             
             if response and response.status_code == 200:
                 result = response.json()
