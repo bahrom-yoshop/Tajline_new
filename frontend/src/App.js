@@ -4187,6 +4187,19 @@ function App() {
   const receiveCargoQrReaderRef = useRef(null);
   const receiveNewCellQrReaderRef = useRef(null);
   
+  // Автоматический фокус при открытии страницы QR-сканирования
+  useEffect(() => {
+    if (qrPlacementPage) {
+      const timer = setTimeout(() => {
+        const input = document.getElementById('qr-input');
+        if (input) {
+          input.focus();
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [qrPlacementPage]);
+  
   // Create isolated container for QR scanner to avoid React conflicts
   const createIsolatedQrContainer = () => {
     if (qrContainerRef.current && !qrContainerRef.current.innerHTML.includes('qr-reader-placement-isolated')) {
