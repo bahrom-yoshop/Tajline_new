@@ -17421,54 +17421,16 @@ function App() {
                                 />
                               </div>
 
-                              {/* НОВОЕ: Карта маршрута для забора груза */}
-                              {console.log('🔧 Отладка карты (режим забора):', {
+                              {/* УПРОЩЕННАЯ КАРТА: Показываем только адрес получения груза */}
+                              {console.log('🔧 Отладка карты (только адрес получения):', {
                                 pickup_address: operatorCargoForm.pickup_address,
-                                operatorWarehouses: operatorWarehouses.length,
-                                warehouseData: operatorWarehouses[0], // ОТЛАДКА: все данные склада
-                                toAddress: operatorWarehouses[0]?.address || operatorWarehouses[0]?.location || 'Душанбе',
-                                fromAddress: operatorCargoForm.pickup_address
+                                address_length: operatorCargoForm.pickup_address?.length || 0
                               })}
-                              {operatorCargoForm.pickup_address && operatorWarehouses.length > 0 && (
-                                <div className="mt-4">
-                                  <div className="mb-2 p-2 bg-orange-50 rounded border">
-                                    <p className="text-sm text-orange-700">
-                                      🗺️ <strong>Карта маршрута забора груза!</strong><br/>
-                                      Маршрут: от <strong>{operatorCargoForm.pickup_address}</strong> до склада <strong>{operatorWarehouses[0]?.name}</strong>
-                                    </p>
-                                    <p className="text-xs text-gray-600 mt-1">
-                                      🔧 Отладка адреса склада: location="{operatorWarehouses[0]?.location}", 
-                                      address="{operatorWarehouses[0]?.address}",
-                                      full_address="{operatorWarehouses[0]?.full_address}",
-                                      final_toAddress="{operatorWarehouses[0]?.address || operatorWarehouses[0]?.location || 'Душанбе'}"
-                                    </p>
-                                    {(!operatorWarehouses[0]?.address && !operatorWarehouses[0]?.location) && (
-                                      <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded">
-                                        <p className="text-sm text-red-700">
-                                          ⚠️ <strong>ПРОБЛЕМА:</strong> У склада нет адреса для построения маршрута!
-                                          Обратитесь к администратору для заполнения адреса склада.
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-                                  {/* ТЕСТОВАЯ ПРОСТАЯ КАРТА */}
-                                  <SimpleRouteMap
-                                    fromAddress={operatorCargoForm.pickup_address}
-                                    toAddress={operatorWarehouses[0]?.address || operatorWarehouses[0]?.location || 'Душанбе'}
-                                    warehouseName={`Склад: ${operatorWarehouses[0]?.name || 'Склад'}`}
-                                  />
-                                  
-                                  {/* ОСНОВНАЯ КАРТА */}
-                                  <RouteMap
-                                    fromAddress={operatorCargoForm.pickup_address}
-                                    toAddress={operatorWarehouses[0]?.address || operatorWarehouses[0]?.location || 'Душанбе'}
-                                    warehouseName={`Склад: ${operatorWarehouses[0]?.name || 'Склад'}`}
-                                    onRouteCalculated={(routeData) => {
-                                      setRouteInfo(routeData);
-                                      console.log('📍 Информация о маршруте забора:', routeData);
-                                    }}
-                                  />
-                                </div>
+                              {operatorCargoForm.pickup_address && (
+                                <SingleAddressMap
+                                  address={operatorCargoForm.pickup_address}
+                                  title="Адрес получения груза"
+                                />
                               )}
                               
                               {/* Показываем почему карта не отображается */}
