@@ -14390,19 +14390,38 @@ function App() {
                     {qrPlacementData.selectedTransport && (
                       <Button
                         variant="outline"
-                        onClick={() => setQrPlacementData(prev => ({
-                          ...prev,
-                          scanMode: prev.scanMode === 'transport' ? 'cargo' : 'transport'
-                        }))}
+                        onClick={() => {
+                          setQrPlacementData(prev => ({
+                            ...prev,
+                            scanMode: 'transport',
+                            selectedTransport: null,
+                            scannedCargo: [],
+                            lastScanResult: 'Выберите новый транспорт'
+                          }));
+                          setTimeout(() => {
+                            const input = document.getElementById('qr-input');
+                            if (input) {
+                              input.focus();
+                            }
+                          }, 100);
+                        }}
                       >
-                        {qrPlacementData.scanMode === 'transport' ? 'Сканировать грузы' : 'Сменить транспорт'}
+                        🚛 Сменить транспорт
                       </Button>
                     )}
                     <Button
                       variant="outline"
-                      onClick={resetQRPlacementData}
+                      onClick={() => {
+                        resetQRPlacementData();
+                        setTimeout(() => {
+                          const input = document.getElementById('qr-input');
+                          if (input) {
+                            input.focus();
+                          }
+                        }, 100);
+                      }}
                     >
-                      Сбросить всё
+                      🔄 Сбросить всё
                     </Button>
                   </div>
                 </CardContent>
