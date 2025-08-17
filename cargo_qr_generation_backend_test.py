@@ -135,50 +135,54 @@ class CargoQRGenerationTester:
             
     def create_test_cargo_if_needed(self):
         """Создание тестового груза если нет подходящих"""
-        if len(self.available_cargo) > 0:
-            self.log("✅ Есть подходящие грузы, создание тестового не требуется")
+        if len(self.available_cargo) >= 3:
+            self.log("✅ Достаточно подходящих грузов, создание дополнительных не требуется")
             return True
             
-        self.log("📦 Создание тестового груза для QR генерации...")
+        # Создаем несколько тестовых грузов для полного тестирования
+        cargos_to_create = max(3 - len(self.available_cargo), 1)
+        self.log(f"📦 Создание {cargos_to_create} тестовых грузов для QR генерации...")
         
-        cargo_data = {
-            "sender_full_name": "Тестовый Отправитель QR",
-            "sender_phone": "+79991234567",
-            "recipient_full_name": "Тестовый Получатель QR",
-            "recipient_phone": "+79987654321",
-            "recipient_address": "Тестовый адрес получателя QR",
-            "weight": 25.5,
-            "cargo_name": "Тестовый груз для QR",
-            "declared_value": 2000.0,
-            "description": "Тестовый груз для проверки генерации QR кодов",
-            "route": "moscow_to_tajikistan",
-            "payment_method": "cash",
-            "payment_amount": 2000.0
-        }
-        
-        headers = {"Authorization": f"Bearer {self.operator_token}"}
-        response = self.session.post(f"{API_BASE}/operator/cargo/accept", json=cargo_data, headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            cargo_id = data.get('id')  # Changed from cargo_id to id
-            cargo_number = data.get('cargo_number')
-            
-            # Добавляем созданный груз в список для тестирования
-            test_cargo = {
-                'id': cargo_id,
-                'cargo_number': cargo_number,
-                'weight': 25.5,
-                'status': 'accepted'
+        for i in range(cargos_to_create):
+            cargo_data = {
+                "sender_full_name": f"Тестовый Отправитель QR {i+1}",
+                "sender_phone": f"+7999123456{i}",
+                "recipient_full_name": f"Тестовый Получатель QR {i+1}",
+                "recipient_phone": f"+7998765432{i}",
+                "recipient_address": f"Тестовый адрес получателя QR {i+1}",
+                "weight": 25.5 + i * 5,  # Разные веса для тестирования
+                "cargo_name": f"Тестовый груз для QR {i+1}",
+                "declared_value": 2000.0 + i * 500,
+                "description": f"Тестовый груз для проверки генерации QR кодов {i+1}",
+                "route": "moscow_to_tajikistan",
+                "payment_method": "cash",
+                "payment_amount": 2000.0 + i * 500
             }
-            self.available_cargo.append(test_cargo)
-            self.test_cargo_ids.append(cargo_id)
             
-            self.log(f"✅ Тестовый груз создан: {cargo_number} (ID: {cargo_id})")
-            return True
-        else:
-            self.log(f"❌ Ошибка создания тестового груза: {response.status_code} - {response.text}")
-            return False
+            headers = {"Authorization": f"Bearer {self.operator_token}"}
+            response = self.session.post(f"{API_BASE}/operator/cargo/accept", json=cargo_data, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                cargo_id = data.get('id')
+                cargo_number = data.get('cargo_number')
+                
+                # Добавляем созданный груз в список для тестирования
+                test_cargo = {
+                    'id': cargo_id,
+                    'cargo_number': cargo_number,
+                    'weight': cargo_data['weight'],
+                    'status': 'accepted'
+                }
+                self.available_cargo.append(test_cargo)
+                self.test_cargo_ids.append(cargo_id)
+                
+                self.log(f"✅ Тестовый груз {i+1} создан: {cargo_number} (ID: {cargo_id})")
+            else:
+                self.log(f"❌ Ошибка создания тестового груза {i+1}: {response.status_code} - {response.text}")
+                return False
+                
+        return True
             
     def validate_qr_data_format(self, qr_data, cargo_number, weight):
         """Валидация формата QR данных: ГГГГВВВССС (10 цифр)"""
