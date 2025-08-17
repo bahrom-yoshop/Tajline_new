@@ -374,8 +374,8 @@ class CourierRequestFilteringTester:
                 return False
             success_count += 1
             
-            # 5. Создание тестовых заявок
-            self.log("\n📋 ЭТАП 5: Создание тестовых заявок на забор груза")
+            # 6. Создание тестовых заявок
+            self.log("\n📋 ЭТАП 6: Создание тестовых заявок на забор груза")
             request_1 = self.create_test_pickup_request(1001)
             request_2 = self.create_test_pickup_request(1002)
             
