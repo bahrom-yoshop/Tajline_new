@@ -280,6 +280,7 @@ class TransportQRGenerationTester:
         
         success_count = 0
         total_tests = 8
+        qr_data = None  # Initialize qr_data variable
         
         try:
             # 1. Авторизация администратора
