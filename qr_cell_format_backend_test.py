@@ -37,7 +37,7 @@ import os
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://cargo-tracker-29.preview.emergentagent.com/api"
+BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
 
 # Test credentials
 WAREHOUSE_OPERATOR = {

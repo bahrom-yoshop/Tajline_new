@@ -7,7 +7,7 @@ import requests
 import json
 
 # Конфигурация
-BACKEND_URL = "https://cargo-tracker-29.preview.emergentagent.com/api"
+BACKEND_URL = "https://freight-hub-6.preview.emergentagent.com/api"
 
 def final_validation_test():
     """Финальное тестирование исправления ValidationError"""

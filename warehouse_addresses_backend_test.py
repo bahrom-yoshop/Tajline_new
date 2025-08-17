@@ -39,7 +39,7 @@ import os
 from datetime import datetime
 
 # Получаем URL backend из переменной окружения
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://d5f33009-cb8d-4f1e-ae7c-23f5e21662c0.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://freight-hub-6.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class WarehouseAddressesTester:

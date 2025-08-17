@@ -7,7 +7,7 @@ import requests
 import json
 
 def debug_operator_warehouses():
-    base_url = "https://cargo-tracker-29.preview.emergentagent.com"
+    base_url = "https://freight-hub-6.preview.emergentagent.com"
     
     # Login as operator
     login_data = {
