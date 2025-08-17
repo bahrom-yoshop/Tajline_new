@@ -10385,11 +10385,15 @@ async def direct_accept_cargo_by_operator(
             db.operator_cargo.insert_one(operator_cargo_document)
             
             created_cargo_list.append({
-                "cargo_id": cargo_id,
+                "id": cargo_id,
+                "cargo_id": cargo_id,  # For backward compatibility
                 "cargo_number": cargo_number,
                 "cargo_name": cargo_document["cargo_name"],
                 "weight": cargo_document["weight"],
-                "declared_value": cargo_document["declared_value"]
+                "declared_value": cargo_document["declared_value"],
+                "base_request_number": base_request_number,
+                "item_sequence": index,
+                "warehouse_id": cargo_document["warehouse_id"]
             })
             
             print(f"✅ Груз {cargo_number} (груз {index} из {len(cargo_items)}) успешно принят через оператора {current_user.full_name}")
