@@ -8671,6 +8671,60 @@ async def update_warehouse_address(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating warehouse address: {str(e)}")
 
+
+# ====== ADMIN: УСТАНОВИТЬ ГОРОД ДЛЯ СКЛАДА ======
+class WarehouseCityRequest(BaseModel):
+    city: str
+
+@app.patch("/api/admin/warehouses/{warehouse_id}/set-city")
+async def admin_set_warehouse_city(warehouse_id: str, body: WarehouseCityRequest, current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only administrators can set city for warehouse")
+    if not body.city or not body.city.strip():
+        raise HTTPException(status_code=400, detail="City is required")
+    wh = db.warehouses.find_one({"id": warehouse_id})
+    if not wh:
+        raise HTTPException(status_code=404, detail="Warehouse not found")
+    # Политика 1:1 — город должен быть уникальным для активных складов
+    existing = db.warehouses.find_one({
+        "city": body.city.strip(),
+        "is_active": True,
+        "id": {"$ne": warehouse_id}
+    })
+    if existing:
+        raise HTTPException(status_code=409, detail="City already assigned to another active warehouse (1:1 policy)")
+
+    db.warehouses.update_one(
+        {"id": warehouse_id},
+        {"$set": {"city": body.city.strip(), "updated_at": datetime.utcnow()}}
+    )
+
+    return {"success": True, "warehouse_id": warehouse_id, "city": body.city.strip()}
+
+# ====== PUBLIC: СПИСОК ГОРОДОВ НАЗНАЧЕНИЯ (1:1 СО СКЛАДОМ) ======
+@app.get("/api/destinations/cities")
+async def get_destination_cities(current_user: User = Depends(get_current_user)):
+    """Вернуть список городов для выдачи груза (city) c 1:1 соответствием складу.
+    Если у склада нет явного поля city, используется поле location."""
+    whs = list(db.warehouses.find({"is_active": True}, {"_id": 0}))
+    raw = []
+    for w in whs:
+        city = (w.get("city") or w.get("location") or "").strip()
+        if city:
+            raw.append({
+                "city": city,
+                "warehouse_id": w.get("id"),
+                "warehouse_name": w.get("name")
+            })
+    # Убираем дубли по city (берем первый встретившийся для 1:1)
+    seen = set()
+    items = []
+    for r in raw:
+        if r["city"].lower() not in seen:
+            seen.add(r["city"].lower())
+            items.append(r)
+    return {"items": items, "count": len(items)}
+
 @app.get("/api/warehouses/by-route/{route}")
 async def get_warehouses_by_route(route: str, current_user: User = Depends(get_current_user)):
     """Получить список складов по маршруту для операторов и админов"""
