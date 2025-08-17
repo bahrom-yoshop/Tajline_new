@@ -164,13 +164,34 @@ const YandexMap = ({ addresses = [], isOpen = false, onToggle }) => {
     }
   };
 
-  // Очистка при размонтировании
+  // Очистка при размонтировании - ИСПРАВЛЕНИЕ для removeChild ошибки
   useEffect(() => {
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.destroy();
-        mapInstanceRef.current = null;
-      }
+      // Добавляем задержку для безопасной очистки
+      setTimeout(() => {
+        try {
+          if (mapInstanceRef.current) {
+            // Сначала удаляем все geoObjects
+            if (mapInstanceRef.current.geoObjects) {
+              mapInstanceRef.current.geoObjects.removeAll();
+            }
+            // Затем уничтожаем карту
+            mapInstanceRef.current.destroy();
+            mapInstanceRef.current = null;
+          }
+          
+          // Безопасная очистка DOM контейнера
+          if (mapRef.current && mapRef.current.parentNode) {
+            try {
+              mapRef.current.innerHTML = '';
+            } catch (e) {
+              console.warn('Предупреждение при очистке контейнера карты:', e);
+            }
+          }
+        } catch (error) {
+          console.warn('Предупреждение при очистке YandexMap:', error);
+        }
+      }, 0);
     };
   }, []);
 
