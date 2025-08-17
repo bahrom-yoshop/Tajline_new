@@ -22311,10 +22311,29 @@ function App() {
                                           </p>
                                         </div>
                                       </div>
-                                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                                        <CheckCircle className="w-3 h-3 mr-1" />
-                                        Активный
-                                      </Badge>
+                                      <div className="flex items-center gap-2">
+                                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                                          <CheckCircle className="w-3 h-3 mr-1" />
+                                          Активный
+                                        </Badge>
+                                        <Button
+                                          variant="outline"
+                                          className="text-purple-700 border-purple-300 hover:bg-purple-50"
+                                          onClick={async () => {
+                                            const city = prompt(`Задать город для склада: ${warehouse.name}`, warehouse.city || warehouse.location || '');
+                                            if (!city) return;
+                                            try {
+                                              const res = await apiCall(`/api/admin/warehouses/${warehouse.id}/set-city`, 'PATCH', { city });
+                                              showAlert(`Город установлен: ${res.city}`, 'success');
+                                              fetchWarehouses();
+                                            } catch (e) {
+                                              showAlert(e?.detail || 'Ошибка установки города', 'error');
+                                            }
+                                          }}
+                                        >
+                                          Установить город
+                                        </Button>
+                                      </div>
                                     </div>
 
                                     {/* Аналитика склада с lazy loading */}
