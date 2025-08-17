@@ -19530,7 +19530,7 @@ function App() {
 
                           {/* Выбор склада */}
                           <div>
-                            <Label htmlFor="warehouse_id">Склад назначения</Label>
+                            <Label htmlFor="warehouse_id">Склад для выдачи груза</Label>
                             <Select 
                               key="warehouse-select"
                               value={operatorCargoForm.warehouse_id} 
