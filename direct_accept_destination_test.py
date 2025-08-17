@@ -371,6 +371,17 @@ class DirectAcceptDestinationTester:
             except Exception as e:
                 self.log(f"⚠️ Ошибка удаления груза {cargo_id}: {e}")
                 
+        # Удаление временного склада
+        if self.temporary_warehouse_id:
+            try:
+                response = self.session.delete(f"{API_BASE}/admin/warehouses/{self.temporary_warehouse_id}", headers=headers)
+                if response.status_code == 200:
+                    self.log(f"✅ Временный склад {self.temporary_warehouse_id} удален")
+                else:
+                    self.log(f"⚠️ Не удалось удалить временный склад: {response.status_code}")
+            except Exception as e:
+                self.log(f"⚠️ Ошибка удаления временного склада: {e}")
+                
         self.log("✅ Очистка тестовых данных завершена")
         
     def run_comprehensive_test(self):
