@@ -44,6 +44,7 @@ class DirectAcceptDestinationTester:
         self.dushanbe_warehouse_id = None
         self.test_cargo_ids = []
         self.created_cargo_data = None
+        self.temporary_warehouse_id = None  # Для отслеживания временного склада
         
     def log(self, message):
         """Логирование с временной меткой"""
