@@ -24465,6 +24465,8 @@ function App() {
                       step="0.01"
                       placeholder="0.00"
                       value={cargoAcceptanceForm.amount_paid}
+                      disabled={!isPaymentEditMode} // Редактируется только в режиме редактирования
+                      className={!isPaymentEditMode ? "bg-gray-100" : ""}
                       onChange={(e) => {
                         const amountPaid = parseFloat(e.target.value) || 0;
                         const totalAmount = cargoAcceptanceForm.cargo_items.reduce((sum, item) => sum + ((parseFloat(item.weight) || 0) * (parseFloat(item.price) || 0)), 0);
