@@ -4826,7 +4826,7 @@ async def create_warehouse(
         is_active=True
     )
 
-@app.get("/api/warehouses")
+@app.get("/api/warehouses", response_model=List[Dict])
 async def get_warehouses(current_user: User = Depends(get_current_user)):
     # Проверяем права доступа
     if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
