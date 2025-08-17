@@ -1633,7 +1633,7 @@ function App() {
             processedCargoItems = cargoInfo.cargo_items.map((item, index) => ({
               name: item.name || `Груз ${index + 1}`,
               weight: item.weight ? String(item.weight) : '',
-              price: item.price || item.total_price || item.value || ''
+              price: item.price_per_kg || item.price || '' // ИСПРАВЛЕНИЕ: Сначала используем price_per_kg (цена за кг), затем price
             }));
             console.log(`✅ Используем cargo_items из backend: ${processedCargoItems.length} грузов`);
           } else if (cargoInfo.cargo_name) {
