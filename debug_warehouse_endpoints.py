@@ -69,7 +69,7 @@ def debug_auth_and_warehouses():
         # Тестируем endpoint складов оператора
         print(f"\n🏭 Тестирование /api/operator/warehouses для оператора...")
         headers = {"Authorization": f"Bearer {operator_token}"}
-        response = session.get(f"{API_BASE}/api/operator/warehouses", headers=headers)
+        response = session.get(f"{API_BASE}/operator/warehouses", headers=headers)
         print(f"Статус: {response.status_code}")
         
         if response.status_code == 200:
