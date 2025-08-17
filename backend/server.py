@@ -3087,7 +3087,7 @@ async def get_batch_cargo_qr_codes(
                 if current_user.role == UserRole.USER and cargo.get("sender_id") != current_user.id:
                     continue  # Пропускаем недоступные грузы
                 
-                qr_code_data = generate_cargo_qr_code(cargo)
+                qr_code_data = generate_cargo_qr_code_data(cargo)
                 cargo_qr_codes.append({
                     "cargo_id": cargo.get("id"),
                     "cargo_number": cargo.get("cargo_number"),
