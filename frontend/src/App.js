@@ -3895,6 +3895,7 @@ function App() {
   const [selectedWarehouseForLayout, setSelectedWarehouseForLayout] = useState(null);
   const [layoutModal, setLayoutModal] = useState(false);
   const [loadingWarehouseLayout, setLoadingWarehouseLayout] = useState(false);
+  const [warehouseSchemaModal, setWarehouseSchemaModal] = useState(false);
   const [usersByRole, setUsersByRole] = useState({
     user: [],
     admin: [],
