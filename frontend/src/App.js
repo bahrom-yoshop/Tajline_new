@@ -19537,31 +19537,39 @@ function App() {
                           {/* Выбор склада */}
                           <div>
                             <Label htmlFor="warehouse_id">Склад для выдачи груза</Label>
-                            <Select 
-                              key="warehouse-select"
-                              value={operatorCargoForm.warehouse_id} 
-                              onValueChange={(value) => {
-                                setOperatorCargoForm(prev => ({
-                                  ...prev, 
-                                  warehouse_id: value
-                                }));
-                              }}
-                            >
-                              <SelectTrigger key="warehouse-trigger">
-                                <SelectValue placeholder={
-                                  warehouses.length === 0 
-                                    ? "Загрузка складов..." 
-                                    : "Выберите склад для выдачи груза"
-                                } />
-                              </SelectTrigger>
-                              <SelectContent key="warehouse-content">
-                                {warehouses.filter(w => w.is_active).map((warehouse) => (
-                                  <SelectItem key={`warehouse-${warehouse.id}`} value={warehouse.id}>
-                                    {warehouse.name} - {warehouse.location}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            {user?.role === 'admin' ? (
+                              <Select 
+                                key="warehouse-select"
+                                value={operatorCargoForm.warehouse_id} 
+                                onValueChange={(value) => {
+                                  setOperatorCargoForm(prev => ({
+                                    ...prev, 
+                                    warehouse_id: value
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger key="warehouse-trigger">
+                                  <SelectValue placeholder={
+                                    warehouses.length === 0 
+                                      ? "Загрузка складов..." 
+                                      : "Выберите склад для выдачи груза"
+                                  } />
+                                </SelectTrigger>
+                                <SelectContent key="warehouse-content">
+                                  {warehouses.filter(w => w.is_active).map((warehouse) => (
+                                    <SelectItem key={`warehouse-${warehouse.id}`} value={warehouse.id}>
+                                      {warehouse.name} - {warehouse.location}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <div className="p-2 rounded border bg-gray-50 text-gray-700">
+                                {operatorCargoForm.warehouse_id ? 
+                                  (warehouses.find(w => w.id === operatorCargoForm.warehouse_id)?.name || '—') : 
+                                  'Назначение не выбрано (обратитесь к администратору)'}
+                              </div>
+                            )}
                           </div>
 
                           {/* Способ оплаты */}
