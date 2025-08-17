@@ -390,8 +390,8 @@ class CourierRequestFilteringTester:
             else:
                 self.log("❌ Курьер А не смог принять заявку")
                 
-            # 9. КРИТИЧЕСКАЯ ПРОВЕРКА: Видимость заявок ПОСЛЕ принятия
-            self.log("\n📋 ЭТАП 9: 🎯 КРИТИЧЕСКАЯ ПРОВЕРКА - Видимость заявок ПОСЛЕ принятия")
+            # 8. КРИТИЧЕСКАЯ ПРОВЕРКА: Видимость заявок ПОСЛЕ принятия
+            self.log("\n📋 ЭТАП 8: 🎯 КРИТИЧЕСКАЯ ПРОВЕРКА - Видимость заявок ПОСЛЕ принятия")
             requests_a_after, count_a_after = self.get_courier_new_requests(self.courier_a_token, "Курьер А")
             requests_b_after, count_b_after = self.get_courier_new_requests(self.courier_b_token, "Курьер Б")
             
