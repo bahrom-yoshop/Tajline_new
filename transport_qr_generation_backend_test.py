@@ -146,25 +146,57 @@ class TransportQRGenerationTester:
             self.log(f"❌ Ошибка создания тестового транспорта: {response.status_code} - {response.text}")
             return None
             
-    def update_transport_status(self, transport_id, status):
-        """Обновить статус транспорта"""
-        self.log(f"🔄 Обновление статуса транспорта {transport_id} на '{status}'...")
+    def create_test_cargo(self):
+        """Создать тестовый груз для размещения на транспорте"""
+        self.log("📦 Создание тестового груза...")
+        
+        cargo_data = {
+            "sender_full_name": "Тестовый Отправитель QR",
+            "sender_phone": "+79991234567",
+            "recipient_full_name": "Тестовый Получатель QR",
+            "recipient_phone": "+79991234568",
+            "recipient_address": "Тестовый адрес получателя",
+            "weight": 900.0,  # Большой вес чтобы заполнить транспорт
+            "cargo_name": "Тестовый груз для QR",
+            "declared_value": 10000.0,
+            "description": "Тестовый груз для проверки QR кодов транспорта",
+            "route": "moscow_to_tajikistan",
+            "payment_method": "cash",
+            "payment_amount": 1000.0
+        }
         
         headers = {"Authorization": f"Bearer {self.admin_token}"}
+        response = self.session.post(f"{API_BASE}/operator/cargo/create", json=cargo_data, headers=headers)
         
-        if status == "filled":
-            # Для статуса filled используем endpoint принятия транспорта
-            response = self.session.post(f"{API_BASE}/transport/{transport_id}/accept", headers=headers)
-        else:
-            # Для других статусов можем использовать прямое обновление (если есть такой endpoint)
-            self.log(f"⚠️ Обновление статуса на '{status}' может потребовать специального endpoint")
-            return False
-            
         if response.status_code == 200:
-            self.log(f"✅ Статус транспорта обновлен на '{status}'")
+            data = response.json()
+            cargo_id = data.get('cargo_id')
+            cargo_number = data.get('cargo_number')
+            self.log(f"✅ Тестовый груз создан: ID {cargo_id}, номер {cargo_number}")
+            return cargo_id, cargo_number
+        else:
+            self.log(f"❌ Ошибка создания тестового груза: {response.status_code} - {response.text}")
+            return None, None
+            
+    def place_cargo_on_transport(self, transport_id, cargo_numbers):
+        """Разместить груз на транспорте чтобы сделать его заполненным"""
+        self.log(f"🚛 Размещение груза на транспорте {transport_id}...")
+        
+        placement_data = {
+            "transport_id": transport_id,
+            "cargo_numbers": cargo_numbers
+        }
+        
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        response = self.session.post(f"{API_BASE}/transport/{transport_id}/place-cargo", json=placement_data, headers=headers)
+        
+        if response.status_code == 200:
+            data = response.json()
+            message = data.get('message', 'Cargo placed successfully')
+            self.log(f"✅ Груз размещен на транспорте: {message}")
             return True
         else:
-            self.log(f"❌ Ошибка обновления статуса: {response.status_code} - {response.text}")
+            self.log(f"❌ Ошибка размещения груза на транспорте: {response.status_code} - {response.text}")
             return False
             
     def generate_qr_code(self, transport_id, transport_number, expect_success=True):
