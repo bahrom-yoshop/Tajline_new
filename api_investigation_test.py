@@ -53,7 +53,9 @@ def investigate_api_endpoints():
             cargo_list = response.json()
             log(f"✅ Получен список: {len(cargo_list)} грузов")
             
-            for i, cargo in enumerate(cargo_list[:3]):  # Показываем первые 3
+            for i, cargo in enumerate(cargo_list):
+                if i >= 3:  # Показываем только первые 3
+                    break
                 log(f"   📦 Груз {i+1}:")
                 if isinstance(cargo, dict):
                     log(f"      ID: {cargo.get('id')}")
