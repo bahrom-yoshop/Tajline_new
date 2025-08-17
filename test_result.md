@@ -1219,6 +1219,18 @@ backend:
           agent: "testing"
           comment: "❌ ОШИБКА ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ЗАЯВКИ 250107 ЗАВЕРШЕНО! РЕЗУЛЬТАТ: Ошибка проверки ID складов Дата: 2025-08-17 22:03. ИТОГ: Груз 250107 теперь имеет warehouse_id (Москва Склад №1: d0a8362d-b4d3-4947-b335-28c94658a021) и destination_warehouse_id (Худжанд Склад №2: 52761d8b-6407-49a5-8c4c-e28db520cdff), поле hidden_reason исчезло или стало visible_candidate."
 
+  - task: "🎯 ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ГРУЗА 250107: Установка правильных складов для заявки 250107 в TAJLINE.TJ"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ ОШИБКА ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ЗАЯВКИ 250107 ЗАВЕРШЕНО! РЕЗУЛЬТАТ: Груз 250107 не найден в системе Дата: 2025-08-17 22:03. ИТОГ: Груз 250107 теперь имеет warehouse_id (Москва Склад №1: d0a8362d-b4d3-4947-b335-28c94658a021) и destination_warehouse_id (Худжанд Склад №2: 52761d8b-6407-49a5-8c4c-e28db520cdff), поле hidden_reason исчезло или стало visible_candidate."
+
 frontend:
   - task: "🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Простые модальные окна без Radix UI в TAJLINE.TJ"
     implemented: true
