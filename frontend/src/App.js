@@ -24075,7 +24075,7 @@ function App() {
                           />
                         </div>
                         <div className="col-span-3">
-                          <Label>Цена (₽) *</Label>
+                          <Label>Цена за кг (₽) *</Label>
                           <Input
                             type="number"
                             step="0.01"
@@ -24085,7 +24085,7 @@ function App() {
                               newItems[index].price = e.target.value;
                               setCargoAcceptanceForm({...cargoAcceptanceForm, cargo_items: newItems});
                             }}
-                            placeholder="1000"
+                            placeholder="80"
                             required
                           />
                         </div>
