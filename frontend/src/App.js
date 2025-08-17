@@ -1630,11 +1630,28 @@ function App() {
           // Обработка данных о грузах - создаем отдельные контейнеры для каждого груза
           if (cargoInfo.cargo_items && cargoInfo.cargo_items.length > 0) {
             // ИСПРАВЛЕНИЕ: Если есть массив cargo_items из backend, используем его напрямую
-            processedCargoItems = cargoInfo.cargo_items.map((item, index) => ({
-              name: item.name || `Груз ${index + 1}`,
-              weight: item.weight ? String(item.weight) : '',
-              price: item.price_per_kg || item.price || '' // ИСПРАВЛЕНИЕ: Сначала используем price_per_kg (цена за кг), затем price
-            }));
+            processedCargoItems = cargoInfo.cargo_items.map((item, index) => {
+              let pricePerKg = item.price_per_kg || item.price || '';
+              
+              // ИСПРАВЛЕНИЕ: Если price содержит общую сумму (больше разумной цены за кг), 
+              // пытаемся восстановить цену за кг, разделив на вес
+              if (!item.price_per_kg && item.price && item.weight) {
+                const totalPrice = parseFloat(item.price);
+                const weight = parseFloat(item.weight);
+                
+                // Если цена очень большая (больше 1000₽ за кг), вероятно это общая сумма
+                if (totalPrice > 1000 && weight > 0) {
+                  pricePerKg = (totalPrice / weight).toFixed(2);
+                  console.log(`🔧 ИСПРАВЛЕНИЕ: Конвертируем общую сумму ${totalPrice}₽ / ${weight}кг = ${pricePerKg}₽/кг`);
+                }
+              }
+              
+              return {
+                name: item.name || `Груз ${index + 1}`,
+                weight: item.weight ? String(item.weight) : '',
+                price: String(pricePerKg)
+              };
+            });
             console.log(`✅ Используем cargo_items из backend: ${processedCargoItems.length} грузов`);
           } else if (cargoInfo.cargo_name) {
             // Если есть cargo_name, попробуем разбить по запятым на отдельные грузы
