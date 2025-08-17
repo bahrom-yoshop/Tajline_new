@@ -5632,9 +5632,14 @@ async def get_available_cargo_for_placement(
             operator_warehouse_ids = [w["id"] for w in warehouses]
         
         # ИСПРАВЛЕНИЕ: Ищем ВСЕ грузы готовые к размещению независимо от статуса оплаты
+        # НО ВАЖНО: только грузы которые находятся на складах оператора (warehouse_id)
         placement_query = {
             # Убираем проверку processing_status - все грузы могут размещаться
             "status": {"$nin": ["placed_in_warehouse", "removed_from_placement"]},  # Еще не размещенные и не удаленные из размещения
+            
+            # КРИТИЧНО: Фильтруем только по warehouse_id (НЕ по destination_warehouse_id)
+            "warehouse_id": {"$in": operator_warehouse_ids} if operator_warehouse_ids else {"$exists": True},
+            
             "$and": [
                 {"$or": [
                     {"warehouse_location": {"$exists": False}},
