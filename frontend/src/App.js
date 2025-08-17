@@ -21939,12 +21939,12 @@ function App() {
                             </Button>
                             <Button 
                               variant="outline" 
-                              onClick={() => setTransportQRGenerationModal(true)}
+                              onClick={() => setQrPlacementPage(true)}
                               disabled={user?.role !== 'admin' && user?.role !== 'warehouse_operator'}
-                              className="bg-orange-600 text-white hover:bg-orange-700 border-orange-600"
+                              className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600"
                             >
                               <QrCode className="mr-2 h-4 w-4" />
-                              Генерация QR кодов
+                              Размещение на транспорт
                             </Button>
                             <Button onClick={() => fetchTransportsList()}>
                               Обновить
