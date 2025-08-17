@@ -13494,6 +13494,175 @@ async def create_cargo_tracking(
         "client_phone": tracking_data.client_phone
     }
 
+# ===== ADMIN DATA FIXES: МАССОВОЕ ЗАПОЛНЕНИЕ ОТСУТСТВУЮЩИХ WAREHOUSE_ID =====
+class DataFixRequest(BaseModel):
+    dry_run: bool = True
+    limit: int = 200
+    apply_to_collections: Optional[List[str]] = ["cargo", "operator_cargo"]
+    status_filter: Optional[List[str]] = [
+        "accepted", "awaiting_placement", "paid", "placement_ready"
+    ]
+    default_destination_warehouse_id: Optional[str] = None
+    cargo_destination_map: Optional[List[Dict[str, str]]] = None  # [{"cargo_number":"250103","destination_warehouse_id":"..."}]
+
+@app.post("/api/admin/data-fixes/fill-missing-warehouse-ids")
+async def fill_missing_warehouse_ids(request: DataFixRequest, current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only administrators can run data fixes")
+    try:
+        collections = request.apply_to_collections or ["cargo", "operator_cargo"]
+        status_filter = request.status_filter or []
+        dry_run = request.dry_run
+        limit = max(1, min(1000, request.limit or 200))
+
+        # Построим карту назначения по cargo_number для быстрого доступа
+        cargo_dest_map = {}
+        if request.cargo_destination_map:
+            for item in request.cargo_destination_map:
+                num = item.get("cargo_number") or item.get("base_request_number")
+                dest = item.get("destination_warehouse_id")
+                if num and dest:
+                    cargo_dest_map[num] = dest
+
+        # Поиск документов без warehouse_id
+        def build_query():
+            query = {
+                "$and": [
+                    {"$or": [
+                        {"warehouse_id": {"$exists": False}},
+                        {"warehouse_id": None},
+                        {"warehouse_id": ""}
+                    ]},
+                    {"status": {"$nin": ["placed_in_warehouse", "removed_from_placement"]}}
+                ]
+            }
+            if status_filter:
+                query["$and"].append({"status": {"$in": status_filter}})
+            return query
+
+        results = {"cargo": [], "operator_cargo": []}
+        updated_count = 0
+        examined = 0
+
+        for coll_name in collections:
+            coll = db[coll_name]
+            cursor = coll.find(build_query()).limit(limit)
+            for doc in cursor:
+                examined += 1
+                d = serialize_mongo_document(doc)
+
+                # Определим оператора
+                operator_id = (
+                    d.get("operator_id") or d.get("received_by_operator_id") or 
+                    d.get("created_by_operator_id") or d.get("accepting_operator_id")
+                )
+                candidate_wh_id = None
+                if operator_id:
+                    binding = db.operator_warehouse_bindings.find_one({"operator_id": operator_id})
+                    if binding:
+                        candidate_wh_id = binding.get("warehouse_id")
+
+                # Определим склад назначения, если можем
+                destination_wh_id = d.get("destination_warehouse_id")
+                if not destination_wh_id:
+                    # По карте соответствий по cargo_number или base_request_number
+                    mapped = cargo_dest_map.get(d.get("cargo_number")) or cargo_dest_map.get(d.get("base_request_number"))
+                    if mapped:
+                        destination_wh_id = mapped
+                    elif request.default_destination_warehouse_id:
+                        destination_wh_id = request.default_destination_warehouse_id
+
+                update_fields = {}
+                if candidate_wh_id and not d.get("warehouse_id"):
+                    update_fields["warehouse_id"] = candidate_wh_id
+                if destination_wh_id and not d.get("destination_warehouse_id"):
+                    # валидируем существование склада назначения
+                    if db.warehouses.find_one({"id": destination_wh_id}):
+                        update_fields["destination_warehouse_id"] = destination_wh_id
+
+                if update_fields:
+                    update_fields["updated_at"] = datetime.utcnow()
+                    if not dry_run:
+                        coll.update_one({"_id": doc["_id"]}, {"$set": update_fields})
+                        # Если коллекция operator_cargo — попробуем синхронизировать одноименный документ в cargo по id
+                        if coll_name == "operator_cargo" and d.get("id"):
+                            db.cargo.update_one({"id": d.get("id")}, {"$set": update_fields})
+                        if coll_name == "cargo" and d.get("id"):
+                            db.operator_cargo.update_one({"id": d.get("id")}, {"$set": update_fields})
+                        updated_count += 1
+                    results[coll_name].append({
+                        "id": d.get("id"),
+                        "cargo_number": d.get("cargo_number"),
+                        "base_request_number": d.get("base_request_number"),
+                        "operator_id": operator_id,
+                        "set_fields": update_fields
+                    })
+
+        return {
+            "success": True,
+            "dry_run": dry_run,
+            "examined": examined,
+            "updated": updated_count,
+            "results_sample": {
+                "cargo": results["cargo"][:10],
+                "operator_cargo": results["operator_cargo"][:10]
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Data fix error: {str(e)}")
+
+# ===== ADMIN: ТОЧЕЧНОЕ ОБНОВЛЕНИЕ СКЛАДОВ ДЛЯ ГРУЗА ПО НОМЕРУ =====
+class SetWarehousesRequest(BaseModel):
+    current_warehouse_id: Optional[str] = None
+    destination_warehouse_id: Optional[str] = None
+
+@app.patch("/api/admin/cargo/by-number/{cargo_number}/set-warehouses")
+async def set_warehouses_by_cargo_number(cargo_number: str, body: SetWarehousesRequest, current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only administrators can update cargo warehouses by number")
+    try:
+        if not body.current_warehouse_id and not body.destination_warehouse_id:
+            raise HTTPException(status_code=400, detail="No fields to update provided")
+        # Валидация ID складов
+        if body.current_warehouse_id and not db.warehouses.find_one({"id": body.current_warehouse_id}):
+            raise HTTPException(status_code=404, detail="Current warehouse not found")
+        if body.destination_warehouse_id and not db.warehouses.find_one({"id": body.destination_warehouse_id}):
+            raise HTTPException(status_code=404, detail="Destination warehouse not found")
+
+        # Строим условия поиска: точный cargo_number ИЛИ base_request_number (если пришёл базовый номер без /)
+        or_conditions = [{"cargo_number": cargo_number}]
+        if "/" not in cargo_number:
+            or_conditions.append({"base_request_number": cargo_number})
+            or_conditions.append({"cargo_number": {"$regex": f"^{cargo_number}/"}})
+
+        update_fields = {"updated_at": datetime.utcnow()}
+        if body.current_warehouse_id:
+            update_fields["warehouse_id"] = body.current_warehouse_id
+        if body.destination_warehouse_id:
+            update_fields["destination_warehouse_id"] = body.destination_warehouse_id
+
+        modified = 0
+        matched = 0
+        details = {"cargo": 0, "operator_cargo": 0}
+        for coll_name in ["cargo", "operator_cargo"]:
+            res = db[coll_name].update_many({"$or": or_conditions}, {"$set": update_fields})
+            matched += res.matched_count
+            modified += res.modified_count
+            details[coll_name] = res.modified_count
+
+        return {
+            "success": True,
+            "cargo_number_query": cargo_number,
+            "matched": matched,
+            "modified": modified,
+            "details": details,
+            "set_fields": update_fields
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Update error: {str(e)}")
+
 # ===== DEBUG: Найти груз по номеру (cargo_number или base_request_number) =====
 @app.get("/api/debug/find-cargo-by-number/{number}")
 async def debug_find_cargo_by_number(number: str, current_user: User = Depends(get_current_user)):
