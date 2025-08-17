@@ -14,23 +14,34 @@ const SimpleRouteMap = ({ fromAddress, toAddress, warehouseName }) => {
       mountedRef.current = false;
       console.log('🧹 Cleanup SimpleRouteMap component');
       
-      // Уничтожаем карту перед размонтированием
-      if (map) {
+      // Добавляем задержку для безопасной очистки
+      setTimeout(() => {
         try {
-          map.destroy();
-        } catch (e) {
-          console.warn('Ошибка при destroy карты в SimpleRouteMap:', e);
+          // Уничтожаем карту перед размонтированием
+          if (map) {
+            try {
+              // Сначала удаляем все geoObjects если есть
+              if (map.geoObjects) {
+                map.geoObjects.removeAll();
+              }
+              map.destroy();
+            } catch (e) {
+              console.warn('Предупреждение при destroy карты в SimpleRouteMap:', e);
+            }
+          }
+          
+          // Безопасная очистка контейнера только после уничтожения карты
+          if (mapRef.current && mapRef.current.parentNode) {
+            try {
+              mapRef.current.innerHTML = '';
+            } catch (e) {
+              console.warn('Предупреждение при очистке контейнера в SimpleRouteMap:', e);
+            }
+          }
+        } catch (error) {
+          console.warn('Предупреждение при cleanup SimpleRouteMap:', error);
         }
-      }
-      
-      // Очищаем контейнер только после уничтожения карты
-      if (mapRef.current) {
-        try {
-          mapRef.current.innerHTML = '';
-        } catch (e) {
-          console.warn('Ошибка при очистке контейнера SimpleRouteMap:', e);
-        }
-      }
+      }, 0);
     };
   }, [map]);
 
