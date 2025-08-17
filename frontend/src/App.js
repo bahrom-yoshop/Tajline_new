@@ -25607,7 +25607,7 @@ function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                   {/* Список складов */}
                   <div>
-                    <Label htmlFor="warehouse_id">Склад назначения *</Label>
+                    <Label htmlFor="warehouse_id">Склад для выдачи груза *</Label>
                     <div className="text-xs text-blue-600 mb-2">
                       📍 Груз принимается на {operatorWarehouses[0]?.name || 'текущий склад'} и будет отправлен в выбранный склад
                     </div>
