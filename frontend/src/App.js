@@ -9357,6 +9357,17 @@ function App() {
         // Обновить список транспортов
         await fetchTransportsList();
         
+        // Если модальное окно управления транспортом открыто, обновляем selectedTransport
+        if (transportManagementModal && selectedTransport && selectedTransport.id === transport.id) {
+          setSelectedTransport(prev => ({
+            ...prev,
+            qr_code: response.qr_code,
+            qr_data: response.qr_data,
+            qr_generated_at: new Date().toISOString(),
+            qr_generated_by: user.id
+          }));
+        }
+        
         // Показать QR код для печати
         openTransportQRPrintModal(response);
       }
