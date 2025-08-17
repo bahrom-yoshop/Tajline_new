@@ -22394,6 +22394,102 @@ function App() {
                               ))}
                             </>
                           )}
+
+                              {/* Массовое назначение городов для складов */}
+                              <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                <h4 className="font-semibold text-purple-800 mb-2">Массово задать города</h4>
+                                <p className="text-sm text-purple-700 mb-2">
+                                  Формат: одна строка = warehouse_id;город ИЛИ warehouse_id;город1,город2,город3<br/>
+                                  Примеры:<br/>
+                                  • 84d25a76-f23b-4c95-adb4-255732cd6520;Душанбе<br/>
+                                  • 84d25a76-f23b-4c95-adb4-255732cd6520;Душанбе, Худжанд, Куляб
+                                </p>
+                                <textarea
+                                  className="w-full h-28 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                  placeholder="Вставьте пары warehouse_id;город(а) построчно"
+                                  value={bulkCitiesText || ''}
+                                  onChange={(e) => setBulkCitiesText(e.target.value)}
+                                />
+                                <div className="flex gap-2 mt-2">
+                                  <Button
+                                    variant="outline"
+                                    className="text-purple-700 border-purple-300 hover:bg-purple-50"
+                                    onClick={async () => {
+                                      try {
+                                        const items = (bulkCitiesText || '')
+                                          .split('\n')
+                                          .map(line => line.trim())
+                                          .filter(Boolean)
+                                          .map(line => {
+                                            const [id, citiesStr] = line.split(';');
+                                            if (!id || !citiesStr) return null;
+                                            // если вторая часть содержит запятые — формируем массив cities
+                                            const parts = citiesStr.split(',').map(s => s.trim()).filter(Boolean);
+                                            if (parts.length > 1) {
+                                              return { warehouse_id: id.trim(), cities: parts };
+                                            } else {
+                                              return { warehouse_id: id.trim(), city: (parts[0] || citiesStr).trim() };
+                                            }
+                                          })
+                                          .filter(Boolean);
+                                        if (items.length === 0) {
+                                          showAlert('Введите пары warehouse_id;город(а)', 'error');
+                                          return;
+                                        }
+                                        const res = await apiCall('/api/admin/warehouses/set-cities-bulk', 'POST', { items, dry_run: true });
+                                        setBulkCitiesPreview(res);
+                                        showAlert('Предпросмотр готов. Проверьте результат ниже.', 'info');
+                                      } catch (e) {
+                                        showAlert(e?.detail || 'Ошибка предпросмотра', 'error');
+                                      }
+                                    }}
+                                  >
+                                    Предпросмотр (dry-run)
+                                  </Button>
+                                  <Button
+                                    className="bg-purple-600 hover:bg-purple-700"
+                                    onClick={async () => {
+                                      try {
+                                        if (!bulkCitiesPreview) {
+                                          showAlert('Сначала выполните предпросмотр', 'error');
+                                          return;
+                                        }
+                                        const okItems = (bulkCitiesPreview.results || [])
+                                          .filter(r => r.status === 'ok')
+                                          .map(r => ({ warehouse_id: r.warehouse_id, cities: r.final_cities }));
+                                        if (okItems.length === 0) {
+                                          showAlert('Нет элементов для применения (проверьте конфликты/ошибки)', 'warning');
+                                          return;
+                                        }
+                                        const confirmed = confirm('Применить города к выбранным складам?');
+                                        if (!confirmed) return;
+                                        const res = await apiCall('/api/admin/warehouses/set-cities-bulk', 'POST', { items: okItems, dry_run: false });
+                                        showAlert(`Обновлено складов: ${res.updated}`, 'success');
+                                        setBulkCitiesPreview(null);
+                                        setBulkCitiesText('');
+                                        fetchWarehouses();
+                                      } catch (e) {
+                                        showAlert(e?.detail || 'Ошибка применения', 'error');
+                                      }
+                                    }}
+                                  >
+                                    Применить
+                                  </Button>
+                                </div>
+                                {bulkCitiesPreview && (
+                                  <div className="mt-3 text-sm">
+                                    <h5 className="font-medium">Результаты предпросмотра:</h5>
+                                    <ul className="list-disc ml-5">
+                                      {(bulkCitiesPreview.results || []).map((r, idx) => (
+                                        <li key={idx} className={r.status === 'ok' ? 'text-green-700' : r.status === 'conflict' ? 'text-orange-700' : 'text-red-700'}>
+                                          {r.warehouse_id} → {Array.isArray(r.final_cities) ? r.final_cities.join(', ') : (r.city || '')} — {r.status}{r.conflict_with ? ` (конфликт с ${r.conflict_with})` : ''}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+
                         </div>
                       </CardContent>
                     </Card>
