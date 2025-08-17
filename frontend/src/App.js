@@ -3846,6 +3846,7 @@ function App() {
   
   const [availableCargo, setAvailableCargo] = useState([]);
   const [availableCargoForPlacement, setAvailableCargoForPlacement] = useState([]); // Грузы для размещения
+  const [availableCargoLoading, setAvailableCargoLoading] = useState(false); // Индикатор загрузки списка размещения
   const [availableCargoPagination, setAvailableCargoPagination] = useState({}); // Пагинация для размещения
   const [availableCargoPage, setAvailableCargoPage] = useState(1);
   const [availableCargoPerPage, setAvailableCargoPerPage] = useState(25);
