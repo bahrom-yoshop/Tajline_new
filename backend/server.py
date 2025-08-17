@@ -5134,7 +5134,7 @@ async def accept_new_cargo(
     }
     
     # Генерируем QR код для груза
-    cargo_qr_code = generate_cargo_qr_code(cargo)
+    cargo_qr_code = generate_cargo_qr_code_data(cargo)
     cargo["qr_code"] = cargo_qr_code
     
     db.operator_cargo.insert_one(cargo)
