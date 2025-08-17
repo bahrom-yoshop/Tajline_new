@@ -77,6 +77,19 @@ def debug_auth_and_warehouses():
             print(f"✅ Получено {len(warehouses)} складов для оператора")
             for i, warehouse in enumerate(warehouses, 1):
                 print(f"   {i}. {warehouse.get('name')} (ID: {warehouse.get('id')})")
+                
+            # Тестируем endpoint available-for-placement
+            print(f"\n📦 Тестирование /api/operator/cargo/available-for-placement...")
+            response = session.get(f"{API_BASE}/operator/cargo/available-for-placement", headers=headers)
+            print(f"Статус: {response.status_code}")
+            
+            if response.status_code == 200:
+                cargo_list = response.json()
+                print(f"✅ Получено {len(cargo_list)} грузов для размещения")
+                for i, cargo in enumerate(cargo_list[:3], 1):
+                    print(f"   {i}. {cargo.get('cargo_number')} (warehouse_id: {cargo.get('warehouse_id')}, destination: {cargo.get('destination_warehouse_id', 'не указан')})")
+            else:
+                print(f"❌ Ошибка получения грузов: {response.text}")
         else:
             print(f"❌ Ошибка: {response.text}")
     else:
