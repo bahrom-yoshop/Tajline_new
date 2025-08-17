@@ -161,7 +161,7 @@ class CargoQRGenerationTester:
         
         if response.status_code == 200:
             data = response.json()
-            cargo_id = data.get('cargo_id')
+            cargo_id = data.get('id')  # Changed from cargo_id to id
             cargo_number = data.get('cargo_number')
             
             # Добавляем созданный груз в список для тестирования
