@@ -998,24 +998,6 @@ function App() {
   };
 
   const fetchPickedRequests = async () => {
-  // Загрузка всех грузов по базе заявки
-  const openRequestItemsModalByBase = async (baseRequestNumber) => {
-    try {
-      if (!baseRequestNumber) return;
-      // Ищем сначала локально среди availableCargoForPlacement
-      let items = availableCargoForPlacement.filter(it => it.base_request_number === baseRequestNumber);
-      // Если нет — попробуем получить с бэкенда (fallback: фильтруем весь список operator_cargo, если он загружен)
-      if (items.length === 0 && operatorCargo && operatorCargo.length > 0) {
-        items = operatorCargo.filter(it => it.base_request_number === baseRequestNumber);
-      }
-      setSelectedRequestBase(baseRequestNumber);
-      setSelectedRequestItems(items);
-      setRequestItemsModal(true);
-    } catch (e) {
-      console.error('Ошибка открытия модального окна подгрузов заявки:', e);
-      showAlert('Не удалось открыть список грузов заявки', 'error');
-    }
-  };
 
     try {
       const data = await apiCall('/api/courier/requests/picked');
