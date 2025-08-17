@@ -2081,7 +2081,7 @@ async def get_cargo_qr_code(
     if current_user.role == UserRole.USER and cargo.get("sender_id") != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    qr_code_data = generate_cargo_qr_code(cargo)
+    qr_code_data = generate_cargo_qr_code_data(cargo)
     
     return {
         "cargo_id": cargo_id,
