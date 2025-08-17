@@ -1532,7 +1532,19 @@ function App() {
       const response = await apiCall('/api/operator/cargo/direct-accept', 'POST', operatorCargoData);
       
       if (response.success) {
-        showAlert(`Груз успешно принят через оператора! Номер груза: ${response.cargo_number}`, 'success');
+        const totalCargoCount = response.total_cargo_count || 1;
+        const baseRequestNumber = response.base_request_number;
+        
+        showAlert(
+          `✅ ${response.message}\n` +
+          `📦 Создано грузов: ${totalCargoCount}\n` + 
+          `📝 Номер заявки: ${baseRequestNumber}`, 
+          'success'
+        );
+        
+        // Показать модальное окно с опциями для QR кодов
+        setOperatorCargoResponse(response);
+        setOperatorQRGenerationModal(true);
         
         // Сбрасываем форму
         setOperatorCargoForm({
