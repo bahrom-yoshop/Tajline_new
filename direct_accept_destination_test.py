@@ -126,6 +126,7 @@ class DirectAcceptDestinationTester:
             data = response.json()
             warehouse_id = data.get('warehouse_id')
             self.dushanbe_warehouse_id = warehouse_id
+            self.temporary_warehouse_id = warehouse_id  # Сохраняем для удаления
             self.log(f"✅ Временный склад Душанбе создан: ID = {warehouse_id}")
             return True
         else:
