@@ -9346,11 +9346,7 @@ function App() {
 
   // Transport QR Code Generation Functions
   const handleGenerateTransportQR = async (transport) => {
-    if (transport.status !== 'filled') {
-      showAlert('QR код можно генерировать только для заполненных транспортов', 'error');
-      return;
-    }
-
+    // Убираем проверку статуса - теперь можно генерировать для любого транспорта
     try {
       setGeneratingTransportQR(true);
       const response = await apiCall(`/api/transport/${transport.id}/generate-qr`, 'POST');
