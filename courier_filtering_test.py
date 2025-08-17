@@ -403,8 +403,8 @@ class CourierRequestFilteringTester:
             else:
                 self.log("❌ Не все курьеры видят новые заявки ДО принятия")
             
-            # 7. Принятие заявки курьером А
-            self.log("\n📋 ЭТАП 7: Принятие заявки курьером А")
+            # 8. Принятие заявки курьером А
+            self.log("\n📋 ЭТАП 8: Принятие заявки курьером А")
             if self.accept_request(self.courier_a_token, "Курьер А", request_1):
                 success_count += 1
             else:
