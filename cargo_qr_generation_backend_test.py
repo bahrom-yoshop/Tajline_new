@@ -369,8 +369,8 @@ class CargoQRGenerationTester:
             
         self.log("🎯 Тестирование массовой генерации QR кодов...")
         
-        # Берем первые 3 груза для тестирования
-        test_cargo_ids = [cargo.get('id') for cargo in cargo_list[:3]]
+        # Берем все доступные грузы для тестирования
+        test_cargo_ids = [cargo.get('id') for cargo in cargo_list]
         
         request_data = {
             "cargo_ids": test_cargo_ids
@@ -398,9 +398,10 @@ class CargoQRGenerationTester:
             for i, result in enumerate(results):
                 cargo_id = result.get('cargo_id')
                 qr_data = result.get('qr_data')
+                cargo_number = result.get('cargo_number')
                 
                 if not result.get('success'):
-                    self.log(f"❌ Груз {i+1} не сгенерирован: {result.get('error', 'Unknown error')}")
+                    self.log(f"❌ Груз {i+1} ({cargo_number}) не сгенерирован: {result.get('error', 'Unknown error')}")
                     continue
                     
                 # Проверяем уникальность QR данных
@@ -409,7 +410,13 @@ class CargoQRGenerationTester:
                     return False
                     
                 generated_qr_data.add(qr_data)
-                self.log(f"   ✅ Груз {i+1}: QR данные = {qr_data} (уникальны)")
+                
+                # Проверяем формат QR данных
+                if not qr_data.isdigit() or len(qr_data) != 10:
+                    self.log(f"❌ Неправильный формат QR данных для груза {cargo_number}: {qr_data}")
+                    return False
+                    
+                self.log(f"   ✅ Груз {i+1} ({cargo_number}): QR данные = {qr_data} (уникальны, формат корректен)")
                 
             self.log(f"✅ Все QR коды уникальны ({len(generated_qr_data)} различных кодов)")
             return True
