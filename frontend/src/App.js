@@ -9453,6 +9453,245 @@ function App() {
     return transports.filter(transport => transport.status === 'filled');
   };
 
+  // Cargo QR Code Generation Functions
+  const handleGenerateCargoQR = async (cargo) => {
+    try {
+      setGeneratingCargoQR(true);
+      const response = await apiCall(`/api/cargo/${cargo.id}/generate-qr`, 'POST');
+      
+      if (response.success) {
+        showAlert(`QR код для груза ${cargo.cargo_number} успешно сгенерирован!`, 'success');
+        
+        // Обновить список грузов
+        await fetchAvailableCargoForPlacement();
+        
+        // Показать QR код для печати
+        openCargoQRPrintModal(response);
+      }
+    } catch (error) {
+      console.error('Error generating cargo QR:', error);
+      showAlert('Ошибка генерации QR кода: ' + error.message, 'error');
+    } finally {
+      setGeneratingCargoQR(false);
+    }
+  };
+
+  const handleBatchGenerateCargoQR = async () => {
+    if (selectedCargoForQR.length === 0) {
+      showAlert('Выберите грузы для генерации QR кодов', 'error');
+      return;
+    }
+
+    try {
+      setGeneratingCargoQR(true);
+      const response = await apiCall('/api/cargo/batch-generate-qr', 'POST', {
+        cargo_ids: selectedCargoForQR
+      });
+      
+      if (response.success) {
+        showAlert(`QR коды успешно сгенерированы для ${response.generated_count} грузов!`, 'success');
+        
+        if (response.error_count > 0) {
+          showAlert(`Ошибок: ${response.error_count}. Проверьте журнал.`, 'warning');
+          console.error('Batch QR generation errors:', response.errors);
+        }
+        
+        // Обновить список грузов
+        await fetchAvailableCargoForPlacement();
+        
+        // Очистить выбранные грузы
+        setSelectedCargoForQR([]);
+        
+        // Открыть окно массовой печати
+        openBatchCargoQRPrintModal(response.results);
+      }
+    } catch (error) {
+      console.error('Error batch generating cargo QR:', error);
+      showAlert('Ошибка массовой генерации QR кодов: ' + error.message, 'error');
+    } finally {
+      setGeneratingCargoQR(false);
+    }
+  };
+
+  const openCargoQRPrintModal = (qrData) => {
+    // Открыть окно печати QR кода груза
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>QR код груза ${qrData.cargo_number}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                text-align: center; 
+                margin: 0;
+                padding: 20px;
+                background: white;
+              }
+              .qr-container { 
+                display: inline-block;
+                border: 2px solid #333;
+                padding: 20px;
+                background: white;
+                margin: 20px;
+              }
+              .cargo-info { 
+                font-size: 18px; 
+                font-weight: bold; 
+                margin-bottom: 10px;
+                color: #333;
+              }
+              .qr-code { 
+                margin: 15px 0;
+              }
+              .qr-data {
+                font-size: 16px;
+                color: #666;
+                margin-top: 10px;
+                font-family: monospace;
+              }
+              .print-btn {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 20px;
+              }
+              @media print {
+                body { margin: 0; padding: 10px; }
+                .print-btn { display: none; }
+                .qr-container { border: 2px solid #000; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="qr-container">
+              <div class="cargo-info">Груз: ${qrData.cargo_number}</div>
+              <div class="qr-code">
+                <img src="${qrData.qr_code}" alt="QR код груза" style="width: 250px; height: 250px;" />
+              </div>
+              <div class="qr-data">Код: ${qrData.qr_data}</div>
+            </div>
+            <button class="print-btn" onclick="window.print()">Печать QR кода</button>
+            <script>
+              // Автоматически открыть диалог печати через 1 секунду
+              setTimeout(function() {
+                // window.print();
+              }, 1000);
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+
+  const openBatchCargoQRPrintModal = (qrResults) => {
+    // Открыть окно массовой печати QR кодов грузов
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      let qrContent = `
+        <html>
+          <head>
+            <title>QR коды грузов (${qrResults.length} штук)</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                padding: 20px; 
+              }
+              .title { 
+                text-align: center; 
+                font-size: 24px; 
+                font-weight: bold; 
+                margin-bottom: 30px; 
+              }
+              .qr-grid { 
+                display: grid; 
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 20px; 
+                page-break-inside: avoid; 
+              }
+              .qr-item { 
+                text-align: center; 
+                border: 1px solid #ddd; 
+                padding: 10px; 
+                page-break-inside: avoid; 
+              }
+              .cargo-label { 
+                font-weight: bold; 
+                margin-bottom: 5px; 
+              }
+              .qr-data {
+                font-size: 12px;
+                color: #666;
+                margin-top: 5px;
+                font-family: monospace;
+              }
+              @media print { 
+                .qr-grid { grid-template-columns: repeat(2, 1fr); } 
+                .print-btn { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="title">QR коды для размещения грузов на транспорт</div>
+            <div class="qr-grid">
+      `;
+      
+      qrResults.forEach(result => {
+        // Получаем QR код из списка доступных грузов
+        const cargo = availableCargoForPlacement.find(c => c.id === result.cargo_id);
+        if (cargo && cargo.qr_code) {
+          qrContent += `
+            <div class="qr-item">
+              <div class="cargo-label">Груз ${result.cargo_number}</div>
+              <img src="${cargo.qr_code}" alt="QR код ${result.cargo_number}" style="max-width: 150px; height: auto;" />
+              <div class="qr-data">Код: ${result.qr_data}</div>
+            </div>
+          `;
+        }
+      });
+      
+      qrContent += `
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+              <button class="print-btn" onclick="window.print()">Печать всех QR кодов</button>
+            </div>
+          </body>
+        </html>
+      `;
+      
+      printWindow.document.write(qrContent);
+      printWindow.document.close();
+    }
+  };
+
+  const getAvailableCargoForQR = () => {
+    return availableCargoForPlacement.filter(cargo => 
+      cargo && cargo.id && ['accepted', 'placed_in_warehouse', 'awaiting_placement'].includes(cargo.status)
+    );
+  };
+
+  const handleSelectAllCargoForQR = (checked) => {
+    if (checked) {
+      setSelectedCargoForQR(getAvailableCargoForQR().map(cargo => cargo.id));
+    } else {
+      setSelectedCargoForQR([]);
+    }
+  };
+
+  const handleCargoQRSelect = (cargoId, checked) => {
+    if (checked) {
+      setSelectedCargoForQR(prev => [...prev, cargoId]);
+    } else {
+      setSelectedCargoForQR(prev => prev.filter(id => id !== cargoId));
+    }
+  };
+
   // Contact functions
   const handleWhatsAppContact = () => {
     // Открыть WhatsApp с предустановленным сообщением
