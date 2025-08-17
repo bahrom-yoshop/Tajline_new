@@ -4008,6 +4008,9 @@ function App() {
   const [warehouseReportData, setWarehouseReportData] = useState([]); // Данные отчета по складу
   const [warehouseDetailedAnalytics, setWarehouseDetailedAnalytics] = useState({}); // Детальная аналитика складов
   const [interwarehouseTransportModal, setInterwarehouseTransportModal] = useState(false);
+  const [transportQRGenerationModal, setTransportQRGenerationModal] = useState(false);
+  const [selectedTransportForQR, setSelectedTransportForQR] = useState(null);
+  const [generatingTransportQR, setGeneratingTransportQR] = useState(false);
   const [interwarehouseForm, setInterwarehouseForm] = useState({
     source_warehouse_id: '',
     destination_warehouse_id: '',
