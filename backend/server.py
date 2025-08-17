@@ -6284,6 +6284,109 @@ async def get_warehouse_layout_with_cargo(
         "occupancy_percentage": round((len(cargo_by_location) / (max_blocks * max_shelves * max_cells)) * 100, 2)
     }
 
+@app.post("/api/warehouses/{warehouse_id}/related-cargo")
+async def find_related_cargo_in_warehouse(
+    warehouse_id: str,
+    request: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Найти связанные грузы на складе по отправителю, получателю или заявке"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.WAREHOUSE_OPERATOR]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    cargo_id = request.get("cargo_id")
+    sender_phone = request.get("sender_phone", "")
+    recipient_phone = request.get("recipient_phone", "")
+    sender_full_name = request.get("sender_full_name", "")
+    recipient_full_name = request.get("recipient_full_name", "")
+    
+    # Поиск связанных грузов в обеих коллекциях
+    related_cargo = []
+    
+    # Условия поиска связанных грузов
+    search_conditions = []
+    
+    # По телефону отправителя
+    if sender_phone:
+        search_conditions.append({"sender_phone": sender_phone})
+    
+    # По телефону получателя
+    if recipient_phone:
+        search_conditions.append({"recipient_phone": recipient_phone})
+    
+    # По имени отправителя
+    if sender_full_name:
+        search_conditions.append({"sender_full_name": {"$regex": sender_full_name, "$options": "i"}})
+    
+    # По имени получателя
+    if recipient_full_name:
+        search_conditions.append({"recipient_full_name": {"$regex": recipient_full_name, "$options": "i"}})
+    
+    if search_conditions:
+        # Поиск в operator_cargo
+        query = {
+            "warehouse_id": warehouse_id,
+            "warehouse_location": {"$ne": None, "$exists": True},
+            "id": {"$ne": cargo_id},  # Исключаем сам груз
+            "$or": search_conditions
+        }
+        
+        operator_related = list(db.operator_cargo.find(query))
+        
+        # Поиск в cargo
+        user_related = list(db.cargo.find(query))
+        
+        # Объединяем результаты
+        all_related = operator_related + user_related
+        
+        for cargo in all_related:
+            # Парсим warehouse_location для получения адреса ячейки
+            location = cargo.get('warehouse_location', '')
+            formatted_location = location
+            
+            # Форматируем в читаемый вид
+            if location.startswith('Б') and '-' in location:
+                try:
+                    parts = location.split('-')
+                    if len(parts) >= 3:
+                        block = parts[0]  # Б01
+                        shelf = parts[1]  # П02
+                        cell = parts[2]   # Я03
+                        formatted_location = f"Блок {block[1:]}, Полка {shelf[1:]}, Ячейка {cell[1:]}"
+                except:
+                    pass
+            
+            related_cargo.append({
+                "id": cargo["id"],
+                "cargo_number": cargo["cargo_number"],
+                "cargo_name": cargo.get("cargo_name", "Груз"),
+                "weight": cargo.get("weight", 0),
+                "sender_full_name": cargo.get("sender_full_name", ""),
+                "sender_phone": cargo.get("sender_phone", ""),
+                "recipient_full_name": cargo.get("recipient_full_name", ""),
+                "recipient_phone": cargo.get("recipient_phone", ""),
+                "recipient_address": cargo.get("recipient_address", ""),
+                "warehouse_location": location,
+                "formatted_location": formatted_location,
+                "declared_value": cargo.get("declared_value", 0),
+                "description": cargo.get("description", ""),
+                "created_at": cargo.get("created_at"),
+                "processing_status": cargo.get("processing_status", "placed")
+            })
+    
+    return {
+        "success": True,
+        "related_cargo": related_cargo,
+        "total_related": len(related_cargo),
+        "search_criteria": {
+            "sender_phone": sender_phone,
+            "recipient_phone": recipient_phone,
+            "sender_full_name": sender_full_name,
+            "recipient_full_name": recipient_full_name
+        },
+        "message": f"Найдено {len(related_cargo)} связанных грузов на складе"
+    }
+
 @app.post("/api/warehouses/{warehouse_id}/move-cargo")
 async def move_cargo_between_cells(
     warehouse_id: str,
