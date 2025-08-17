@@ -9767,6 +9767,133 @@ function App() {
     }
   };
 
+  // Operator QR Generation Functions
+  const handleGenerateOperatorCargoQR = async () => {
+    if (!operatorCargoResponse) {
+      showAlert('Нет данных о созданных грузах', 'error');
+      return;
+    }
+
+    try {
+      setGeneratingCargoQR(true);
+      const response = await apiCall('/api/operator/cargo/generate-qr-batch', 'POST', {
+        base_request_number: operatorCargoResponse.base_request_number,
+        cargo_ids: operatorCargoResponse.created_cargo.map(cargo => cargo.cargo_id)
+      });
+      
+      if (response.success) {
+        showAlert(`QR коды сгенерированы для ${response.generated_count} грузов!`, 'success');
+        
+        // Открыть окно печати всех QR кодов
+        openOperatorBatchQRPrintModal(response.qr_codes, operatorCargoResponse.base_request_number);
+      }
+    } catch (error) {
+      console.error('Error generating operator cargo QR:', error);
+      showAlert('Ошибка генерации QR кодов: ' + error.message, 'error');
+    } finally {
+      setGeneratingCargoQR(false);
+    }
+  };
+
+  const openOperatorBatchQRPrintModal = (qrCodes, baseRequestNumber) => {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      let qrContent = `
+        <html>
+          <head>
+            <title>QR коды заявки ${baseRequestNumber}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                padding: 20px; 
+                background: white;
+              }
+              .title { 
+                text-align: center; 
+                font-size: 24px; 
+                font-weight: bold; 
+                margin-bottom: 10px; 
+              }
+              .subtitle {
+                text-align: center; 
+                font-size: 16px; 
+                color: #666;
+                margin-bottom: 30px; 
+              }
+              .qr-grid { 
+                display: grid; 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 20px; 
+                page-break-inside: avoid; 
+              }
+              .qr-item { 
+                text-align: center; 
+                border: 2px solid #333; 
+                padding: 15px; 
+                page-break-inside: avoid; 
+                background: white;
+              }
+              .cargo-label { 
+                font-weight: bold; 
+                margin-bottom: 10px; 
+                font-size: 16px;
+              }
+              .cargo-details {
+                font-size: 12px;
+                color: #666;
+                margin-bottom: 10px;
+              }
+              .qr-data {
+                font-size: 14px;
+                color: #666;
+                margin-top: 10px;
+                font-family: monospace;
+                font-weight: bold;
+              }
+              @media print { 
+                .print-btn { display: none; }
+                .qr-item { border: 2px solid #000; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="title">QR коды заявки №${baseRequestNumber}</div>
+            <div class="subtitle">Всего грузов: ${qrCodes.length}</div>
+            <div class="qr-grid">
+      `;
+      
+      qrCodes.forEach(qrCode => {
+        qrContent += `
+          <div class="qr-item">
+            <div class="cargo-label">${qrCode.cargo_number}</div>
+            <div class="cargo-details">
+              ${qrCode.cargo_name}<br>
+              Вес: ${qrCode.weight} кг
+            </div>
+            <img src="${qrCode.qr_code}" alt="QR код ${qrCode.cargo_number}" style="width: 150px; height: 150px;" />
+            <div class="qr-data">${qrCode.qr_data}</div>
+          </div>
+        `;
+      });
+      
+      qrContent += `
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+              <button class="print-btn" onclick="window.print()" style="
+                background: #007bff; color: white; border: none; 
+                padding: 15px 30px; border-radius: 5px; cursor: pointer; 
+                font-size: 16px;
+              ">Печать всех QR кодов</button>
+            </div>
+          </body>
+        </html>
+      `;
+      
+      printWindow.document.write(qrContent);
+      printWindow.document.close();
+    }
+  };
+
   // QR Placement Functions
   const resetQRPlacementData = () => {
     setQrPlacementData({
