@@ -17436,16 +17436,9 @@ function App() {
                               {/* Показываем почему карта не отображается */}
                               {!operatorCargoForm.pickup_address && (
                                 <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                                  <p className="text-sm text-yellow-800">
-                                    ℹ️ Заполните "Адрес места нахождения груза" чтобы увидеть карту маршрута забора
-                                  </p>
-                                </div>
-                              )}
-                              
-                              {operatorCargoForm.pickup_address && operatorWarehouses.length === 0 && (
-                                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-                                  <p className="text-sm text-red-800">
-                                    ⚠️ Не найдены склады оператора для маршрута. Склады: {operatorWarehouses.length}
+                                  <p className="text-sm text-yellow-700">
+                                    🗺️ <strong>Карта адреса получения груза</strong><br/>
+                                    Заполните поле "Адрес получения груза" чтобы увидеть его на карте.
                                   </p>
                                 </div>
                               )}
