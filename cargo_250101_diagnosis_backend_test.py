@@ -90,29 +90,25 @@ def test_cargo_250101_diagnosis():
         print(f"Статус получения городов: {cities_response.status_code}")
         
         if cities_response.status_code == 200:
-            cities_data = cities_response.json()
+            cities_response_data = cities_response.json()
+            cities_data = cities_response_data.get("items", [])
             print(f"✅ Получено городов: {len(cities_data)}")
-            print(f"📋 Структура данных: {cities_data}")
+            print(f"📋 Структура данных: {cities_data[:3]}...")  # Показываем первые 3 для краткости
             
-            # Проверяем структуру данных
-            if isinstance(cities_data, list):
-                # Ищем город "Яван"
-                for city in cities_data:
-                    if isinstance(city, dict):
-                        city_name = city.get("name", "").lower()
-                        if "яван" in city_name:
-                            yavan_warehouse_id = city.get("warehouse_id")
-                            print(f"✅ Город 'Яван' найден! warehouse_id: {yavan_warehouse_id}")
-                            break
-                    elif isinstance(city, str):
-                        if "яван" in city.lower():
-                            print(f"✅ Город 'Яван' найден в списке: {city}")
-                            # Попробуем найти соответствующий склад
-                            break
+            # Ищем город "Яван"
+            for city in cities_data:
+                city_name = city.get("city", "").lower()
+                if "яван" in city_name:
+                    yavan_warehouse_id = city.get("warehouse_id")
+                    print(f"✅ Город 'Яван' найден! warehouse_id: {yavan_warehouse_id}")
+                    break
             
             if not yavan_warehouse_id:
                 print("⚠️ Город 'Яван' не найден в списке городов")
-                
+                print("📋 Доступные города:")
+                for city in cities_data[:10]:  # Показываем первые 10
+                    print(f"   - {city.get('city', 'N/A')}")
+                    
         else:
             print(f"❌ Ошибка получения городов: {cities_response.text}")
             
