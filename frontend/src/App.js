@@ -19866,8 +19866,8 @@ function App() {
                               </SelectTrigger>
                               <SelectContent key="payment-method-content">
                                 <SelectItem key="payment-not_paid" value="not_paid">Не оплачено</SelectItem>
-                                <SelectItem key="payment-cash" value="cash">Оплата наличными</SelectItem>
-                                <SelectItem key="payment-card_transfer" value="card_transfer">Перевод на карту</SelectItem>
+                                <SelectItem key="payment-cash" value="cash">Наличный</SelectItem>
+                                <SelectItem key="payment-card_transfer" value="card_transfer">На карту</SelectItem>
                                 <SelectItem key="payment-cash_on_delivery" value="cash_on_delivery">Оплата при получении</SelectItem>
                                 <SelectItem key="payment-credit" value="credit">Оплата в долг</SelectItem>
                               </SelectContent>
