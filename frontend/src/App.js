@@ -25882,10 +25882,11 @@ function App() {
                             className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                             onChange={(e) => {
                               const q = e.target.value.toLowerCase();
-                              const filtered = (destinationCities || []).filter(c => (
+                              setDestinationCitiesQuery(q);
+                              const filtered = (destinationCitiesAll || []).filter(c => (
                                 c.city.toLowerCase().includes(q) || (c.warehouse_name || '').toLowerCase().includes(q)
                               ));
-                              setDestinationCities(filtered.length > 0 ? filtered : (destinationCities || []));
+                              setDestinationCities(filtered);
                             }}
                           />
                         </div>
