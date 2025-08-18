@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional
 class PaymentStatusTester:
     def __init__(self):
         # Используем URL из frontend/.env
-        self.base_url = "https://cargo-talk.preview.emergentagent.com/api"
+        self.base_url = "https://cargo-system-debug.preview.emergentagent.com/api"
         self.tokens = {}
         self.test_data = {}
         self.tests_run = 0

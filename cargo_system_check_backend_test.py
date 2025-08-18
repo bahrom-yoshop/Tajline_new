@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
 
 def authenticate_admin():
     """Авторизация администратора"""

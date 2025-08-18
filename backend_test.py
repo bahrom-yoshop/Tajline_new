@@ -16,7 +16,7 @@ import sys
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class UserRoleTester:

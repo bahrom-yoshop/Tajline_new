@@ -8,7 +8,7 @@ import json
 
 def check_multiple_pickup_requests():
     """Проверка нескольких заявок на забор груза"""
-    base_url = "https://cargo-talk.preview.emergentagent.com"
+    base_url = "https://cargo-system-debug.preview.emergentagent.com"
     
     print("🔍 ПРОВЕРКА НЕСКОЛЬКИХ ЗАЯВОК НА ЗАБОР ГРУЗА")
     print("="*60)

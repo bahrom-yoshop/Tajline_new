@@ -11,7 +11,7 @@ from datetime import datetime
 from collections import Counter
 
 # Конфигурация
-BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
 
 # Тестовые данные для авторизации
 ADMIN_CREDENTIALS = {

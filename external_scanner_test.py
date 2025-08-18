@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class ExternalScannerTester:
-    def __init__(self, base_url="https://cargo-talk.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cargo-system-debug.preview.emergentagent.com"):
         self.base_url = base_url
         self.operator_token = None
         self.tests_run = 0

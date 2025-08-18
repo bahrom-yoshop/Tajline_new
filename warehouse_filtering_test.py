@@ -14,7 +14,7 @@ from datetime import datetime
 import uuid
 
 # Configuration
-BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
 
 class WarehouseFilteringTest:
     def __init__(self):

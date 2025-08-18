@@ -497,7 +497,7 @@ class IndividualCargoItemsTester:
 if __name__ == "__main__":
     # Update base URL to use the correct backend URL from environment
     import os
-    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-talk.preview.emergentagent.com')
+    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-system-debug.preview.emergentagent.com')
     
     tester = IndividualCargoItemsTester(backend_url)
     
