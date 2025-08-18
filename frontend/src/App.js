@@ -14450,6 +14450,8 @@ function App() {
                         setActiveTab('warehouses-list');
                       } else if (item.section === 'users' && user?.role === 'admin') {
                         setActiveTab('users-regular');
+                      } else if (item.section === 'chat') {
+                        setActiveTab('chat-cargo');
                       }
                     }}
                     className={`w-full flex items-center px-3 py-3 rounded-xl transition-all duration-200 ${
