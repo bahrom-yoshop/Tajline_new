@@ -51,22 +51,39 @@ def test_cargo_250101_diagnosis():
         print(f"Статус диагностики: {debug_response.status_code}")
         
         if debug_response.status_code == 200:
-            cargo_data = debug_response.json()
+            debug_data = debug_response.json()
             print("✅ Груз 250101 найден!")
-            print(f"📋 Данные груза:")
+            print(f"📋 Данные диагностики:")
             
-            # Извлекаем ключевые поля
-            collections = cargo_data.get("collections", [])
-            warehouse_id = cargo_data.get("warehouse_id")
-            destination_warehouse_id = cargo_data.get("destination_warehouse_id")
-            status = cargo_data.get("status")
-            hidden_reason = cargo_data.get("hidden_reason")
+            # Извлекаем данные из правильной структуры
+            cargo_data = debug_data.get("data", [])
+            summary = debug_data.get("summary", {})
             
-            print(f"   - Коллекции: {collections}")
-            print(f"   - warehouse_id: {warehouse_id}")
-            print(f"   - destination_warehouse_id: {destination_warehouse_id}")
-            print(f"   - Статус: {status}")
-            print(f"   - hidden_reason: {hidden_reason}")
+            print(f"   - Всего найдено: {summary.get('total_found', 0)}")
+            print(f"   - По коллекциям: {summary.get('by_collection', {})}")
+            print(f"   - Статусы скрытия: {summary.get('hidden_status_counts', {})}")
+            
+            # Берем первый найденный груз для анализа
+            if cargo_data:
+                first_cargo = cargo_data[0]
+                collections = [item.get("collection") for item in cargo_data]
+                warehouse_id = first_cargo.get("warehouse_id")
+                destination_warehouse_id = first_cargo.get("destination_warehouse_id")
+                status = first_cargo.get("status")
+                hidden_reason = first_cargo.get("hidden_reason")
+                
+                print(f"   - Коллекции: {collections}")
+                print(f"   - warehouse_id: {warehouse_id}")
+                print(f"   - destination_warehouse_id: {destination_warehouse_id}")
+                print(f"   - Статус: {status}")
+                print(f"   - hidden_reason: {hidden_reason}")
+            else:
+                collections = []
+                warehouse_id = None
+                destination_warehouse_id = None
+                status = None
+                hidden_reason = None
+                print("   - Данные груза не найдены")
             
         elif debug_response.status_code == 404:
             print("❌ Груз 250101 не найден в системе")
