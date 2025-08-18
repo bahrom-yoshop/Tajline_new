@@ -4490,6 +4490,53 @@ function App() {
   const [cargoScanError, setCargoScanError] = useState(false);
   const [cellScanError, setCellScanError] = useState(false);
   const [lastScanResult, setLastScanResult] = useState(null); // 'success', 'error', null
+
+  // Звуковые уведомления
+  const playSuccessSound = () => {
+    try {
+      // Создаем звук успеха с помощью Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(520, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(720, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Звук недоступен:', error);
+    }
+  };
+
+  const playErrorSound = () => {
+    try {
+      // Создаем звук ошибки с помощью Web Audio API
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(320, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(240, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    } catch (error) {
+      console.log('Звук недоступен:', error);
+    }
+  };
   
   // Состояния для камеры - разделены для каждого сканера
   const [html5QrCode, setHtml5QrCode] = useState(null);  // Основной сканер
