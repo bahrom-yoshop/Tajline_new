@@ -18930,7 +18930,7 @@ async def send_message(chat_id: str, message_data: MessageCreate, current_user=D
             "sent_at": datetime.utcnow(),
             "edited_at": None,
             "is_edited": False,
-            "read_by": {current_user["id"]: datetime.utcnow()},
+            "read_by": {current_user.id: datetime.utcnow()},
             "reply_to_message_id": message_data.reply_to_message_id
         }
         
