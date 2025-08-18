@@ -1544,6 +1544,38 @@ function App() {
     }
   };
 
+  // Помощники: управление списком грузов в операторской форме
+  const addOperatorCargoItem = () => {
+    const items = Array.isArray(operatorCargoForm.cargo_items) ? [...operatorCargoForm.cargo_items] : [];
+    items.push({ name: '', weight: '', price_per_kg: '', value: '', description: '' });
+    setOperatorCargoForm({ ...operatorCargoForm, cargo_items: items });
+  };
+  const removeOperatorCargoItem = (index) => {
+    const items = Array.isArray(operatorCargoForm.cargo_items) ? [...operatorCargoForm.cargo_items] : [];
+    if (items.length > 1) {
+      items.splice(index, 1);
+      // пересчитать итоги
+      const total_weight = items.reduce((s, it) => s + (parseFloat(it.weight) || 0), 0);
+      const total_cost = items.reduce((s, it) => s + (parseFloat(it.value) || 0), 0);
+      setOperatorCargoForm({ ...operatorCargoForm, cargo_items: items, total_weight, total_cost });
+    }
+  };
+  const updateOperatorCargoItemField = (index, field, rawValue) => {
+    const items = Array.isArray(operatorCargoForm.cargo_items) ? [...operatorCargoForm.cargo_items] : [];
+    if (!items[index]) items[index] = { name: '', weight: '', price_per_kg: '', value: '', description: '' };
+    let value = rawValue;
+    items[index] = { ...items[index], [field]: value };
+    // Пересчет итоговой стоимости для строки
+    const w = parseFloat(items[index].weight) || 0;
+    const p = parseFloat(items[index].price_per_kg) || 0;
+    const itog = +(w * p).toFixed(2);
+    items[index].value = itog;
+    // Пересчеты общих итогов
+    const total_weight = items.reduce((s, it) => s + (parseFloat(it.weight) || 0), 0);
+    const total_cost = items.reduce((s, it) => s + (parseFloat(it.value) || 0), 0);
+    setOperatorCargoForm({ ...operatorCargoForm, cargo_items: items, total_weight, total_cost });
+  };
+
   // НОВАЯ ФУНКЦИЯ: Обработка отправки формы приёма груза через оператора
   const handleOperatorCargoSubmit = async (e) => {
     e.preventDefault();
