@@ -132,8 +132,8 @@ def test_cargo_250101_diagnosis():
         patch_data = {}
         
         if needs_warehouse_fix:
-            patch_data["warehouse_id"] = moscow_warehouse_id
-            print(f"🔧 Устанавливаем warehouse_id: {moscow_warehouse_id}")
+            patch_data["current_warehouse_id"] = moscow_warehouse_id
+            print(f"🔧 Устанавливаем current_warehouse_id: {moscow_warehouse_id}")
         
         if needs_destination_fix:
             patch_data["destination_warehouse_id"] = yavan_warehouse_id
