@@ -19152,7 +19152,7 @@ function App() {
                                   <Textarea
                                     id="cargo_description"
                                     value={operatorCargoForm.special_instructions || ''}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, special_instructions: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, special_instructions: e.target.value }))}
                                     placeholder="Личные вещи, документы, подарки... (необязательно)"
                                     rows={3}
                                   />
