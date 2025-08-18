@@ -5784,6 +5784,34 @@ async def get_available_cargo_for_placement(
             cargo_data['payment_status'] = cargo.get('payment_status', 'unknown')
             cargo_data['payment_method'] = cargo.get('payment_method', 'not_specified')
             
+            # ИСПРАВЛЕНИЕ: Добавляем недостающие поля стоимости и оплаты
+            # Поля стоимости груза
+            cargo_data['declared_value'] = cargo.get('declared_value', 0.0)
+            cargo_data['total_cost'] = cargo.get('total_cost', 0.0)
+            
+            # Рассчитываем total_cost если его нет, но есть cargo_items
+            if cargo_data['total_cost'] == 0.0:
+                cargo_items = cargo.get('cargo_items', [])
+                if isinstance(cargo_items, list) and len(cargo_items) > 0:
+                    calculated_cost = 0.0
+                    for item in cargo_items:
+                        if isinstance(item, dict):
+                            weight = float(item.get('weight', 0))
+                            price_per_kg = float(item.get('price_per_kg', 0))
+                            calculated_cost += weight * price_per_kg
+                    cargo_data['total_cost'] = calculated_cost
+            
+            # Если total_cost все еще 0, используем declared_value или наоборот
+            if cargo_data['total_cost'] == 0.0 and cargo_data['declared_value'] > 0:
+                cargo_data['total_cost'] = cargo_data['declared_value']
+            elif cargo_data['declared_value'] == 0.0 and cargo_data['total_cost'] > 0:
+                cargo_data['declared_value'] = cargo_data['total_cost']
+            
+            # Дополнительные поля оплаты
+            cargo_data['payment_amount'] = cargo.get('payment_amount')
+            cargo_data['debt_due_date'] = cargo.get('debt_due_date')
+            cargo_data['received_by_operator'] = cargo.get('received_by_operator') or cargo.get('accepting_operator', 'Неизвестно')
+            
             # История операций с грузом
             cargo_data['created_at'] = cargo.get('created_at')
             cargo_data['updated_at'] = cargo.get('updated_at')
