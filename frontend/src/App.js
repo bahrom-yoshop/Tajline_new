@@ -18994,13 +18994,7 @@ function App() {
                                 </select>
                               </div>
 
-                              {/* Переключатель множественных грузов (оператор) */}
-                              <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
-                                <span className="text-sm">Несколько видов груза (с калькулятором)</span>
-                                <Button type="button" variant="outline" onClick={() => setOperatorCargoForm({...operatorCargoForm, use_multi_cargo: !operatorCargoForm.use_multi_cargo})}>
-                                  {operatorCargoForm.use_multi_cargo ? 'Выключить' : 'Включить'}
-                                </Button>
-                              </div>
+
 
                               {/* Курьерская служба — временно скрыто по требованию */}
                               {false && (
