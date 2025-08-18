@@ -92,14 +92,23 @@ def test_cargo_250101_diagnosis():
         if cities_response.status_code == 200:
             cities_data = cities_response.json()
             print(f"✅ Получено городов: {len(cities_data)}")
+            print(f"📋 Структура данных: {cities_data}")
             
-            # Ищем город "Яван"
-            for city in cities_data:
-                city_name = city.get("name", "").lower()
-                if "яван" in city_name:
-                    yavan_warehouse_id = city.get("warehouse_id")
-                    print(f"✅ Город 'Яван' найден! warehouse_id: {yavan_warehouse_id}")
-                    break
+            # Проверяем структуру данных
+            if isinstance(cities_data, list):
+                # Ищем город "Яван"
+                for city in cities_data:
+                    if isinstance(city, dict):
+                        city_name = city.get("name", "").lower()
+                        if "яван" in city_name:
+                            yavan_warehouse_id = city.get("warehouse_id")
+                            print(f"✅ Город 'Яван' найден! warehouse_id: {yavan_warehouse_id}")
+                            break
+                    elif isinstance(city, str):
+                        if "яван" in city.lower():
+                            print(f"✅ Город 'Яван' найден в списке: {city}")
+                            # Попробуем найти соответствующий склад
+                            break
             
             if not yavan_warehouse_id:
                 print("⚠️ Город 'Яван' не найден в списке городов")
@@ -109,6 +118,7 @@ def test_cargo_250101_diagnosis():
             
     except Exception as e:
         print(f"❌ Ошибка при получении городов: {e}")
+        print(f"📋 Тип данных: {type(cities_data) if 'cities_data' in locals() else 'Неизвестно'}")
     
     # Шаг 4: Исправление warehouse_id если пустой
     print("\n4️⃣ ИСПРАВЛЕНИЕ WAREHOUSE_ID")
