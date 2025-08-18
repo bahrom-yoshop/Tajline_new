@@ -22974,6 +22974,7 @@ function App() {
                           </CardContent>
                         </Card>
                       )}
+                      {console.log('🔧 КОНЕЦ СЕКЦИИ ЧАТА - activeSection:', activeSection, 'activeTab:', activeTab)}
                     </>
                   )}
 
