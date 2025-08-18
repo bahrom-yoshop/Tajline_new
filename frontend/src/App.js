@@ -18751,7 +18751,7 @@ function App() {
                                     id="pickup_time_from"
                                     type="time"
                                     value={operatorCargoForm.pickup_time_from}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_time_from: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, pickup_time_from: e.target.value }))}
                                     className="border-orange-200 focus:border-orange-400"
                                     required
                                   />
