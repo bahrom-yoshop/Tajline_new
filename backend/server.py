@@ -19063,7 +19063,7 @@ async def upload_chat_file(file: UploadFile = File(...), current_user=Depends(ge
 async def get_chat_stats(current_user=Depends(get_current_user)):
     """Получить статистику чатов (только для админов)"""
     try:
-        user = db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        user = db.users.find_one({"id": current_user.id}, {"_id": 0})
         if not user or user.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Access denied")
         
