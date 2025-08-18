@@ -2918,6 +2918,78 @@ async def get_placement_statistics(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving placement statistics: {str(e)}")
 
+@app.post("/api/warehouse/complete-placement")
+async def complete_cargo_placement(
+    placement_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Завершение и сохранение сессии размещения грузов
+    """
+    try:
+        # Проверяем права доступа
+        if current_user["role"] not in ["warehouse_operator", "admin"]:
+            raise HTTPException(status_code=403, detail="Insufficient permissions for placement completion")
+        
+        # Получаем данные размещения
+        session_id = placement_data.get("session_id")
+        total_placed = placement_data.get("total_placed", 0)
+        placement_timestamp = placement_data.get("placement_timestamp")
+        operator_id = placement_data.get("operator_id")
+        warehouse_id = placement_data.get("warehouse_id")
+        summary = placement_data.get("placed_cargo_summary", "")
+        
+        # Проверяем обязательные поля
+        if not all([session_id, total_placed, operator_id]):
+            raise HTTPException(status_code=400, detail="Missing required placement data")
+        
+        # Создаем запись о завершенной сессии размещения
+        placement_session = {
+            "session_id": str(session_id),
+            "operator_id": operator_id,
+            "operator_name": current_user.get("full_name", "Unknown"),
+            "warehouse_id": warehouse_id,
+            "total_placed_count": int(total_placed),
+            "placement_timestamp": placement_timestamp or datetime.utcnow().isoformat(),
+            "summary": summary,
+            "status": "completed",
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        # Сохраняем в коллекцию placement_sessions
+        db.placement_sessions.insert_one(placement_session)
+        
+        # Обновляем статистику пользователя
+        user_stats_update = {
+            "$inc": {
+                "total_placements": int(total_placed),
+                "placement_sessions": 1
+            },
+            "$set": {
+                "last_placement_date": datetime.utcnow().isoformat()
+            }
+        }
+        
+        db.users.update_one(
+            {"user_id": operator_id},
+            user_stats_update,
+            upsert=True
+        )
+        
+        # Возвращаем успешный результат
+        return {
+            "success": True,
+            "message": f"Placement session completed successfully with {total_placed} items",
+            "session_id": session_id,
+            "total_placed": total_placed,
+            "timestamp": placement_timestamp
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error completing placement session: {str(e)}")
+
 @app.get("/api/warehouses/{warehouse_id}/structure")
 async def get_warehouse_structure(
     warehouse_id: str,
