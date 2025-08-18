@@ -19049,7 +19049,7 @@ async def upload_chat_file(file: UploadFile = File(...), current_user=Depends(ge
             "file_type": file_type,
             "file_url": f"/{file_path}",
             "mime_type": file.content_type,
-            "uploaded_by": current_user["id"],
+            "uploaded_by": current_user.id,
             "uploaded_at": datetime.utcnow()
         }
         
