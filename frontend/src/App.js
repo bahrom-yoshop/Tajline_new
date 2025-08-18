@@ -3815,6 +3815,11 @@ function App() {
           setExternalScannedCell(cellInfo);
           setScannerMessage(`✅ Ячейка отсканирована: ${cellDisplayFormat}. Ячейка свободна. Выполняем размещение...`);
           
+          // UX УЛУЧШЕНИЯ: успешное сканирование ячейки
+          setCellScanError(false);
+          setLastScanResult('success');
+          playSuccessSound();
+          
           // Автоматически выполняем размещение
           if (externalScannedCargo) {
             await performExternalScannerPlacement(externalScannedCargo, cellInfo);
