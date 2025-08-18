@@ -77,7 +77,7 @@ def authenticate_admin():
     try:
         # Данные для входа администратора
         login_data = {
-            "phone": "+992999999999",
+            "phone": "+992888888888",
             "password": "admin123"
         }
         
