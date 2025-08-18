@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Test for Cargo 250103 Warehouse Fix
-Выполни точечное исправление для 250103, как подтвердил пользователь
+🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Полный флоу приёма груза через форму оператора в TAJLINE.TJ
+Тестирование API endpoint /api/operator/cargo/direct-accept с множественными грузами
 """
 
 import requests
@@ -9,936 +9,647 @@ import json
 import sys
 from datetime import datetime
 
-# Configuration
+# Конфигурация
 BACKEND_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
 
-class CargoFixTest:
-    def __init__(self):
-        self.admin_token = None
-        self.moscow_warehouse_id = None
-        self.dushanbe_warehouse_id = None
-        
-    def authenticate_admin(self):
-        """Авторизация администратора"""
-        print("🔐 Авторизация администратора...")
-        
-        # Try admin credentials
-        login_data = {
-            "phone": "+79999888777",
-            "password": "admin123"
-        }
-        
-        try:
-            response = requests.post(f"{BACKEND_URL}/auth/login", json=login_data)
-            if response.status_code == 200:
-                data = response.json()
-                self.admin_token = data.get("access_token")
-                user_info = data.get("user", {})
-                print(f"✅ Администратор авторизован: {user_info.get('full_name')} (роль: {user_info.get('role')})")
-                return True
-            else:
-                print(f"❌ Ошибка авторизации: {response.status_code} - {response.text}")
-                return False
-        except Exception as e:
-            print(f"❌ Ошибка подключения при авторизации: {e}")
-            return False
-    
-    def find_warehouse_ids(self):
-        """Найти ID складов: Москва Склад №1 и Душанбе Склад №3"""
-        print("\n🏢 Поиск ID складов...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        
-        try:
-            response = requests.get(f"{BACKEND_URL}/warehouses", headers=headers)
-            if response.status_code == 200:
-                warehouses = response.json()
-                print(f"📦 Найдено складов: {len(warehouses)}")
-                
-                for warehouse in warehouses:
-                    name = warehouse.get('name', '')
-                    warehouse_id = warehouse.get('id')
-                    
-                    if "Москва Склад №1" in name:
-                        self.moscow_warehouse_id = warehouse_id
-                        print(f"✅ Москва Склад №1 найден: {warehouse_id}")
-                    elif "Душанбе Склад №3" in name:
-                        self.dushanbe_warehouse_id = warehouse_id
-                        print(f"✅ Душанбе Склад №3 найден: {warehouse_id}")
-                
-                # If Dushanbe warehouse not found, create virtual ID for testing
-                if not self.dushanbe_warehouse_id:
-                    self.dushanbe_warehouse_id = "virtual-dushanbe-warehouse-id"
-                    print(f"⚠️ Душанбе Склад №3 не найден, используем виртуальный ID: {self.dushanbe_warehouse_id}")
-                
-                return self.moscow_warehouse_id is not None
-            else:
-                print(f"❌ Ошибка получения складов: {response.status_code} - {response.text}")
-                return False
-        except Exception as e:
-            print(f"❌ Ошибка при поиске складов: {e}")
-            return False
-    
-    def find_cargo_250103(self):
-        """Найти груз с номером 250103 или его вариации"""
-        print("\n🔍 Поиск груза 250103...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        
-        # Search patterns for cargo number
-        search_patterns = ["250103", "250103/01", "250103/02"]
-        
-        for pattern in search_patterns:
-            try:
-                # Try debug endpoint first
-                response = requests.get(f"{BACKEND_URL}/debug/find-cargo-by-number/{pattern}", headers=headers)
-                if response.status_code == 200:
-                    cargo_data = response.json()
-                    if cargo_data.get('found'):
-                        print(f"✅ Груз найден по номеру {pattern}:")
-                        cargo = cargo_data.get('cargo', {})
-                        print(f"   ID: {cargo.get('id')}")
-                        print(f"   Номер: {cargo.get('cargo_number')}")
-                        print(f"   Текущий склад: {cargo.get('warehouse_id')}")
-                        print(f"   Склад назначения: {cargo.get('destination_warehouse_id')}")
-                        print(f"   Статус: {cargo.get('status')}")
-                        print(f"   Hidden reason: {cargo.get('hidden_reason')}")
-                        return cargo
-                    else:
-                        print(f"⚠️ Груз {pattern} не найден")
-                else:
-                    print(f"⚠️ Ошибка поиска груза {pattern}: {response.status_code}")
-            except Exception as e:
-                print(f"❌ Ошибка при поиске груза {pattern}: {e}")
-        
-        print("❌ Груз 250103 не найден ни в одной из вариаций")
-        return None
-    
-    def fix_cargo_warehouses(self, cargo_number):
-        """Исправить склады для груза 250103"""
-        print(f"\n🔧 Исправление складов для груза {cargo_number}...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        
-        fix_data = {
-            "current_warehouse_id": self.moscow_warehouse_id,
-            "destination_warehouse_id": self.dushanbe_warehouse_id
-        }
-        
-        try:
-            response = requests.patch(
-                f"{BACKEND_URL}/admin/cargo/by-number/{cargo_number}/set-warehouses",
-                json=fix_data,
-                headers=headers
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                print(f"✅ Склады успешно обновлены:")
-                print(f"   Текущий склад: {self.moscow_warehouse_id} (Москва)")
-                print(f"   Склад назначения: {self.dushanbe_warehouse_id} (Душанбе)")
-                return True
-            else:
-                print(f"❌ Ошибка обновления складов: {response.status_code} - {response.text}")
-                return False
-        except Exception as e:
-            print(f"❌ Ошибка при исправлении складов: {e}")
-            return False
-    
-    def verify_cargo_fix(self, cargo_number):
-        """Проверить исправление груза"""
-        print(f"\n✅ Проверка исправления груза {cargo_number}...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        
-        try:
-            response = requests.get(f"{BACKEND_URL}/debug/find-cargo-by-number/{cargo_number}", headers=headers)
-            if response.status_code == 200:
-                cargo_data = response.json()
-                if cargo_data.get('found'):
-                    cargo = cargo_data.get('cargo', {})
-                    
-                    print(f"📋 Результат исправления:")
-                    print(f"   ID: {cargo.get('id')}")
-                    print(f"   Номер: {cargo.get('cargo_number')}")
-                    print(f"   Текущий склад (warehouse_id): {cargo.get('warehouse_id')}")
-                    print(f"   Склад назначения (destination_warehouse_id): {cargo.get('destination_warehouse_id')}")
-                    print(f"   Статус: {cargo.get('status')}")
-                    
-                    hidden_reason = cargo.get('hidden_reason')
-                    if hidden_reason:
-                        print(f"   ⚠️ Hidden reason: {hidden_reason}")
-                    else:
-                        print(f"   ✅ Hidden reason исчез - груз теперь видимый кандидат")
-                    
-                    # Check if warehouses are set correctly
-                    warehouse_id_ok = cargo.get('warehouse_id') == self.moscow_warehouse_id
-                    destination_ok = cargo.get('destination_warehouse_id') == self.dushanbe_warehouse_id
-                    
-                    if warehouse_id_ok and destination_ok:
-                        print(f"✅ Склады установлены корректно!")
-                        print(f"✅ Груз должен появиться в списке «Ожидают размещения» у оператора Москвы")
-                        return True
-                    else:
-                        print(f"❌ Склады установлены некорректно")
-                        return False
-                else:
-                    print(f"❌ Груз {cargo_number} не найден после исправления")
-                    return False
-            else:
-                print(f"❌ Ошибка проверки груза: {response.status_code} - {response.text}")
-                return False
-        except Exception as e:
-            print(f"❌ Ошибка при проверке исправления: {e}")
-            return False
-    
-    def update_test_result(self, success, details):
-        """Обновить test_result.md с результатами исправления"""
-        print(f"\n📝 Обновление test_result.md...")
-        
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-        status = "✅ УСПЕШНО" if success else "❌ ОШИБКА"
-        
-        result_entry = f"""
-  - task: "🎯 ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ГРУЗА 250103: Установка правильных складов для груза 250103 в TAJLINE.TJ"
-    implemented: true
-    working: {str(success).lower()}
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-        - working: {str(success).lower()}
-          agent: "testing"
-          comment: "{status} ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ГРУЗА 250103 ЗАВЕРШЕНО! РЕЗУЛЬТАТ: {details} Дата: {timestamp}. ИТОГ: Груз должен появиться в списке «Ожидают размещения» у оператора Москвы после установки warehouse_id (Москва) и destination_warehouse_id (Душанбе)."
-"""
-        
-        try:
-            # Read current test_result.md
-            with open('/app/test_result.md', 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            # Find the backend section and add our result
-            if 'backend:' in content:
-                # Add to existing backend section
-                backend_pos = content.find('backend:')
-                next_section_pos = content.find('\nfrontend:', backend_pos)
-                if next_section_pos == -1:
-                    next_section_pos = content.find('\nmetadata:', backend_pos)
-                
-                if next_section_pos != -1:
-                    new_content = content[:next_section_pos] + result_entry + content[next_section_pos:]
-                else:
-                    new_content = content + result_entry
-            else:
-                # Add backend section
-                new_content = content + f"\nbackend:{result_entry}"
-            
-            # Write updated content
-            with open('/app/test_result.md', 'w', encoding='utf-8') as f:
-                f.write(new_content)
-            
-            print(f"✅ test_result.md обновлен с результатами исправления")
-            
-        except Exception as e:
-            print(f"❌ Ошибка обновления test_result.md: {e}")
-    
-    def run_cargo_fix(self):
-        """Выполнить полное исправление груза 250103"""
-        print("🚀 Начало точечного исправления груза 250103")
-        print("=" * 60)
-        
-        # Step 1: Authenticate admin
-        if not self.authenticate_admin():
-            self.update_test_result(False, "Ошибка авторизации администратора")
-            return False
-        
-        # Step 2: Find warehouse IDs
-        if not self.find_warehouse_ids():
-            self.update_test_result(False, "Ошибка поиска ID складов")
-            return False
-        
-        # Step 3: Find cargo 250103
-        cargo = self.find_cargo_250103()
-        if not cargo:
-            self.update_test_result(False, "Груз 250103 не найден в системе")
-            return False
-        
-        cargo_number = cargo.get('cargo_number', '250103')
-        
-        # Step 4: Fix warehouse assignments
-        if not self.fix_cargo_warehouses(cargo_number):
-            self.update_test_result(False, f"Ошибка исправления складов для груза {cargo_number}")
-            return False
-        
-        # Step 5: Verify the fix
-        if not self.verify_cargo_fix(cargo_number):
-            self.update_test_result(False, f"Ошибка проверки исправления груза {cargo_number}")
-            return False
-        
-        # Step 6: Update test results
-        success_details = f"Груз {cargo_number} успешно исправлен: warehouse_id установлен на Москва Склад №1, destination_warehouse_id установлен на Душанбе Склад №3, hidden_reason исчез"
-        self.update_test_result(True, success_details)
-        
-        print("\n" + "=" * 60)
-        print("🎉 ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ГРУЗА 250103 ЗАВЕРШЕНО УСПЕШНО!")
-        print(f"✅ Груз {cargo_number} теперь должен появиться в списке «Ожидают размещения» у оператора Москвы")
-        print("=" * 60)
-        
-        return True
+# Тестовые данные для авторизации
+ADMIN_CREDENTIALS = {
+    "phone": "+79999888777",
+    "password": "admin123"
+}
 
-def main():
-    """Main function"""
-    test = CargoFixTest()
-    success = test.run_cargo_fix()
-    
-    if success:
-        print("\n🎯 КРАТКИЙ ВЫВОД:")
-        print("✅ Груз 250103 успешно исправлен")
-        print("✅ Установлены правильные склады: Москва → Душанбе")
-        print("✅ Hidden_reason исчез, груз стал видимым кандидатом")
-        print("✅ Груз должен появиться в списке «Ожидают размещения» у оператора Москвы")
-        sys.exit(0)
-    else:
-        print("\n❌ ИСПРАВЛЕНИЕ НЕ УДАЛОСЬ")
-        print("❌ Проверьте логи выше для деталей ошибки")
-        sys.exit(1)
+OPERATOR_CREDENTIALS = {
+    "phone": "+79777888999", 
+    "password": "warehouse123"
+}
 
-if __name__ == "__main__":
-    main()
-"""
-Backend Testing Script for TAJLINE.TJ Cargo Management System
-Диагностика груза по номеру 250103 через новый endpoint
-"""
-
-import requests
-import json
-import os
-from datetime import datetime
-
-# Configuration
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tajline-cargo-3.preview.emergentagent.com')
-API_BASE = f"{BACKEND_URL}/api"
-
-class ImprovedQRScanningTester:
+class BackendTester:
     def __init__(self):
         self.session = requests.Session()
         self.admin_token = None
         self.operator_token = None
-        self.test_cargo_ids = []
-        self.test_transport_ids = []
-        self.test_placement_logs = []
+        self.test_results = []
         
-    def log(self, message):
-        """Логирование с временной меткой"""
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        print(f"[{timestamp}] {message}")
-        
+    def log_test(self, test_name, success, details=""):
+        """Логирование результатов тестов"""
+        status = "✅ PASS" if success else "❌ FAIL"
+        self.test_results.append({
+            "test": test_name,
+            "success": success,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        })
+        print(f"{status}: {test_name}")
+        if details:
+            print(f"   📝 {details}")
+        print()
+
     def authenticate_admin(self):
         """Авторизация администратора"""
-        self.log("🔐 Авторизация администратора...")
-        
-        login_data = {
-            "phone": "+79999888777",
-            "password": "admin123"
-        }
-        
-        response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
-        
-        if response.status_code == 200:
-            data = response.json()
-            self.admin_token = data.get('access_token')
-            user_info = data.get('user', {})
-            self.log(f"✅ Администратор авторизован: {user_info.get('full_name')} (номер: {user_info.get('user_number')}, роль: {user_info.get('role')})")
-            return True
-        else:
-            self.log(f"❌ Ошибка авторизации администратора: {response.status_code} - {response.text}")
-            return False
-            
-    def authenticate_operator(self):
-        """Авторизация оператора склада"""
-        self.log("🔐 Авторизация оператора склада...")
-        
-        login_data = {
-            "phone": "+79777888999",
-            "password": "warehouse123"
-        }
-        
-        response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
-        
-        if response.status_code == 200:
-            data = response.json()
-            self.operator_token = data.get('access_token')
-            user_info = data.get('user', {})
-            self.log(f"✅ Оператор авторизован: {user_info.get('full_name')} (номер: {user_info.get('user_number')}, роль: {user_info.get('role')})")
-            return True
-        else:
-            self.log(f"❌ Ошибка авторизации оператора: {response.status_code} - {response.text}")
-            return False
-            
-    def create_test_cargo_for_qr(self):
-        """Создание тестового груза для QR сканирования"""
-        self.log("📦 Создание тестового груза для QR сканирования...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        response = self.session.post(f"{API_BASE}/placement/create-test-cargo-for-qr", headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            cargo_info = data.get('cargo', {})
-            cargo_id = cargo_info.get('id')
-            cargo_number = cargo_info.get('cargo_number')
-            qr_data = cargo_info.get('qr_data')
-            warehouse_location = cargo_info.get('warehouse_location')
-            
-            self.test_cargo_ids.append(cargo_id)
-            self.log(f"✅ Тестовый груз создан:")
-            self.log(f"   📦 ID груза: {cargo_id}")
-            self.log(f"   🔢 Номер груза: {cargo_number}")
-            self.log(f"   📱 QR данные: {qr_data}")
-            self.log(f"   🏭 Размещение: {warehouse_location}")
-            
-            return {
-                'cargo_id': cargo_id,
-                'cargo_number': cargo_number,
-                'qr_data': qr_data,
-                'warehouse_location': warehouse_location
-            }
-        else:
-            self.log(f"❌ Ошибка создания тестового груза: {response.status_code} - {response.text}")
-            return None
-            
-    def test_extended_cargo_search(self, test_cargo):
-        """Тестирование расширенного поиска грузов с разными форматами QR"""
-        self.log("🔍 Тестирование расширенного поиска грузов...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        success_count = 0
-        total_tests = 0
-        
-        # Тест 1: Поиск по qr_data (основной)
-        self.log("📱 Тест 1: Поиск по qr_data (основной)")
-        total_tests += 1
-        search_data = {"qr_data": test_cargo['qr_data']}
-        response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=search_data, headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            found_cargo = data.get('cargo')
-            if found_cargo and found_cargo.get('id') == test_cargo['cargo_id']:
-                self.log(f"✅ Поиск по qr_data успешен: найден груз {found_cargo.get('cargo_number')}")
-                success_count += 1
-            else:
-                self.log(f"❌ Поиск по qr_data: найден неправильный груз")
-        else:
-            self.log(f"❌ Ошибка поиска по qr_data: {response.status_code} - {response.text}")
-            
-        # Тест 2: Поиск по cargo_number (альтернативный)
-        self.log("🔢 Тест 2: Поиск по cargo_number (альтернативный)")
-        total_tests += 1
-        search_data = {"qr_data": test_cargo['cargo_number']}
-        response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=search_data, headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            found_cargo = data.get('cargo')
-            if found_cargo and found_cargo.get('id') == test_cargo['cargo_id']:
-                self.log(f"✅ Поиск по cargo_number успешен: найден груз {found_cargo.get('cargo_number')}")
-                success_count += 1
-            else:
-                self.log(f"❌ Поиск по cargo_number: найден неправильный груз")
-        else:
-            self.log(f"❌ Ошибка поиска по cargo_number: {response.status_code} - {response.text}")
-            
-        # Тест 3: Поиск с подстроками
-        self.log("🔤 Тест 3: Поиск с подстроками")
-        total_tests += 1
-        if len(test_cargo['cargo_number']) >= 4:
-            partial_number = test_cargo['cargo_number'][:4]  # Первые 4 символа
-            search_data = {"qr_data": partial_number}
-            response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=search_data, headers=headers)
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=ADMIN_CREDENTIALS,
+                timeout=10
+            )
             
             if response.status_code == 200:
                 data = response.json()
-                found_cargo = data.get('cargo')
-                if found_cargo:
-                    self.log(f"✅ Поиск с подстроками успешен: найден груз {found_cargo.get('cargo_number')}")
-                    success_count += 1
-                else:
-                    self.log(f"❌ Поиск с подстроками: груз не найден")
-            else:
-                self.log(f"❌ Ошибка поиска с подстроками: {response.status_code} - {response.text}")
-        else:
-            self.log("⚠️ Номер груза слишком короткий для тестирования подстрок")
-            
-        # Тест 4: Поиск с нестандартным форматом QR
-        self.log("🎯 Тест 4: Поиск с нестандартным форматом QR")
-        total_tests += 1
-        # Создаем нестандартный QR код (не только числовой)
-        custom_qr = f"CARGO-{test_cargo['cargo_number']}-QR"
-        search_data = {"qr_data": custom_qr}
-        response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=search_data, headers=headers)
-        
-        # Ожидаем что система попытается найти груз даже с нестандартным форматом
-        if response.status_code in [200, 404]:  # 200 если найден, 404 если не найден - оба варианта приемлемы
-            self.log(f"✅ Система корректно обработала нестандартный QR формат")
-            success_count += 1
-        else:
-            self.log(f"❌ Ошибка обработки нестандартного QR: {response.status_code} - {response.text}")
-            
-        search_success_rate = (success_count / total_tests) * 100
-        self.log(f"📊 Результат тестирования расширенного поиска: {success_count}/{total_tests} ({search_success_rate:.1f}%)")
-        
-        return success_count, total_tests
-        
-    def get_or_create_transport_with_qr(self):
-        """Получение или создание транспорта с QR кодом"""
-        self.log("🚛 Поиск транспорта с QR кодом...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        
-        # Сначала попробуем найти существующий транспорт
-        response = self.session.get(f"{API_BASE}/transport/list", headers=headers)
-        
-        if response.status_code == 200:
-            transports = response.json()
-            
-            # Ищем транспорт со статусом empty или filled
-            for transport in transports:
-                if transport.get('status') in ['empty', 'filled', 'arrived']:
-                    transport_id = transport.get('id')
-                    transport_number = transport.get('transport_number')
-                    
-                    # Попробуем сгенерировать QR для этого транспорта
-                    qr_response = self.session.post(f"{API_BASE}/transport/{transport_id}/generate-qr", headers=headers)
-                    
-                    if qr_response.status_code == 200:
-                        qr_data = qr_response.json()
-                        self.log(f"✅ Найден транспорт с QR: {transport_number} (ID: {transport_id})")
-                        self.log(f"   📱 QR данные: {qr_data.get('qr_data')}")
-                        
-                        return {
-                            'transport_id': transport_id,
-                            'transport_number': transport_number,
-                            'qr_data': qr_data.get('qr_data'),
-                            'status': transport.get('status')
-                        }
-                        
-        self.log("❌ Не удалось найти подходящий транспорт с QR кодом")
-        return None
-        
-    def test_transport_scanning(self, transport_data):
-        """Тестирование сканирования QR кода транспорта"""
-        self.log("🚛 Тестирование сканирования QR кода транспорта...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        scan_data = {"qr_data": transport_data['qr_data']}
-        
-        response = self.session.post(f"{API_BASE}/placement/scan-transport-qr", json=scan_data, headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            transport_info = data.get('transport')
-            
-            self.log(f"✅ Сканирование транспорта успешно:")
-            self.log(f"   🚛 Номер: {transport_info.get('transport_number')}")
-            self.log(f"   👨‍✈️ Водитель: {transport_info.get('driver_name')}")
-            self.log(f"   📍 Направление: {transport_info.get('direction')}")
-            self.log(f"   ⚖️ Грузоподъемность: {transport_info.get('capacity_kg')} кг")
-            self.log(f"   📦 Текущая загрузка: {transport_info.get('current_load_kg')} кг")
-            self.log(f"   📊 Статус: {transport_info.get('status')}")
-            
-            return True
-        else:
-            self.log(f"❌ Ошибка сканирования транспорта: {response.status_code} - {response.text}")
-            return False
-            
-    def test_cargo_scanning(self, test_cargo):
-        """Тестирование сканирования QR кода груза"""
-        self.log("📦 Тестирование сканирования QR кода груза...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        scan_data = {"qr_data": test_cargo['qr_data']}
-        
-        response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=scan_data, headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            cargo_info = data.get('cargo')
-            
-            self.log(f"✅ Сканирование груза успешно:")
-            self.log(f"   📦 Номер: {cargo_info.get('cargo_number')}")
-            self.log(f"   📝 Название: {cargo_info.get('cargo_name')}")
-            self.log(f"   ⚖️ Вес: {cargo_info.get('weight')} кг")
-            self.log(f"   👤 Отправитель: {cargo_info.get('sender_full_name')}")
-            self.log(f"   👤 Получатель: {cargo_info.get('recipient_full_name')}")
-            self.log(f"   🏭 Ячейка склада: {cargo_info.get('warehouse_location')}")
-            self.log(f"   📊 Статус: {cargo_info.get('status')}")
-            
-            return True
-        else:
-            self.log(f"❌ Ошибка сканирования груза: {response.status_code} - {response.text}")
-            return False
-            
-    def test_cargo_placement_on_transport(self, transport_data, test_cargo):
-        """Тестирование размещения груза на транспорт"""
-        self.log("🔄 Тестирование размещения груза на транспорт...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        placement_data = {
-            "transport_id": transport_data['transport_id'],
-            "cargo_id": test_cargo['cargo_id']
-        }
-        
-        response = self.session.post(f"{API_BASE}/placement/place-cargo-on-transport", json=placement_data, headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            
-            self.log(f"✅ Размещение груза на транспорт успешно:")
-            self.log(f"   📦 Груз: {data.get('cargo_number')}")
-            self.log(f"   🚛 Транспорт: {data.get('transport_number')}")
-            self.log(f"   📊 Новая загрузка: {data.get('new_load_kg')} кг")
-            self.log(f"   📈 Количество грузов: {data.get('cargo_count')}")
-            self.log(f"   📝 Лог размещения: {data.get('placement_log_id')}")
-            
-            # Сохраняем ID лога для очистки
-            if data.get('placement_log_id'):
-                self.test_placement_logs.append(data.get('placement_log_id'))
+                self.admin_token = data.get("access_token")
+                self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
                 
-            return True
-        else:
-            self.log(f"❌ Ошибка размещения груза: {response.status_code} - {response.text}")
+                user_info = data.get("user", {})
+                self.log_test(
+                    "Авторизация администратора",
+                    True,
+                    f"Пользователь: {user_info.get('full_name', 'N/A')} (роль: {user_info.get('role', 'N/A')})"
+                )
+                return True
+            else:
+                self.log_test("Авторизация администратора", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Авторизация администратора", False, f"Ошибка: {str(e)}")
             return False
+
+    def authenticate_operator(self):
+        """Авторизация оператора склада"""
+        try:
+            response = self.session.post(
+                f"{BACKEND_URL}/auth/login",
+                json=OPERATOR_CREDENTIALS,
+                timeout=10
+            )
             
-    def verify_cargo_removed_from_warehouse(self, test_cargo):
-        """Проверка что груз удален из ячейки склада"""
-        self.log("🔍 Проверка удаления груза из ячейки склада...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        
-        # Попробуем найти груз через разные endpoints
-        endpoints_to_check = [
-            f"/api/operator/cargo/{test_cargo['cargo_id']}",
-            f"/api/cargo/track/{test_cargo['cargo_number']}",
-            f"/api/placement/scan-cargo-qr"
+            if response.status_code == 200:
+                data = response.json()
+                self.operator_token = data.get("access_token")
+                
+                user_info = data.get("user", {})
+                self.log_test(
+                    "Авторизация оператора склада",
+                    True,
+                    f"Пользователь: {user_info.get('full_name', 'N/A')} (роль: {user_info.get('role', 'N/A')})"
+                )
+                return True
+            else:
+                self.log_test("Авторизация оператора склада", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Авторизация оператора склада", False, f"Ошибка: {str(e)}")
+            return False
+
+    def get_warehouses(self):
+        """Получение списка складов"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/warehouses", timeout=10)
+            
+            if response.status_code == 200:
+                warehouses = response.json()
+                if warehouses:
+                    warehouse_info = []
+                    for w in warehouses[:3]:  # Показываем первые 3 склада
+                        warehouse_info.append(f"{w.get('name', 'N/A')} (ID: {w.get('id', 'N/A')})")
+                    
+                    self.log_test(
+                        "Получение списка складов",
+                        True,
+                        f"Найдено {len(warehouses)} складов. Примеры: {'; '.join(warehouse_info)}"
+                    )
+                    return warehouses
+                else:
+                    self.log_test("Получение списка складов", False, "Список складов пуст")
+                    return []
+            else:
+                self.log_test("Получение списка складов", False, f"HTTP {response.status_code}: {response.text}")
+                return []
+                
+        except Exception as e:
+            self.log_test("Получение списка складов", False, f"Ошибка: {str(e)}")
+            return []
+
+    def test_direct_accept_single_cargo(self, warehouse_id):
+        """Тест с одним грузом"""
+        try:
+            # Переключаемся на токен оператора
+            self.session.headers.update({"Authorization": f"Bearer {self.operator_token}"})
+            
+            payload = {
+                "sender_full_name": "Иван Петров",
+                "sender_phone": "+79991234567",
+                "sender_address": "Москва, ул. Ленина 1",
+                "recipient_full_name": "Али Рахимов",
+                "recipient_phone": "+992901234567",
+                "recipient_address": "Душанбе, ул. Рудаки 10",
+                "cargo_items": [
+                    {
+                        "cargo_name": "Документы",
+                        "weight": 0.5,
+                        "price_per_kg": 2000.0
+                    }
+                ],
+                "description": "Принят через оператора на складе",
+                "route": "moscow_to_tajikistan",
+                "warehouse_id": warehouse_id,
+                "payment_method": "cash",
+                "payment_amount": 1000.0
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/operator/cargo/direct-accept",
+                json=payload,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Проверяем структуру ответа
+                required_fields = ["success", "base_request_number", "total_cargo_count", "created_cargo", "received_by", "received_at"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    created_cargo = data.get("created_cargo", [])
+                    if created_cargo and len(created_cargo) == 1:
+                        cargo = created_cargo[0]
+                        cargo_fields = ["cargo_id", "cargo_number", "cargo_name", "weight", "declared_value"]
+                        cargo_missing = [field for field in cargo_fields if field not in cargo]
+                        
+                        if not cargo_missing:
+                            self.log_test(
+                                "Тест с одним грузом - структура ответа",
+                                True,
+                                f"Базовый номер: {data.get('base_request_number')}, "
+                                f"Номер груза: {cargo.get('cargo_number')}, "
+                                f"Вес: {cargo.get('weight')}кг, "
+                                f"Стоимость: {cargo.get('declared_value')}₽"
+                            )
+                            return data
+                        else:
+                            self.log_test(
+                                "Тест с одним грузом - структура ответа",
+                                False,
+                                f"Отсутствуют поля в created_cargo: {cargo_missing}"
+                            )
+                    else:
+                        self.log_test(
+                            "Тест с одним грузом - структура ответа",
+                            False,
+                            f"Неверное количество грузов: ожидался 1, получено {len(created_cargo)}"
+                        )
+                else:
+                    self.log_test(
+                        "Тест с одним грузом - структура ответа",
+                        False,
+                        f"Отсутствуют обязательные поля: {missing_fields}"
+                    )
+            else:
+                self.log_test(
+                    "Тест с одним грузом",
+                    False,
+                    f"HTTP {response.status_code}: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_test("Тест с одним грузом", False, f"Ошибка: {str(e)}")
+            
+        return None
+
+    def test_direct_accept_multiple_cargo(self, warehouse_id):
+        """Тест с множественными грузами"""
+        try:
+            payload = {
+                "sender_full_name": "Петр Сидоров",
+                "sender_phone": "+79995555555",
+                "sender_address": "Москва, ул. Пушкина 5",
+                "recipient_full_name": "Бахтияр Назаров",
+                "recipient_phone": "+992905555555",
+                "recipient_address": "Душанбе, ул. Исмоили Сомони 25",
+                "cargo_items": [
+                    {
+                        "cargo_name": "Электроника",
+                        "weight": 2.0,
+                        "price_per_kg": 100.0
+                    },
+                    {
+                        "cargo_name": "Одежда",
+                        "weight": 1.5,
+                        "price_per_kg": 50.0
+                    },
+                    {
+                        "cargo_name": "Книги",
+                        "weight": 3.0,
+                        "price_per_kg": 30.0
+                    }
+                ],
+                "description": "Принят через оператора на складе",
+                "route": "moscow_to_tajikistan",
+                "warehouse_id": warehouse_id,
+                "payment_method": "card_transfer",
+                "payment_amount": 365.0
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/operator/cargo/direct-accept",
+                json=payload,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Проверяем структуру ответа
+                required_fields = ["success", "base_request_number", "total_cargo_count", "created_cargo"]
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if not missing_fields:
+                    created_cargo = data.get("created_cargo", [])
+                    expected_count = 3
+                    
+                    if len(created_cargo) == expected_count:
+                        # Проверяем каждый груз
+                        all_valid = True
+                        cargo_details = []
+                        
+                        for i, cargo in enumerate(created_cargo):
+                            cargo_fields = ["cargo_id", "cargo_number", "cargo_name", "weight", "declared_value"]
+                            cargo_missing = [field for field in cargo_fields if field not in cargo]
+                            
+                            if cargo_missing:
+                                all_valid = False
+                                break
+                            
+                            cargo_details.append(
+                                f"Груз {i+1}: {cargo.get('cargo_name')} "
+                                f"({cargo.get('cargo_number')}, {cargo.get('weight')}кг, {cargo.get('declared_value')}₽)"
+                            )
+                        
+                        if all_valid:
+                            self.log_test(
+                                "Тест с множественными грузами - структура ответа",
+                                True,
+                                f"Базовый номер: {data.get('base_request_number')}, "
+                                f"Создано {len(created_cargo)} грузов. "
+                                f"Детали: {'; '.join(cargo_details)}"
+                            )
+                            return data
+                        else:
+                            self.log_test(
+                                "Тест с множественными грузами - структура ответа",
+                                False,
+                                f"Неполные данные в грузах"
+                            )
+                    else:
+                        self.log_test(
+                            "Тест с множественными грузами - структура ответа",
+                            False,
+                            f"Неверное количество грузов: ожидалось {expected_count}, получено {len(created_cargo)}"
+                        )
+                else:
+                    self.log_test(
+                        "Тест с множественными грузами - структура ответа",
+                        False,
+                        f"Отсутствуют обязательные поля: {missing_fields}"
+                    )
+            else:
+                self.log_test(
+                    "Тест с множественными грузами",
+                    False,
+                    f"HTTP {response.status_code}: {response.text}"
+                )
+                
+        except Exception as e:
+            self.log_test("Тест с множественными грузами", False, f"Ошибка: {str(e)}")
+            
+        return None
+
+    def test_validation_errors(self, warehouse_id):
+        """Тест валидации ошибок"""
+        test_cases = [
+            {
+                "name": "Отсутствие обязательных полей",
+                "payload": {
+                    "sender_full_name": "Тест",
+                    # Отсутствуют другие обязательные поля
+                },
+                "expected_status": [400, 422]
+            },
+            {
+                "name": "Пустой массив cargo_items",
+                "payload": {
+                    "sender_full_name": "Тест Отправитель",
+                    "sender_phone": "+79991234567",
+                    "sender_address": "Москва, ул. Тестовая 1",
+                    "recipient_full_name": "Тест Получатель",
+                    "recipient_phone": "+992901234567",
+                    "recipient_address": "Душанбе, ул. Тестовая 1",
+                    "cargo_items": [],  # Пустой массив
+                    "description": "Тест",
+                    "route": "moscow_to_tajikistan",
+                    "warehouse_id": warehouse_id
+                },
+                "expected_status": [400, 422]
+            },
+            {
+                "name": "Некорректные типы данных",
+                "payload": {
+                    "sender_full_name": "Тест Отправитель",
+                    "sender_phone": "+79991234567",
+                    "sender_address": "Москва, ул. Тестовая 1",
+                    "recipient_full_name": "Тест Получатель",
+                    "recipient_phone": "+992901234567",
+                    "recipient_address": "Душанбе, ул. Тестовая 1",
+                    "cargo_items": [
+                        {
+                            "cargo_name": "Тест",
+                            "weight": "неверный_тип",  # Должно быть число
+                            "price_per_kg": 100.0
+                        }
+                    ],
+                    "description": "Тест",
+                    "route": "moscow_to_tajikistan",
+                    "warehouse_id": warehouse_id
+                },
+                "expected_status": [400, 422]
+            }
         ]
         
-        for endpoint in endpoints_to_check:
+        validation_results = []
+        
+        for test_case in test_cases:
             try:
-                if endpoint.endswith('scan-cargo-qr'):
-                    # Для scan-cargo-qr используем POST
-                    scan_data = {"qr_data": test_cargo['qr_data']}
-                    response = self.session.post(f"{API_BASE}{endpoint}", json=scan_data, headers=headers)
+                response = self.session.post(
+                    f"{BACKEND_URL}/operator/cargo/direct-accept",
+                    json=test_case["payload"],
+                    timeout=10
+                )
+                
+                if response.status_code in test_case["expected_status"]:
+                    self.log_test(
+                        f"Валидация: {test_case['name']}",
+                        True,
+                        f"Корректно возвращен HTTP {response.status_code}"
+                    )
+                    validation_results.append(True)
                 else:
-                    # Для остальных используем GET
-                    response = self.session.get(f"{API_BASE}{endpoint}", headers=headers)
+                    self.log_test(
+                        f"Валидация: {test_case['name']}",
+                        False,
+                        f"Ожидался HTTP {test_case['expected_status']}, получен {response.status_code}"
+                    )
+                    validation_results.append(False)
+                    
+            except Exception as e:
+                self.log_test(f"Валидация: {test_case['name']}", False, f"Ошибка: {str(e)}")
+                validation_results.append(False)
+        
+        return validation_results
+
+    def verify_cargo_creation(self, created_cargo_data):
+        """Проверка корректности создания грузов"""
+        if not created_cargo_data:
+            return False
+            
+        try:
+            # Переключаемся на токен администратора для проверки
+            self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
+            
+            created_cargo = created_cargo_data.get("created_cargo", [])
+            verification_results = []
+            
+            for cargo in created_cargo:
+                cargo_id = cargo.get("cargo_id")
+                cargo_number = cargo.get("cargo_number")
+                
+                if not cargo_id:
+                    verification_results.append(False)
+                    continue
+                
+                # Проверяем существование груза в базе данных
+                response = self.session.get(
+                    f"{BACKEND_URL}/debug/find-cargo-by-number/{cargo_number}",
+                    timeout=10
+                )
                 
                 if response.status_code == 200:
                     data = response.json()
+                    found_cargo = data.get("found_cargo")
                     
-                    # Проверяем warehouse_location
-                    if endpoint.endswith('scan-cargo-qr'):
-                        cargo_info = data.get('cargo', {})
+                    if found_cargo and len(found_cargo) > 0:
+                        cargo_info = found_cargo[0]
+                        
+                        # Проверяем ключевые поля
+                        has_warehouse_id = cargo_info.get("warehouse_id") is not None
+                        has_cargo_number = cargo_info.get("cargo_number") == cargo_number
+                        has_status = cargo_info.get("status") is not None
+                        
+                        if has_warehouse_id and has_cargo_number and has_status:
+                            verification_results.append(True)
+                            self.log_test(
+                                f"Проверка груза {cargo_number}",
+                                True,
+                                f"Груз найден в базе данных со статусом {cargo_info.get('status')}"
+                            )
+                        else:
+                            verification_results.append(False)
+                            self.log_test(
+                                f"Проверка груза {cargo_number}",
+                                False,
+                                f"Неполные данные груза в базе"
+                            )
                     else:
-                        cargo_info = data
-                        
-                    warehouse_location = cargo_info.get('warehouse_location')
-                    transport_id = cargo_info.get('transport_id')
-                    
-                    if warehouse_location is None and transport_id:
-                        self.log(f"✅ Груз успешно удален из ячейки склада (warehouse_location = null)")
-                        self.log(f"   🚛 Груз теперь на транспорте: {transport_id}")
-                        return True
-                    elif warehouse_location:
-                        self.log(f"⚠️ Груз все еще в ячейке склада: {warehouse_location}")
-                        return False
-                        
-            except Exception as e:
-                self.log(f"⚠️ Ошибка проверки через {endpoint}: {e}")
-                continue
+                        verification_results.append(False)
+                        self.log_test(
+                            f"Проверка груза {cargo_number}",
+                            False,
+                            "Груз не найден в базе данных"
+                        )
+                else:
+                    verification_results.append(False)
+                    self.log_test(
+                        f"Проверка груза {cargo_number}",
+                        False,
+                        f"Ошибка поиска груза: HTTP {response.status_code}"
+                    )
+            
+            return all(verification_results)
+            
+        except Exception as e:
+            self.log_test("Проверка создания грузов", False, f"Ошибка: {str(e)}")
+            return False
+
+    def cleanup_test_data(self, created_cargo_data):
+        """Очистка тестовых данных"""
+        if not created_cargo_data:
+            return
+            
+        try:
+            # Переключаемся на токен администратора
+            self.session.headers.update({"Authorization": f"Bearer {self.admin_token}"})
+            
+            created_cargo = created_cargo_data.get("created_cargo", [])
+            cleanup_count = 0
+            
+            for cargo in created_cargo:
+                cargo_id = cargo.get("cargo_id")
+                cargo_number = cargo.get("cargo_number")
                 
-        self.log("❌ Не удалось проверить статус груза через доступные endpoints")
-        return False
-        
-    def test_transport_cargo_list(self, transport_data):
-        """Проверка списка грузов транспорта"""
-        self.log("📋 Проверка списка грузов транспорта...")
-        
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        response = self.session.get(f"{API_BASE}/placement/transport-cargo/{transport_data['transport_id']}", headers=headers)
-        
-        if response.status_code == 200:
-            data = response.json()
-            cargo_list = data.get('cargo_list', [])
-            
-            self.log(f"✅ Список грузов транспорта получен:")
-            self.log(f"   📦 Количество грузов: {len(cargo_list)}")
-            
-            for i, cargo in enumerate(cargo_list, 1):
-                self.log(f"   {i}. Груз: {cargo.get('cargo_number')}, Вес: {cargo.get('weight')} кг")
-                if cargo.get('placed_at'):
-                    self.log(f"      ⏰ Размещен: {cargo.get('placed_at')}")
-                if cargo.get('placed_by_operator'):
-                    self.log(f"      👤 Оператор: {cargo.get('placed_by_operator')}")
+                if cargo_id:
+                    response = self.session.delete(
+                        f"{BACKEND_URL}/admin/cargo/{cargo_id}",
+                        timeout=10
+                    )
                     
-            return len(cargo_list) > 0
-        else:
-            self.log(f"❌ Ошибка получения списка грузов: {response.status_code} - {response.text}")
+                    if response.status_code in [200, 204]:
+                        cleanup_count += 1
+            
+            self.log_test(
+                "Очистка тестовых данных",
+                cleanup_count > 0,
+                f"Удалено {cleanup_count} из {len(created_cargo)} тестовых грузов"
+            )
+            
+        except Exception as e:
+            self.log_test("Очистка тестовых данных", False, f"Ошибка: {str(e)}")
+
+    def run_comprehensive_test(self):
+        """Запуск полного тестирования"""
+        print("🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Полный флоу приёма груза через форму оператора")
+        print("=" * 80)
+        print()
+        
+        # 1. Авторизация
+        if not self.authenticate_admin():
+            print("❌ Не удалось авторизоваться как администратор. Тестирование прервано.")
             return False
             
-    def test_different_qr_formats(self):
-        """Тестирование поддержки разных форматов QR кодов"""
-        self.log("🎯 Тестирование поддержки разных форматов QR кодов...")
+        if not self.authenticate_operator():
+            print("❌ Не удалось авторизоваться как оператор. Тестирование прервано.")
+            return False
         
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
-        success_count = 0
-        total_tests = 0
+        # 2. Получение складов
+        warehouses = self.get_warehouses()
+        if not warehouses:
+            print("❌ Не удалось получить список складов. Тестирование прервано.")
+            return False
         
-        # Тестовые форматы QR кодов
-        test_formats = [
-            "1234567890",  # Только цифры
-            "CARGO123456",  # Буквы и цифры
-            "QR-2025-001",  # С дефисами
-            "TEST_CARGO_001",  # С подчеркиваниями
-            "груз-тест-001",  # Кириллица
-            "MIXED-груз-123",  # Смешанный формат
-        ]
+        warehouse_id = warehouses[0].get("id")
         
-        for qr_format in test_formats:
-            total_tests += 1
-            self.log(f"🔍 Тестирование формата: '{qr_format}'")
-            
-            scan_data = {"qr_data": qr_format}
-            response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=scan_data, headers=headers)
-            
-            # Проверяем что система корректно обрабатывает запрос (не падает с ошибкой)
-            if response.status_code in [200, 404]:  # 200 если найден, 404 если не найден
-                self.log(f"✅ Формат '{qr_format}' корректно обработан (статус: {response.status_code})")
-                success_count += 1
-            else:
-                self.log(f"❌ Ошибка обработки формата '{qr_format}': {response.status_code}")
-                
-        format_success_rate = (success_count / total_tests) * 100
-        self.log(f"📊 Результат тестирования форматов QR: {success_count}/{total_tests} ({format_success_rate:.1f}%)")
+        # 3. Тестирование endpoint с одним грузом
+        print("🔍 Тестирование endpoint /api/operator/cargo/direct-accept с одним грузом")
+        print("-" * 60)
+        single_cargo_result = self.test_direct_accept_single_cargo(warehouse_id)
         
-        return success_count, total_tests
+        # 4. Тестирование endpoint с множественными грузами
+        print("🔍 Тестирование endpoint /api/operator/cargo/direct-accept с множественными грузами")
+        print("-" * 60)
+        multiple_cargo_result = self.test_direct_accept_multiple_cargo(warehouse_id)
         
-    def cleanup_test_data(self):
-        """Очистка тестовых данных"""
-        self.log("🧹 Очистка тестовых данных...")
+        # 5. Тестирование валидации
+        print("🔍 Тестирование валидации ошибок")
+        print("-" * 60)
+        validation_results = self.test_validation_errors(warehouse_id)
         
-        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        # 6. Проверка корректности создания грузов
+        print("🔍 Проверка корректности создания грузов в базе данных")
+        print("-" * 60)
+        verification_success = False
+        if single_cargo_result:
+            verification_success = self.verify_cargo_creation(single_cargo_result)
         
-        # Удаление тестовых грузов
-        for cargo_id in self.test_cargo_ids:
-            try:
-                response = self.session.delete(f"{API_BASE}/admin/cargo/{cargo_id}", headers=headers)
-                if response.status_code == 200:
-                    self.log(f"✅ Тестовый груз {cargo_id} удален")
-                else:
-                    self.log(f"⚠️ Не удалось удалить груз {cargo_id}: {response.status_code}")
-            except Exception as e:
-                self.log(f"⚠️ Ошибка удаления груза {cargo_id}: {e}")
-                
-    def run_comprehensive_test(self):
-        """Запуск комплексного тестирования улучшенной системы QR-сканирования"""
-        self.log("🎯 НАЧАЛО КРИТИЧЕСКОГО ТЕСТИРОВАНИЯ УЛУЧШЕННОЙ СИСТЕМЫ QR-СКАНИРОВАНИЯ")
-        self.log("=" * 80)
+        # 7. Очистка тестовых данных
+        print("🧹 Очистка тестовых данных")
+        print("-" * 60)
+        if single_cargo_result:
+            self.cleanup_test_data(single_cargo_result)
+        if multiple_cargo_result:
+            self.cleanup_test_data(multiple_cargo_result)
         
-        success_count = 0
-        total_tests = 15  # Общее количество основных тестов
+        # 8. Подведение итогов
+        self.print_summary()
         
-        try:
-            # 1. Авторизация администратора
-            self.log("\n📋 ЭТАП 1: Авторизация администратора")
-            if not self.authenticate_admin():
-                self.log("❌ Критическая ошибка: не удалось авторизовать администратора")
-                return False
-            success_count += 1
-            
-            # 2. Авторизация оператора склада
-            self.log("\n📋 ЭТАП 2: Авторизация оператора склада")
-            if not self.authenticate_operator():
-                self.log("❌ Критическая ошибка: не удалось авторизовать оператора")
-                return False
-            success_count += 1
-            
-            # 3. Создание тестового груза с QR кодом
-            self.log("\n📋 ЭТАП 3: Создание тестового груза с QR кодом")
-            test_cargo = self.create_test_cargo_for_qr()
-            if not test_cargo:
-                self.log("❌ Критическая ошибка: не удалось создать тестовый груз")
-                return False
-            success_count += 1
-            
-            # 4. Получение cargo_number для тестирования альтернативных форматов
-            self.log("\n📋 ЭТАП 4: Получение cargo_number для тестирования")
-            cargo_number = test_cargo.get('cargo_number')
-            if cargo_number:
-                self.log(f"✅ Cargo number получен: {cargo_number}")
-                success_count += 1
-            else:
-                self.log("❌ Не удалось получить cargo_number")
-                
-            # 5. Тестирование расширенного поиска грузов
-            self.log("\n📋 ЭТАП 5: Тестирование расширенного поиска грузов")
-            search_success, search_total = self.test_extended_cargo_search(test_cargo)
-            if search_success >= search_total * 0.75:  # 75% успешности
-                self.log("✅ Расширенный поиск грузов работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы с расширенным поиском грузов")
-                
-            # 6. Поиск/создание транспорта с QR кодом
-            self.log("\n📋 ЭТАП 6: Поиск/создание транспорта с QR кодом")
-            transport_data = self.get_or_create_transport_with_qr()
-            if transport_data:
-                self.log("✅ Транспорт с QR кодом найден/создан")
-                success_count += 1
-            else:
-                self.log("❌ Не удалось найти/создать транспорт с QR кодом")
-                
-            # 7. Тестирование сканирования транспорта
-            self.log("\n📋 ЭТАП 7: Тестирование сканирования QR кода транспорта")
-            if transport_data and self.test_transport_scanning(transport_data):
-                self.log("✅ Сканирование транспорта работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы со сканированием транспорта")
-                
-            # 8. Тестирование сканирования груза
-            self.log("\n📋 ЭТАП 8: Тестирование сканирования QR кода груза")
-            if self.test_cargo_scanning(test_cargo):
-                self.log("✅ Сканирование груза работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы со сканированием груза")
-                
-            # 9. Размещение груза на транспорт
-            self.log("\n📋 ЭТАП 9: Размещение груза на транспорт")
-            if transport_data and self.test_cargo_placement_on_transport(transport_data, test_cargo):
-                self.log("✅ Размещение груза на транспорт работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы с размещением груза на транспорт")
-                
-            # 10. Проверка удаления груза из ячейки склада
-            self.log("\n📋 ЭТАП 10: Проверка удаления груза из ячейки склада")
-            if self.verify_cargo_removed_from_warehouse(test_cargo):
-                self.log("✅ Груз успешно удален из ячейки склада")
-                success_count += 1
-            else:
-                self.log("❌ Груз не удален из ячейки склада")
-                
-            # 11. Проверка списка грузов транспорта
-            self.log("\n📋 ЭТАП 11: Проверка списка грузов транспорта")
-            if transport_data and self.test_transport_cargo_list(transport_data):
-                self.log("✅ Список грузов транспорта работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы со списком грузов транспорта")
-                
-            # 12. Тестирование поддержки разных форматов QR
-            self.log("\n📋 ЭТАП 12: Тестирование поддержки разных форматов QR")
-            format_success, format_total = self.test_different_qr_formats()
-            if format_success >= format_total * 0.8:  # 80% успешности
-                self.log("✅ Поддержка разных форматов QR работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы с поддержкой разных форматов QR")
-                
-            # 13. Тестирование поиска груза по его qr_data
-            self.log("\n📋 ЭТАП 13: Тестирование поиска груза по qr_data")
-            if test_cargo and self.test_cargo_scanning(test_cargo):
-                self.log("✅ Поиск груза по qr_data работает корректно")
-                success_count += 1
-            else:
-                self.log("❌ Проблемы с поиском груза по qr_data")
-                
-            # 14. Тестирование поиска по cargo_number
-            self.log("\n📋 ЭТАП 14: Тестирование поиска по cargo_number")
-            if cargo_number:
-                headers = {"Authorization": f"Bearer {self.admin_token}"}
-                scan_data = {"qr_data": cargo_number}
-                response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=scan_data, headers=headers)
-                
-                if response.status_code == 200:
-                    self.log("✅ Поиск по cargo_number работает корректно")
-                    success_count += 1
-                else:
-                    self.log("❌ Проблемы с поиском по cargo_number")
-            else:
-                self.log("❌ Нет cargo_number для тестирования")
-                
-            # 15. Тестирование поиска с частичным совпадением
-            self.log("\n📋 ЭТАП 15: Тестирование поиска с частичным совпадением")
-            if cargo_number and len(cargo_number) >= 4:
-                headers = {"Authorization": f"Bearer {self.admin_token}"}
-                partial_number = cargo_number[:4]
-                scan_data = {"qr_data": partial_number}
-                response = self.session.post(f"{API_BASE}/placement/scan-cargo-qr", json=scan_data, headers=headers)
-                
-                if response.status_code in [200, 404]:  # Любой корректный ответ
-                    self.log("✅ Поиск с частичным совпадением работает корректно")
-                    success_count += 1
-                else:
-                    self.log("❌ Проблемы с поиском с частичным совпадением")
-            else:
-                self.log("❌ Нет подходящего cargo_number для тестирования частичного поиска")
-                
-        except Exception as e:
-            self.log(f"❌ Критическая ошибка во время тестирования: {e}")
-            
-        finally:
-            # Очистка тестовых данных
-            self.log("\n📋 ФИНАЛЬНЫЙ ЭТАП: Очистка тестовых данных")
-            self.cleanup_test_data()
-            
-        # Итоговый отчет
-        self.log("\n" + "=" * 80)
-        self.log("🎯 ИТОГОВЫЙ ОТЧЕТ ТЕСТИРОВАНИЯ УЛУЧШЕННОЙ СИСТЕМЫ QR-СКАНИРОВАНИЯ")
-        self.log("=" * 80)
+        return True
+
+    def print_summary(self):
+        """Вывод итогового отчета"""
+        print("\n" + "=" * 80)
+        print("📊 ИТОГОВЫЙ ОТЧЕТ ТЕСТИРОВАНИЯ")
+        print("=" * 80)
         
-        success_rate = (success_count / total_tests) * 100
+        total_tests = len(self.test_results)
+        passed_tests = sum(1 for result in self.test_results if result["success"])
+        failed_tests = total_tests - passed_tests
+        success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         
-        self.log(f"📊 РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ:")
-        self.log(f"   Успешных тестов: {success_count}/{total_tests}")
-        self.log(f"   Процент успеха: {success_rate:.1f}%")
+        print(f"Всего тестов: {total_tests}")
+        print(f"Успешных: {passed_tests} ✅")
+        print(f"Неудачных: {failed_tests} ❌")
+        print(f"Процент успеха: {success_rate:.1f}%")
+        print()
         
+        # Группировка результатов по категориям
+        categories = {
+            "Авторизация": [],
+            "API Endpoints": [],
+            "Валидация": [],
+            "Проверка данных": [],
+            "Очистка": []
+        }
+        
+        for result in self.test_results:
+            test_name = result["test"]
+            if "авторизация" in test_name.lower():
+                categories["Авторизация"].append(result)
+            elif "валидация" in test_name.lower():
+                categories["Валидация"].append(result)
+            elif "проверка" in test_name.lower():
+                categories["Проверка данных"].append(result)
+            elif "очистка" in test_name.lower():
+                categories["Очистка"].append(result)
+            else:
+                categories["API Endpoints"].append(result)
+        
+        for category, tests in categories.items():
+            if tests:
+                passed = sum(1 for t in tests if t["success"])
+                total = len(tests)
+                print(f"{category}: {passed}/{total} ✅")
+        
+        print("\n" + "=" * 80)
+        
+        # Критические выводы
         if success_rate >= 90:
-            self.log("🎉 ОТЛИЧНО: Улучшенная система QR-сканирования работает идеально!")
-        elif success_rate >= 75:
-            self.log("✅ ХОРОШО: Основная функциональность работает, есть минорные проблемы")
+            print("🎉 КРИТИЧЕСКИЙ ВЫВОД: ТЕСТИРОВАНИЕ ЗАВЕРШЕНО УСПЕШНО!")
+            print("Endpoint /api/operator/cargo/direct-accept работает корректно с множественными грузами.")
+        elif success_rate >= 70:
+            print("⚠️ КРИТИЧЕСКИЙ ВЫВОД: ТЕСТИРОВАНИЕ ЗАВЕРШЕНО С ПРЕДУПРЕЖДЕНИЯМИ!")
+            print("Основная функциональность работает, но есть минорные проблемы.")
         else:
-            self.log("❌ ПРОБЛЕМЫ: Система требует доработки")
-            
-        self.log("\n🔍 КЛЮЧЕВЫЕ ПРОВЕРКИ:")
-        self.log("✅ Авторизация администратора работает")
-        self.log("✅ Расширенный поиск грузов с разными форматами QR")
-        self.log("✅ Создание тестовых данных функционально")
-        self.log("✅ Автоматический переход между сканированием транспорта и грузов")
-        self.log("✅ Поддержка любых форматов QR кодов для грузов")
-        self.log("✅ Полный цикл размещения от сканирования до размещения")
-        self.log("✅ Груз автоматически удаляется из ячейки склада")
-        self.log("✅ Груз появляется на транспорте со всеми данными")
+            print("❌ КРИТИЧЕСКИЙ ВЫВОД: ОБНАРУЖЕНЫ СЕРЬЕЗНЫЕ ПРОБЛЕМЫ!")
+            print("Требуется исправление критических ошибок.")
         
-        return success_rate >= 75
+        print("=" * 80)
 
 def main():
-    """Главная функция запуска тестирования"""
-    print("🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Улучшенная система QR-сканирования для размещения грузов в TAJLINE.TJ")
-    print("=" * 80)
+    """Главная функция"""
+    tester = BackendTester()
     
-    tester = ImprovedQRScanningTester()
-    success = tester.run_comprehensive_test()
-    
-    if success:
-        print("\n🎉 ТЕСТИРОВАНИЕ ЗАВЕРШЕНО УСПЕШНО!")
-        exit(0)
-    else:
-        print("\n❌ ТЕСТИРОВАНИЕ ВЫЯВИЛО ПРОБЛЕМЫ!")
-        exit(1)
+    try:
+        success = tester.run_comprehensive_test()
+        if success:
+            print("\n✅ Тестирование завершено успешно!")
+        else:
+            print("\n❌ Тестирование завершено с ошибками!")
+            sys.exit(1)
+            
+    except KeyboardInterrupt:
+        print("\n⚠️ Тестирование прервано пользователем")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Критическая ошибка тестирования: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
