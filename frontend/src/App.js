@@ -14130,6 +14130,17 @@ function App() {
           { id: 'reports-cargo', label: 'Отчеты по грузам' },
           { id: 'reports-performance', label: 'Производительность' }
         ]
+      },
+      {
+        id: 'chat',
+        label: '💬 ЧАТ',
+        icon: <MessageSquare className="w-5 h-5" />,
+        section: 'chat',
+        subsections: [
+          { id: 'chat-cargo', label: 'Чаты по грузам' },
+          { id: 'chat-support', label: 'Поддержка' },
+          { id: 'chat-stats', label: 'Статистика чатов', adminOnly: true }
+        ]
       }
     ];
 
