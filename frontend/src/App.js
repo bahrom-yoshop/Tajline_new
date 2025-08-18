@@ -22396,8 +22396,7 @@ function App() {
                                       </Button>
                                       <Button 
                                         variant="outline" 
-                                        onClick={() => {
-                                          setSelectedWarehouse(warehouse);
+                                        onClick={() => { setSelectedWarehouse(warehouse); setActiveTab('warehouses-manage'); }}
 
                       {/* Модалка: Список городов склада */}
                       <Dialog open={cityListModalOpen} onOpenChange={setCityListModalOpen}>
