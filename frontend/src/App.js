@@ -22336,20 +22336,14 @@ function App() {
                                         <Button
                                           variant="outline"
                                           className="text-purple-700 border-purple-300 hover:bg-purple-50"
-                                          onClick={async () => {
-                                            const city = prompt(`Задать город для склада: ${warehouse.name}`, warehouse.city || warehouse.location || '');
-                                            if (!city) return;
-                                            try {
-                                              const cities = city.split(',').map(s => s.trim()).filter(Boolean);
-                                              const res = await apiCall(`/api/admin/warehouses/${warehouse.id}/set-city`, 'PATCH', { cities });
-                                              showAlert(`Города установлены: ${(res.cities||[]).join(', ')}`, 'success');
-                                              fetchWarehouses();
-                                            } catch (e) {
-                                              showAlert(e?.detail || 'Ошибка установки города', 'error');
-                                            }
+                                          onClick={() => {
+                                            setCityModalWarehouse(warehouse);
+                                            const existing = (warehouse.cities || []).join(', ');
+                                            setCityModalText(existing);
+                                            setCityModalOpen(true);
                                           }}
                                         >
-                                          Установить город
+                                          Добавить город
                                         </Button>
                                       </div>
                                     </div>
