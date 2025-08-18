@@ -19002,10 +19002,10 @@ function App() {
                                     type="checkbox"
                                     checked={operatorCargoForm.use_multi_cargo}
                                     onChange={(e) => {
-                                      setOperatorCargoForm({
-                                        ...operatorCargoForm,
+                                      setOperatorCargoForm(prev => ({
+                                        ...prev,
                                         use_multi_cargo: e.target.checked
-                                      });
+                                      }));
                                       if (!e.target.checked) {
                                         setTotalWeight(0);
                                         setTotalCost(0);
