@@ -10632,6 +10632,8 @@ async def direct_accept_cargo_by_operator(
                 "destination_warehouse_id": destination_wh_id,
                 
                 "payment_method": cargo_data.get("payment_method", "not_paid"),
+                "payment_amount": cargo_data.get("payment_amount"),
+                "debt_due_date": cargo_data.get("debt_due_date"),
                 
                 # Статусы
                 "status": "awaiting_placement",
