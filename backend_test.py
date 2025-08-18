@@ -312,44 +312,22 @@ class ChatNotificationTester:
                 print("❌ Не удалось авторизоваться как администратор. Тестирование прервано.")
                 return
             
-            # 2. Создание тестовых пользователей разных ролей
-            print("\n2️⃣ СОЗДАНИЕ ТЕСТОВЫХ ПОЛЬЗОВАТЕЛЕЙ РАЗНЫХ РОЛЕЙ")
+            # 2. Создание тестового клиента через регистрацию
+            print("\n2️⃣ СОЗДАНИЕ ТЕСТОВОГО КЛИЕНТА")
+            client_user = self.create_test_client()
             
-            # Создаем клиента
-            client_user = self.create_test_user(
-                "client", 
-                "Тестовый Клиент Чата", 
-                "+79901234567", 
-                "client123"
+            # 3. Авторизация существующих пользователей разных ролей
+            print("\n3️⃣ АВТОРИЗАЦИЯ ПОЛЬЗОВАТЕЛЕЙ РАЗНЫХ РОЛЕЙ")
+            
+            # Авторизуемся как оператор склада
+            self.operator_token, operator_info = self.authenticate_user(
+                "+79777888999", "warehouse123", "Оператор склада"
             )
             
-            # Создаем оператора
-            operator_user = self.create_test_user(
-                "operator", 
-                "Тестовый Оператор Чата", 
-                "+79901234568", 
-                "operator123"
-            )
-            
-            # Создаем админа
-            admin_user = self.create_test_user(
-                "admin", 
-                "Тестовый Админ Чата", 
-                "+79901234569", 
-                "admin123"
-            )
-            
-            # 3. Авторизация созданных пользователей
-            print("\n3️⃣ АВТОРИЗАЦИЯ СОЗДАННЫХ ПОЛЬЗОВАТЕЛЕЙ")
-            
+            # Авторизуемся как клиент (если создан)
             if client_user:
                 self.client_token, client_info = self.authenticate_user(
-                    "+79901234567", "client123", "Клиент"
-                )
-            
-            if operator_user:
-                self.operator_token, operator_info = self.authenticate_user(
-                    "+79901234568", "operator123", "Оператор"
+                    client_user.get('phone'), "client123", "Клиент"
                 )
             
             # 4. Тестирование API списка пользователей
@@ -359,7 +337,7 @@ class ChatNotificationTester:
             all_users = self.get_users_list()
             
             # Получаем только операторов и админов
-            admin_operator_users = self.get_users_list(['admin', 'operator'])
+            admin_operator_users = self.get_users_list(['admin', 'warehouse_operator'])
             
             # 5. Создание чата клиентом с операторами/админами
             print("\n5️⃣ СОЗДАНИЕ ЧАТА КЛИЕНТОМ С ОПЕРАТОРАМИ/АДМИНАМИ")
@@ -388,7 +366,7 @@ class ChatNotificationTester:
                     self.check_chat_in_database(chat_id)
                     
                     # Проверяем что участники добавлены правильно
-                    # Проверяем что создатель имеет роль "client"
+                    self.check_chat_participants(chat_id)
                     
                     # Тестируем уведомления
                     self.test_chat_notifications(chat_id)
@@ -397,7 +375,7 @@ class ChatNotificationTester:
             print("\n7️⃣ ТЕСТИРОВАНИЕ СОЗДАНИЯ ЧАТОВ ОТ РАЗНЫХ РОЛЕЙ")
             
             # Создаем чат от оператора (уведомления не должны приходить)
-            if self.operator_token and admin_operator_users:
+            if self.operator_token and admin_info:
                 participant_ids = [admin_info.get('id')]  # Только админ
                 
                 operator_chat_data = {
