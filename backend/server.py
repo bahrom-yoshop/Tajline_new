@@ -18994,7 +18994,7 @@ async def get_chat_messages(chat_id: str, skip: int = 0, limit: int = 50, curren
         if message_ids:
             db.messages.update_many(
                 {"id": {"$in": message_ids}},
-                {"$set": {f"read_by.{current_user['id']}": datetime.utcnow()}}
+                {"$set": {f"read_by.{current_user.id}": datetime.utcnow()}}
             )
             
             # Обнуляем счетчик непрочитанных
