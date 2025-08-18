@@ -20795,12 +20795,18 @@ function App() {
                                                 <h4 className="font-semibold text-lg text-gray-700 mb-3">📦 Связанные грузы</h4>
                                                 <div className="space-y-1 text-sm">
                                                   <p><strong>Количество грузов:</strong> {relatedCargos.length}</p>
+                                                  
+                                                  {/* Отладочная информация */}
+                                                  <div className="text-xs text-gray-500 mb-2">
+                                                    🔧 Базовый номер: {item.cargo_number.split('/')[0]} | Найдено уникальных: {relatedCargos.length}
+                                                  </div>
+                                                  
                                                   <div className="bg-gray-50 p-3 rounded-lg">
                                                     <p className="font-medium text-gray-700 mb-2">Грузы из заявки №{item.cargo_number.split('/')[0]}:</p>
                                                     <div className="flex flex-wrap gap-2">
                                                       {relatedCargos.map((relatedCargo, index) => (
                                                         <Badge 
-                                                          key={relatedCargo.id} 
+                                                          key={`related-${relatedCargo.id}-${index}`} 
                                                           variant="outline" 
                                                           className="bg-blue-50 text-blue-700 border-blue-200"
                                                         >
