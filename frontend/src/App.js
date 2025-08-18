@@ -18970,7 +18970,7 @@ function App() {
                                 <Input
                                   id="operator_recipient_address"
                                   value={operatorCargoForm.recipient_address}
-                                  onChange={(e) => setOperatorCargoForm({...operatorCargoForm, recipient_address: e.target.value})}
+                                  onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, recipient_address: e.target.value }))}
                                   placeholder="Душанбе, ул. Рудаки, 10, кв. 5"
                                   required
                                 />
