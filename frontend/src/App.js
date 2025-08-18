@@ -1616,6 +1616,13 @@ function App() {
           'success'
         );
         
+        // Автообновление «Размещения» сразу после приёмки
+        try {
+          await fetchAvailableCargoForPlacement(1, availableCargoPerPage);
+        } catch (e) {
+          console.warn('Не удалось автообновить «Размещение»:', e);
+        }
+        
         // Показать модальное окно с опциями для QR кодов
         setOperatorCargoResponse(response);
         setOperatorQRGenerationModal(true);
