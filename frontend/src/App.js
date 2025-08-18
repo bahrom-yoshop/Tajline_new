@@ -3689,6 +3689,16 @@ function App() {
         
         setScannerMessage(`❌ Груз не найден. Отсканируйте QR код груза из списка для размещения.`);
         
+        // UX УЛУЧШЕНИЯ: ошибка сканирования
+        setCargoScanError(true);
+        setLastScanResult('error');
+        playErrorSound();
+        
+        // Автоматически убираем индикатор ошибки через 3 секунды
+        setTimeout(() => {
+          setCargoScanError(false);
+        }, 3000);
+        
         // АВТОМАТИЧЕСКИЙ СБРОС: очищаем поле и остаемся на шаге сканирования груза
         setExternalCargoInput('');
         setExternalScannedCargo(null);
