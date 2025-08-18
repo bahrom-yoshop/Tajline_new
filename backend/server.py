@@ -19000,7 +19000,7 @@ async def get_chat_messages(chat_id: str, skip: int = 0, limit: int = 50, curren
             # Обнуляем счетчик непрочитанных
             db.chats.update_one(
                 {"id": chat_id},
-                {"$set": {f"unread_count.{current_user['id']}": 0}}
+                {"$set": {f"unread_count.{current_user.id}": 0}}
             )
         
         return {"messages": serialize_mongo_document(messages)}
