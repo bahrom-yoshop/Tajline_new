@@ -10616,6 +10616,11 @@ async def direct_accept_cargo_by_operator(
                 "weight": float(cargo_item.get("weight", 0)),
                 "description": cargo_item.get("description", ""),
                 
+                # ИСПРАВЛЕНИЕ: Правильный расчет стоимости груза
+                "price_per_kg": float(cargo_item.get("price_per_kg", 0)),
+                "declared_value": float(cargo_item.get("weight", 0)) * float(cargo_item.get("price_per_kg", 0)),
+                "total_cost": float(cargo_item.get("weight", 0)) * float(cargo_item.get("price_per_kg", 0)),
+                
                 # Общие данные заявки
                 "total_items_in_request": len(cargo_items),
                 "route": cargo_data.get("route", "moscow_to_tajikistan"),
