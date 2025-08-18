@@ -2947,7 +2947,7 @@ async def complete_cargo_placement(
         placement_session = {
             "session_id": str(session_id),
             "operator_id": operator_id,
-            "operator_name": current_user.get("full_name", "Unknown"),
+            "operator_name": current_user.full_name,
             "warehouse_id": warehouse_id,
             "total_placed_count": int(total_placed),
             "placement_timestamp": placement_timestamp or datetime.utcnow().isoformat(),
