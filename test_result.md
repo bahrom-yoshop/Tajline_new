@@ -5492,6 +5492,7 @@ metadata:
 
 test_plan:
   current_focus: []
+    - "КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ ИСПРАВЛЕНИЯ НАВИГАЦИИ ЧАТА"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
