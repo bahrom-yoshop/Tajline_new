@@ -14083,8 +14083,6 @@ function App() {
                     {pickedRequests.length}
                   </Badge>
                 )}
-              </CardContent>
-              </CardContent>
               </button>
             ))}
           </nav>
