@@ -22864,6 +22864,7 @@ function App() {
                   
                   {activeSection === 'chat' && (
                     <>
+                      {console.log('🔧 Секция чата рендерится! activeSection:', activeSection, 'activeTab:', activeTab)}
                       {/* Чаты по грузам */}
                       {activeTab === 'chat-cargo' && (
                         <Card className="h-[600px]">
