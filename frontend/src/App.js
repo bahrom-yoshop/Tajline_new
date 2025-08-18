@@ -17512,12 +17512,27 @@ function App() {
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center justify-between mb-6">
-                        <Button 
-                          onClick={fetchPersonalDashboard}
-                          disabled={dashboardLoading}
-                        >
-                          {dashboardLoading ? 'Загрузка...' : 'Обновить данные'}
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            onClick={fetchPersonalDashboard}
+                            disabled={dashboardLoading}
+                          >
+                            {dashboardLoading ? 'Загрузка...' : 'Обновить данные'}
+                          </Button>
+                          
+                          {/* Кнопка "Начать чат" для всех пользователей */}
+                          <Button 
+                            onClick={() => {
+                              fetchChatOperators();
+                              setNewChatTitle(`Поддержка - ${user?.full_name || 'Пользователь'}`);
+                              setShowCreateChatModal(true);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            💬 Начать чат
+                          </Button>
+                        </div>
                         
                         {/* Новые функции для операторов и админов */}
                         {(user?.role === 'admin' || user?.role === 'warehouse_operator') && (
