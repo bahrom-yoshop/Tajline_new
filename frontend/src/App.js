@@ -19049,7 +19049,7 @@ function App() {
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <input type="checkbox" id="multiple_cargo_types" checked={operatorCargoForm.multiple_cargo_types || false}
-                                      onChange={(e) => setOperatorCargoForm({ ...operatorCargoForm, multiple_cargo_types: e.target.checked })}
+                                      onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, multiple_cargo_types: e.target.checked }))}
                                       className="rounded border-gray-300" />
                                     <Label htmlFor="multiple_cargo_types" className="cursor-pointer">Несколько видов груза (с калькулятором)</Label>
                                   </div>
