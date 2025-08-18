@@ -12304,6 +12304,78 @@ function App() {
     }
   };
 
+  // ========================================
+  // 💬 ФУНКЦИИ УПРАВЛЕНИЯ ЧАТАМИ
+  // ========================================
+  
+  // Загрузка операторов и админов для создания чата
+  const fetchChatOperators = async () => {
+    try {
+      const response = await apiCall('/api/admin/users/list', 'GET');
+      const users = response?.users || [];
+      
+      // Фильтруем только операторов и админов
+      const staffUsers = users.filter(user => 
+        user.role === 'admin' || user.role === 'operator'
+      );
+      
+      setChatOperatorsList(staffUsers);
+    } catch (error) {
+      console.error('❌ Ошибка загрузки операторов для чата:', error);
+      setChatOperatorsList([]);
+    }
+  };
+  
+  // Создание нового чата
+  const createNewChat = async () => {
+    try {
+      if (!newChatTitle.trim() || selectedChatOperators.length === 0) {
+        alert('Пожалуйста, введите название чата и выберите участников');
+        return;
+      }
+      
+      const chatData = {
+        chat_type: 'support_chat',
+        title: newChatTitle.trim(),
+        participant_ids: [
+          user.id, // Добавляем текущего пользователя
+          ...selectedChatOperators // Добавляем выбранных операторов/админов
+        ]
+      };
+      
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/chat/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(chatData)
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Закрываем модальное окно
+        setShowCreateChatModal(false);
+        setNewChatTitle('');
+        setSelectedChatOperators([]);
+        
+        // Переключаемся на созданный чат
+        setSelectedChatId(result.chat_id);
+        setActiveTab('chat-cargo');
+        
+        showAlert('✅ Чат успешно создан!', 'success');
+      } else {
+        const error = await response.json();
+        showAlert(`❌ Ошибка создания чата: ${error.detail}`, 'error');
+      }
+    } catch (error) {
+      console.error('❌ Ошибка создания чата:', error);
+      showAlert('❌ Ошибка создания чата', 'error');
+    }
+  };
+
   // Функция для открытия страницы создания склада
   const openWarehouseCreationPage = async () => {
     setShowWarehouseCreationPage(true);
