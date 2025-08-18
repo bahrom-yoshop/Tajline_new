@@ -10,7 +10,7 @@ from datetime import datetime
 import uuid
 
 # Получаем URL backend из переменной окружения
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tajline-cargo-3.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-talk.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 def test_detailed_operator_creation():

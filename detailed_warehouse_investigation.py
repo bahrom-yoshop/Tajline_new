@@ -24,7 +24,7 @@ import sys
 from datetime import datetime
 
 # Конфигурация
-BASE_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
+BASE_URL = "https://cargo-talk.preview.emergentagent.com/api"
 ADMIN_PHONE = "+79999888777"
 ADMIN_PASSWORD = "admin123"
 

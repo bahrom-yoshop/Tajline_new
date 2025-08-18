@@ -11,7 +11,7 @@ import json
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
 
 def test_cargo_removal_status_fix():
     """Тестирование исправленной проблемы с удалением груза 100008/02"""

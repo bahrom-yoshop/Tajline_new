@@ -19,7 +19,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class OperatorPermissionsAPITester:
-    def __init__(self, base_url="https://tajline-cargo-3.preview.emergentagent.com"):
+    def __init__(self, base_url="https://cargo-talk.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}  # Store tokens for different users
         self.users = {}   # Store user data

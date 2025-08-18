@@ -18,7 +18,7 @@ import sys
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://c1fee57d-64d0-4902-b6b6-459531853840.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class ChatNotificationTester:

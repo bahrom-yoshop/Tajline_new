@@ -11,7 +11,7 @@ from datetime import datetime
 from collections import defaultdict
 
 # Конфигурация
-BACKEND_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
 
 # Тестовые данные для авторизации
 OPERATOR_CREDENTIALS = {

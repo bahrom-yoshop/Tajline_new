@@ -6,7 +6,7 @@ TEST: Send pickup request to placement with recipient data
 import requests
 import json
 
-BACKEND_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
+BACKEND_URL = "https://cargo-talk.preview.emergentagent.com/api"
 
 WAREHOUSE_OPERATOR = {
     "phone": "+79777888999",
