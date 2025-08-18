@@ -3855,6 +3855,10 @@ function App() {
   // ========================================
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [chatNotifications, setChatNotifications] = useState(0);
+  const [showCreateChatModal, setShowCreateChatModal] = useState(false);
+  const [availableOperators, setAvailableOperators] = useState([]);
+  const [selectedOperators, setSelectedOperators] = useState([]);
+  const [newChatTitle, setNewChatTitle] = useState('');
   
   // Operator cargo management states
   const [operatorCargo, setOperatorCargo] = useState([]);
