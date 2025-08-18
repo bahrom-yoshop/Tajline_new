@@ -20613,13 +20613,24 @@ function App() {
                                 {availableCargoForPlacement.filter(item => item && item.id).map((item) => {
                                   const warehouseColors = getWarehouseColor(item.warehouse_name);
                                   
-                                  // Получение связанных грузов по базовому номеру заявки
+                                  // Получение связанных грузов по базовому номеру заявки (ИСПРАВЛЕНО)
                                   const getRelatedCargos = (currentItem) => {
                                     if (!currentItem.cargo_number) return [];
                                     const baseNumber = currentItem.cargo_number.split('/')[0];
-                                    return availableCargoForPlacement.filter(cargo => 
-                                      cargo.cargo_number && cargo.cargo_number.startsWith(baseNumber + '/')
+                                    
+                                    // Фильтруем и убираем дубликаты по cargo_number
+                                    const relatedCargos = availableCargoForPlacement.filter(cargo => 
+                                      cargo.cargo_number && 
+                                      cargo.cargo_number.startsWith(baseNumber + '/') &&
+                                      cargo.id // Убеждаемся что у груза есть ID
                                     );
+                                    
+                                    // Убираем дубликаты по cargo_number
+                                    const uniqueCargos = relatedCargos.filter((cargo, index, self) => 
+                                      index === self.findIndex(c => c.cargo_number === cargo.cargo_number)
+                                    );
+                                    
+                                    return uniqueCargos;
                                   };
                                   
                                   const relatedCargos = getRelatedCargos(item);
