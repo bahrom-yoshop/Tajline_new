@@ -26,7 +26,7 @@ from typing import Dict, Any, Optional
 class PopupBlockingBackendTester:
     def __init__(self):
         # Use the backend URL from frontend/.env
-        self.base_url = "https://tajline-manager-1.preview.emergentagent.com"
+        self.base_url = "https://tajline-cargo-3.preview.emergentagent.com"
         self.tokens = {}
         self.users = {}
         self.tests_run = 0

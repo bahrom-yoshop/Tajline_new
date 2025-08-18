@@ -25,7 +25,7 @@ import time
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://tajline-manager-1.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
 ADMIN_PHONE = "+79999888777"
 ADMIN_PASSWORD = "admin123"
 

@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 def debug_notifications():
-    base_url = "https://tajline-manager-1.preview.emergentagent.com"
+    base_url = "https://tajline-cargo-3.preview.emergentagent.com"
     
     # Login as operator
     print("🔍 Logging in as operator...")

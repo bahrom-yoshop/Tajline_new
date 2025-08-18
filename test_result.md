@@ -1351,7 +1351,7 @@ backend:
     status_history:
         - working: true
           agent: "testing"
-          comment: "✅ УСПЕШНО СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102 ЗАВЕРШЕНА! РЕЗУЛЬТАТ: Груз 250102 успешно исправлен: warehouse_id=d0a8362d-b4d3-4947-b335-28c94658a021, destination_warehouse_id=84d25a76-f23b-4c95-adb4-255732cd6520, hidden_reason отсутствует, груз стал visible_candidate Дата: 2025-08-18 02:08. ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ: 1) Диагностика через GET /api/debug/find-cargo-by-number/250102 и operator/cargo/list - груз найден (ID: 668bef5b-07bb-4c77-98b2-d8e938d6f193), 2) Получение списка городов через GET /api/destinations/cities, 3) Исправление складов через PATCH /api/admin/cargo/by-number/250102/set-warehouses (установлены warehouse_id: Москва Склад №1, destination_warehouse_id: Душанбе Склад №3), 4) Проверка что hidden_reason отсутствует и карточка является visible_candidate."
+          comment: "✅ УСПЕШНО СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102 ЗАВЕРШЕНА! РЕЗУЛЬТАТ: Груз 250102 успешно исправлен: warehouse_id=tajline-cargo-3, destination_warehouse_id=tajline-cargo-3, hidden_reason отсутствует, груз стал visible_candidate Дата: 2025-08-18 02:08. ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ: 1) Диагностика через GET /api/debug/find-cargo-by-number/250102 и operator/cargo/list - груз найден (ID: 668bef5b-07bb-4c77-98b2-d8e938d6f193), 2) Получение списка городов через GET /api/destinations/cities, 3) Исправление складов через PATCH /api/admin/cargo/by-number/250102/set-warehouses (установлены warehouse_id: Москва Склад №1, destination_warehouse_id: Душанбе Склад №3), 4) Проверка что hidden_reason отсутствует и карточка является visible_candidate."
 
 frontend:
   - task: "🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Простые модальные окна без Radix UI в TAJLINE.TJ"

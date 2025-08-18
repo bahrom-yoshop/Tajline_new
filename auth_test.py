@@ -11,7 +11,7 @@ from datetime import datetime
 import bcrypt
 
 class AuthenticationTester:
-    def __init__(self, base_url="https://tajline-manager-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://tajline-cargo-3.preview.emergentagent.com"):
         self.base_url = base_url
         self.test_users = []
         self.tests_run = 0

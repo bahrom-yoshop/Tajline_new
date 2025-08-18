@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://73ed2aa0-f922-4978-81e7-0ad7dcef385d.preview.emergentagent.com/api"
+BACKEND_URL = "https://tajline-cargo-3.preview.emergentagent.com/api"
 
 def test_cargo_250101_diagnosis():
     """Диагностика и исправление заявки 250101"""

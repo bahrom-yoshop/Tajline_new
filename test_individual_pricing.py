@@ -8,7 +8,7 @@ import json
 
 class IndividualPricingTester:
     def __init__(self):
-        self.base_url = "https://tajline-manager-1.preview.emergentagent.com"
+        self.base_url = "https://tajline-cargo-3.preview.emergentagent.com"
         self.admin_token = None
         
     def login_admin(self):
