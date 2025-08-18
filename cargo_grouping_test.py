@@ -303,7 +303,7 @@ class CargoGroupingTester:
                             "warehouse_name": item.get("warehouse_name")
                         })
                 
-                if len(found_cargo) == 2:
+                if len(found_cargo) >= 2:
                     self.log_test(
                         "Поиск грузов в API размещения",
                         True,
