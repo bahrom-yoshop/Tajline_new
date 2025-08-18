@@ -18868,7 +18868,7 @@ async def create_chat(chat_data: ChatCreate, current_user=Depends(get_current_us
 async def get_chat_list(skip: int = 0, limit: int = 20, current_user=Depends(get_current_user)):
     """Получить список чатов пользователя"""
     try:
-        user_id = current_user["id"]
+        user_id = current_user.id
         
         # Находим чаты где пользователь является участником
         chats_cursor = db.chats.find({
