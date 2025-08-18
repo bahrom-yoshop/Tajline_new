@@ -18847,7 +18847,7 @@ async def create_chat(chat_data: ChatCreate, current_user=Depends(get_current_us
             "cargo_number": cargo_number,
             "title": chat_data.title,
             "participants": participants,
-            "created_by": current_user["id"],
+            "created_by": current_user.id,
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
             "last_message_at": None,
