@@ -22671,7 +22671,8 @@ function App() {
 
                   {/* Список складов */}
                   {(activeTab === 'warehouses-list' || !activeTab || activeTab === 'warehouses') && user?.role === 'admin' && (
-                    <Card>
+                    <>
+                      <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between">
                           <div className="flex items-center">
