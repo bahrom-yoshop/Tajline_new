@@ -1,6 +1,7 @@
 #===================================================
 # TESTING RESULTS & COMMUNICATION LOG
 - Backend scenario (оперативно): Диагностика и исправление заявки 250102 для отображения в списке «Размещение» оператора (проверка warehouse_id, destination_warehouse_id, статус, hidden_reason).
+- Backend scenario: Диагностика и автоисправление заявок 250103 и 250104 (видимость в «Размещении»), проверка warehouse_id, destination_warehouse_id, hidden_reason; при необходимости — PATCH set-warehouses.
 #===================================================
 
 ## OVERVIEW
