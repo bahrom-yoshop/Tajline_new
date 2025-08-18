@@ -14362,9 +14362,12 @@ function App() {
                               <button
                                 key={sub.id}
                                 onClick={() => {
+                                  console.log('🔧 [Mobile] Клик по подсекции:', sub.id, 'секция:', item.section);
+                                  console.log('🔧 [Mobile] Текущие состояния до клика - activeSection:', activeSection, 'activeTab:', activeTab);
                                   setActiveSection(item.section);
                                   setActiveTab(sub.id);
                                   setMobileMenuOpen(false);
+                                  console.log('🔧 [Mobile] Состояния установлены - новая секция:', item.section, 'новый таб:', sub.id);
                                 }}
                                 className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                                   activeTab === sub.id 
