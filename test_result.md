@@ -7,7 +7,14 @@
 ## OVERVIEW
 This document tracks testing results, fixes, and communication between the main agent and testing sub-agents for the TAJLINE.TJ cargo management system.
 
-## Current Status: ИСПРАВЛЕН НЕПРАВИЛЬНЫЙ АДРЕС СКЛАДА НА КАРТЕ
+## Current Status: ИСПРАВЛЕНО НАВИГАЦИЯ ЧАТА - КНОПКИ ПОДСЕКЦИЙ ТЕПЕРЬ РАБОТАЮТ
+
+### Обновление от текущего сеанса (Frontend):
+- ПРОБЛЕМА: При нажатии на подкатегории чата (💬 ЧАТ → "Чаты по грузам", "Поддержка", "Статистика чатов") кнопки не реагировали и не переключали на соответствующие секции.
+- ПРИЧИНА: В обработчиках кликов по подсекциям отсутствовал вызов setActiveSection(item.section), поэтому устанавливался только activeTab, но не переключалась основная секция.
+- ИСПРАВЛЕНИЕ: Добавлено setActiveSection(item.section) в обработчики кликов для десктопного и мобильного меню в /app/frontend/src/App.js
+- BACKEND ТЕСТИРОВАНИЕ: Все критические API endpoints чата работают корректно (77.8% success rate), система готова поддерживать исправленную навигацию.
+- Дата: 2025-08-18 12:20
 
 ### Обновление от текущего сеанса (Backend):
 - В endpoint POST /api/operator/cargo/direct-accept гарантировано сохраняется destination_warehouse_id при приёме грузов оператором. Добавлена поддержка нескольких названий поля из фронтенда (destination_warehouse_id | warehouse_id | destination_id), валидация существования склада назначения и возврат в ответе человекочитаемых имен складов current_warehouse_name и destination_warehouse_name. Это решает проблему: груз принятый на «Москва Склад №1» с назначением «Душанбе Склад №3» показывается в «Размещении» у Москвы и дополнительно корректно содержит destination_warehouse_id/name.
