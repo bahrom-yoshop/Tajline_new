@@ -18865,6 +18865,62 @@ function App() {
                                 </div>
                               </div>
 
+                              {/* Город для выдачи груза (операторская форма) */}
+                              <div>
+                                <Label htmlFor="operator_destination_city" className="font-medium">
+                                  Город для выдачи груза *
+                                </Label>
+                                <div className="text-xs text-blue-600 mb-2">
+                                  📍 Груз принимается на {operatorWarehouses[0]?.name || 'текущий склад'} и будет отправлен в склад города, выбранного ниже
+                                </div>
+                                <Select 
+                                  value={operatorCargoForm.destination_city || ''} 
+                                  onValueChange={(city) => {
+                                    const cityMap = (destinationCitiesAll || []).find(c => c.city.toLowerCase() === city.toLowerCase());
+                                    setOperatorCargoForm({
+                                      ...operatorCargoForm,
+                                      destination_city: city,
+                                      warehouse_id: cityMap?.warehouse_id || '',
+                                      destination_warehouse_name: cityMap?.warehouse_name || ''
+                                    })
+                                  }}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Выберите город" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <div className="p-2">
+                                      <input
+                                        type="text"
+                                        placeholder="Поиск города..."
+                                        className="w-full mb-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        onChange={(e) => {
+                                          const q = e.target.value.toLowerCase();
+                                          const filtered = (destinationCitiesAll || []).filter(c => (
+                                            c.city.toLowerCase().includes(q) || (c.warehouse_name || '').toLowerCase().includes(q)
+                                          ));
+                                          setDestinationCities(filtered);
+                                        }}/>
+                                    </div>
+                                    {(destinationCities || destinationCitiesAll || []).map(c => (
+                                      <SelectItem key={`${c.warehouse_id}_${c.city}`} value={c.city}>
+                                        {c.city} — {c.warehouse_name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              {/* Склад для выдачи (только для чтения) */}
+                              <div>
+                                <Label>Склад для выдачи (назначается по городу)</Label>
+                                <div className="p-2 rounded border bg-gray-50 text-gray-700">
+                                  {operatorCargoForm.destination_warehouse_name || 
+                                    warehouses.find(w => w.id === operatorCargoForm.warehouse_id)?.name ||
+                                    'Не выбран'}
+                                </div>
+                              </div>
+
                               {/* Адрес получения груза */}
                               <div>
                                 <Label htmlFor="operator_recipient_address" className="font-medium">
