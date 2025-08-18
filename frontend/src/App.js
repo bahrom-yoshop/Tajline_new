@@ -3637,7 +3637,7 @@ function App() {
       const cargoNumber = extractCargoNumber(cargoData);
       console.log('🖥️ Сканирование груза внешним сканером:', cargoNumber);
       
-      // Ищем груз в списке ожидающих размещение
+      // НОВАЯ ЛОГИКА: Проверяем, есть ли груз в списке для размещения
       const cargo = availableCargoForPlacement.find(item => 
         item.cargo_number === cargoNumber || 
         item.id === cargoNumber ||
@@ -3645,29 +3645,78 @@ function App() {
       );
 
       if (cargo) {
+        // ✅ ГРУЗ НАЙДЕН - продолжаем процесс
         setExternalScannedCargo(cargo);
         setScannerMessage(`✅ Груз ${cargo.cargo_number} найден! Переходим к сканированию ячейки.`);
         showAlert(`Груз ${cargo.cargo_number} найден! Отсканируйте ячейку.`, 'success');
         
-        // УЛУЧШЕНИЕ: МГНОВЕННЫЙ переход к сканированию ячейки без задержек
+        // Переходим к сканированию ячейки
         setExternalScannerStep('cell');
         setScannerMessage(`📍 Отсканируйте QR код ячейки для размещения груза ${cargo.cargo_number}`);
         
-        // Мгновенно фокусируемся на поле ячейки
+        // Фокусируемся на поле ячейки
         setTimeout(() => {
           const cellInput = document.querySelector('input[placeholder*="QR код ячейки"]');
           if (cellInput) {
             cellInput.focus();
           }
-        }, 50); // Минимальная задержка только для DOM
+        }, 50);
         
       } else {
-        setScannerError('Груз не найден в списке ожидающих размещение');
-        showAlert('Груз не найден в списке ожидающих размещение. Проверьте номер груза.', 'error');
+        // ❌ ГРУЗ НЕ НАЙДЕН - показываем подсказку и сбрасываем
+        console.log('❌ Груз не найден, сбрасываем поля...');
+        
+        // Получаем список доступных грузов для подсказки
+        const availableNumbers = availableCargoForPlacement
+          .slice(0, 5) // показываем только первые 5
+          .map(item => item.cargo_number)
+          .join(', ');
+        
+        const hintMessage = availableNumbers 
+          ? `Доступные грузы: ${availableNumbers}${availableCargoForPlacement.length > 5 ? '...' : ''}`
+          : 'Нет доступных грузов для размещения';
+        
+        // Показываем подробную подсказку
+        showAlert(
+          `❌ Груз "${cargoNumber}" не найден в списке для размещения.\n\n${hintMessage}\n\nОтсканируйте правильный QR код груза.`, 
+          'warning'
+        );
+        
+        setScannerMessage(`❌ Груз не найден. Отсканируйте QR код груза из списка для размещения.`);
+        
+        // АВТОМАТИЧЕСКИЙ СБРОС: очищаем поле и остаемся на шаге сканирования груза
+        setExternalCargoInput('');
+        setExternalScannedCargo(null);
+        // externalScannerStep остается 'cargo' - не меняем!
+        
+        // Фокусируемся обратно на поле груза
+        setTimeout(() => {
+          const cargoInput = document.querySelector('input[placeholder*="QR код груза"]');
+          if (cargoInput) {
+            cargoInput.focus();
+            cargoInput.select(); // выделяем весь текст для удобства
+          }
+        }, 100);
       }
+      
     } catch (error) {
-      console.error('Ошибка обработки сканирования груза:', error);
-      setScannerError('Ошибка обработки данных груза');
+      console.error('❌ Ошибка обработки сканирования груза:', error);
+      
+      // При ошибке также сбрасываем и показываем понятное сообщение
+      showAlert('❌ Ошибка сканирования груза. Проверьте формат QR кода и попробуйте еще раз.', 'error');
+      setScannerMessage('❌ Ошибка сканирования. Попробуйте еще раз.');
+      
+      // Сбрасываем поле груза
+      setExternalCargoInput('');
+      setExternalScannedCargo(null);
+      
+      // Возвращаем фокус на поле груза
+      setTimeout(() => {
+        const cargoInput = document.querySelector('input[placeholder*="QR код груза"]');
+        if (cargoInput) cargoInput.focus();
+      }, 100);
+    }
+  };
       showAlert('Ошибка обработки данных груза', 'error');
     }
   };
