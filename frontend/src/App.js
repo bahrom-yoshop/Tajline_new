@@ -22395,8 +22395,13 @@ function App() {
                                         Управление ячейками
                                       </Button>
                                       <Button 
-                                        variant="outline" 
+                                        variant="outline"
+                                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
                                         onClick={() => { setSelectedWarehouse(warehouse); setActiveTab('warehouses-manage'); }}
+                                      >
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Редактировать
+                                      </Button>
 
                       {/* Модалка: Список городов склада */}
                       <Dialog open={cityListModalOpen} onOpenChange={setCityListModalOpen}>
