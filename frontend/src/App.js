@@ -14141,11 +14141,11 @@ function App() {
       },
       {
         id: 'chat',
-        label: '💬 ЧАТ',
+        label: `💬 ЧАТ${chatNotifications > 0 ? ` (${chatNotifications})` : ''}`,
         icon: <MessageSquare className="w-5 h-5" />,
         section: 'chat',
         subsections: [
-          { id: 'chat-cargo', label: 'Чаты по грузам' },
+          { id: 'chat-cargo', label: `Чаты по грузам${chatNotifications > 0 ? ` (${chatNotifications})` : ''}` },
           { id: 'chat-support', label: 'Поддержка' },
           { id: 'chat-stats', label: 'Статистика чатов', adminOnly: true }
         ]
