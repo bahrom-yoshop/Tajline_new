@@ -148,6 +148,116 @@ class ConnectionManager:
 # Глобальный менеджер подключений
 connection_manager = ConnectionManager()
 
+# ========================================
+# 💬 CHAT CONNECTION MANAGER
+# ========================================
+
+class ChatConnectionManager:
+    def __init__(self):
+        # Словарь подключений чата: user_id -> {"websocket": WebSocket, "user_info": dict, "joined_chats": List[str]}
+        self.chat_connections: Dict[str, Dict] = {}
+        # Словарь участников чата: chat_id -> List[user_id]
+        self.chat_participants: Dict[str, List[str]] = {}
+        
+    async def connect_to_chat(self, websocket: WebSocket, user_id: str, user_info: dict):
+        """Подключить пользователя к системе чата"""
+        await websocket.accept()
+        self.chat_connections[user_id] = {
+            "websocket": websocket,
+            "user_info": user_info,
+            "joined_chats": [],
+            "connected_at": datetime.utcnow()
+        }
+        print(f"💬 Chat WebSocket connected: {user_info.get('full_name')} ({user_info.get('role')})")
+        
+    def disconnect_from_chat(self, user_id: str):
+        """Отключить пользователя от системы чата"""
+        if user_id in self.chat_connections:
+            # Удалить из всех чатов
+            joined_chats = self.chat_connections[user_id].get("joined_chats", [])
+            for chat_id in joined_chats:
+                self.leave_chat(user_id, chat_id)
+            
+            del self.chat_connections[user_id]
+            print(f"💬 Chat WebSocket disconnected: User {user_id}")
+    
+    def join_chat(self, user_id: str, chat_id: str):
+        """Присоединить пользователя к конкретному чату"""
+        if user_id in self.chat_connections:
+            if chat_id not in self.chat_connections[user_id]["joined_chats"]:
+                self.chat_connections[user_id]["joined_chats"].append(chat_id)
+            
+            if chat_id not in self.chat_participants:
+                self.chat_participants[chat_id] = []
+            
+            if user_id not in self.chat_participants[chat_id]:
+                self.chat_participants[chat_id].append(user_id)
+    
+    def leave_chat(self, user_id: str, chat_id: str):
+        """Покинуть конкретный чат"""
+        if user_id in self.chat_connections:
+            if chat_id in self.chat_connections[user_id]["joined_chats"]:
+                self.chat_connections[user_id]["joined_chats"].remove(chat_id)
+        
+        if chat_id in self.chat_participants:
+            if user_id in self.chat_participants[chat_id]:
+                self.chat_participants[chat_id].remove(user_id)
+            
+            # Удалить чат если никого не осталось
+            if not self.chat_participants[chat_id]:
+                del self.chat_participants[chat_id]
+    
+    async def send_to_chat(self, chat_id: str, message: dict, exclude_user: Optional[str] = None):
+        """Отправить сообщение всем участникам чата"""
+        if chat_id not in self.chat_participants:
+            return
+        
+        disconnected = []
+        for user_id in self.chat_participants[chat_id]:
+            if exclude_user and user_id == exclude_user:
+                continue
+                
+            if user_id in self.chat_connections:
+                try:
+                    websocket = self.chat_connections[user_id]["websocket"]
+                    await websocket.send_text(json.dumps(message))
+                except Exception as e:
+                    print(f"❌ Error sending chat message to {user_id}: {e}")
+                    disconnected.append(user_id)
+        
+        # Удалить отключенные соединения
+        for user_id in disconnected:
+            self.disconnect_from_chat(user_id)
+    
+    async def send_to_user(self, user_id: str, message: dict):
+        """Отправить сообщение конкретному пользователю"""
+        if user_id in self.chat_connections:
+            try:
+                websocket = self.chat_connections[user_id]["websocket"]
+                await websocket.send_text(json.dumps(message))
+            except Exception as e:
+                print(f"❌ Error sending message to user {user_id}: {e}")
+                self.disconnect_from_chat(user_id)
+    
+    def get_chat_stats(self):
+        """Получить статистику чатов"""
+        stats = {
+            "total_connections": len(self.chat_connections),
+            "active_chats": len(self.chat_participants),
+            "users_by_role": {},
+            "active_users": list(self.chat_connections.keys())
+        }
+        
+        # Подсчет пользователей по ролям
+        for user_id, connection in self.chat_connections.items():
+            role = connection["user_info"].get("role", "unknown")
+            stats["users_by_role"][role] = stats["users_by_role"].get(role, 0) + 1
+        
+        return stats
+
+# Глобальный менеджер чат подключений
+chat_manager = ChatConnectionManager()
+
 # Utility functions for MongoDB ObjectId serialization
 def serialize_mongo_document(document):
     """Converts ObjectId in a MongoDB document to strings recursively."""
