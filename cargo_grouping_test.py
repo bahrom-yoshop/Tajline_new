@@ -333,9 +333,17 @@ class CargoGroupingTester:
                     self.log_test(
                         "Поиск грузов в API размещения",
                         False,
-                        f"Найдено {len(found_cargo)} из {len(created_cargo_numbers)} созданных грузов. Ожидалось: 2"
+                        f"Найдено {len(found_cargo)} из {len(created_cargo_numbers)} созданных грузов. Ожидалось минимум: 2"
                     )
-                    return []
+                    
+                    # Показываем что нашли для диагностики
+                    if found_cargo:
+                        print("📊 Найденные грузы:")
+                        for cargo in found_cargo:
+                            print(f"   • {cargo['cargo_number']}: {cargo['cargo_name']}")
+                        print()
+                    
+                    return found_cargo
             else:
                 self.log_test("Поиск грузов в API размещения", False, f"HTTP {response.status_code}: {response.text}")
                 return []
