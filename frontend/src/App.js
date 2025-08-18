@@ -20612,6 +20612,18 @@ function App() {
                               <div className="grid gap-6">
                                 {availableCargoForPlacement.filter(item => item && item.id).map((item) => {
                                   const warehouseColors = getWarehouseColor(item.warehouse_name);
+                                  
+                                  // Получение связанных грузов по базовому номеру заявки
+                                  const getRelatedCargos = (currentItem) => {
+                                    if (!currentItem.cargo_number) return [];
+                                    const baseNumber = currentItem.cargo_number.split('/')[0];
+                                    return availableCargoForPlacement.filter(cargo => 
+                                      cargo.cargo_number && cargo.cargo_number.startsWith(baseNumber + '/')
+                                    );
+                                  };
+                                  
+                                  const relatedCargos = getRelatedCargos(item);
+                                  
                                   return (
                                     <Card key={`cargo-${item.id}`} className={`${warehouseColors.border} ${warehouseColors.bg} border-l-4`}>
                                       <CardContent className="p-6">
