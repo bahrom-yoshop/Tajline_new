@@ -2928,7 +2928,7 @@ async def complete_cargo_placement(
     """
     try:
         # Проверяем права доступа
-        if current_user["role"] not in ["warehouse_operator", "admin"]:
+        if current_user.role not in ["warehouse_operator", "admin"]:
             raise HTTPException(status_code=403, detail="Insufficient permissions for placement completion")
         
         # Получаем данные размещения
