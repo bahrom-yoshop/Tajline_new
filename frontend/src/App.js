@@ -19072,47 +19072,36 @@ function App() {
                                   />
                                 </div>
 
-                                {/* Маршрут доставки */}
-                                <div>
-                                  <Label htmlFor="delivery_route" className="font-medium">
-                                    Маршрут доставки *
-                                  </Label>
-                                  <select
-                                    id="delivery_route"
-                                    value={operatorCargoForm.delivery_route || 'moscow_to_tajikistan'}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, delivery_route: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  >
-                                    <option value="moscow_to_tajikistan">Москва → Таджикистан</option>
-                                    <option value="tajikistan_to_moscow">Таджикистан → Москва</option>
-                                  </select>
-                                </div>
+                                {/* Маршрут доставки — скрыт по требованию */}
+                                {false && (
+                                  <div>
+                                    <Label htmlFor="delivery_route" className="font-medium">Маршрут доставки *</Label>
+                                    <select id="delivery_route" value={operatorCargoForm.delivery_route || 'moscow_to_tajikistan'}
+                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, delivery_route: e.target.value})}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                      <option value="moscow_to_tajikistan">Москва → Таджикистан</option>
+                                      <option value="tajikistan_to_moscow">Таджикистан → Москва</option>
+                                    </select>
+                                  </div>
+                                )}
 
-                                {/* Склад для выдачи груза */}
-                                <div>
-                                  <Label htmlFor="destination_warehouse" className="font-medium">
-                                    Склад для выдачи груза *
-                                  </Label>
-                                  <select
-                                    id="destination_warehouse"
-                                    value={operatorCargoForm.warehouse_id || ''}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, warehouse_id: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                  >
-                                    <option value="">Выберите склад назначения</option>
-                                    {warehouses.filter(w => w.is_active).map((warehouse) => (
-                                      <option key={warehouse.id} value={warehouse.id}>
-                                        {warehouse.name} - {warehouse.location}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  {operatorWarehouses.length === 0 && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                      Загрузка складов... Если список пуст, обратитесь к администратору.
-                                    </p>
-                                  )}
-                                </div>
+                                {/* Склад для выдачи груза — скрыт (используем авто-выбор по городу выше) */}
+                                {false && (
+                                  <div>
+                                    <Label htmlFor="destination_warehouse" className="font-medium">Склад для выдачи груза *</Label>
+                                    <select id="destination_warehouse" value={operatorCargoForm.warehouse_id || ''}
+                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, warehouse_id: e.target.value})}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                      <option value="">Выберите склад назначения</option>
+                                      {warehouses.filter(w => w.is_active).map((warehouse) => (
+                                        <option key={warehouse.id} value={warehouse.id}>{warehouse.name} - {warehouse.location}</option>
+                                      ))}
+                                    </select>
+                                    {operatorWarehouses.length === 0 && (
+                                      <p className="text-sm text-red-500 mt-1">Загрузка складов... Если список пуст, обратитесь к администратору.</p>
+                                    )}
+                                  </div>
+                                )}
 
                                 {/* Способ оплаты */}
                                 <div>
