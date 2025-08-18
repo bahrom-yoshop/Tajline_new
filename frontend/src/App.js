@@ -18783,7 +18783,7 @@ function App() {
                                     step="0.01"
                                     min="0"
                                     value={operatorCargoForm.courier_fee}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, courier_fee: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, courier_fee: e.target.value }))}
                                     placeholder="1000.00"
                                     className="border-orange-200 focus:border-orange-400"
                                     required
