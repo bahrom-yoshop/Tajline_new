@@ -24,6 +24,14 @@ import random  # Добавляем для генерации номеров
 
 app = FastAPI()
 
+# Создаем директории для загружаемых файлов
+import os
+os.makedirs("uploads/chat_files", exist_ok=True)
+os.makedirs("uploads/chat_audio", exist_ok=True)
+
+# Подключаем статические файлы для чата
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 # CORS настройка
 app.add_middleware(
     CORSMiddleware,
