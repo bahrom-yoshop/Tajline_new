@@ -18717,7 +18717,7 @@ function App() {
                                 <Textarea
                                   id="pickup_address"
                                   value={operatorCargoForm.pickup_address}
-                                  onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_address: e.target.value})}
+                                  onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, pickup_address: e.target.value }))}
                                   placeholder="Укажите точный адрес, где находится груз для забора"
                                   className="border-orange-200 focus:border-orange-400"
                                   rows={2}
