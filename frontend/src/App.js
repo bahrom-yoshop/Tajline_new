@@ -22836,14 +22836,26 @@ function App() {
                   {activeTab === 'chat-cargo' && (
                     <Card className="h-[600px]">
                       <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <MessageSquare className="mr-2 h-5 w-5" />
-                          💬 Чаты по грузам
-                          {chatNotifications > 0 && (
-                            <Badge variant="destructive" className="ml-2">
-                              {chatNotifications}
-                            </Badge>
-                          )}
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <MessageSquare className="mr-2 h-5 w-5" />
+                            💬 Чаты по грузам
+                            {chatNotifications > 0 && (
+                              <Badge variant="destructive" className="ml-2">
+                                {chatNotifications}
+                              </Badge>
+                            )}
+                          </div>
+                          <Button
+                            onClick={() => {
+                              fetchChatOperators();
+                              setShowCreateChatModal(true);
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Начать чат
+                          </Button>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="h-[500px] p-0">
