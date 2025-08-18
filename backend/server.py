@@ -18948,7 +18948,7 @@ async def send_message(chat_id: str, message_data: MessageCreate, current_user=D
                 "$inc": {
                     f"unread_count.{participant['user_id']}": 1 
                     for participant in chat["participants"] 
-                    if participant["user_id"] != current_user["id"]
+                    if participant["user_id"] != current_user.id
                 }
             }
         )
