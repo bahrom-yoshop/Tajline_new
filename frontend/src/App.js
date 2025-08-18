@@ -22,6 +22,7 @@ import CourierHistoryAnalytics from './components/CourierHistoryAnalytics'; // �
 import RouteMap from './components/RouteMap'; // Компонент карты маршрута для оформления груза
 import SimpleRouteMap from './components/SimpleRouteMap'; // Простая тестовая карта
 import ChatComponent from './components/ChatComponent';
+import ChatNotifications from './components/ChatNotifications';
 import { 
   Truck, Package, Users, Bell, Search, Plus, Edit, Trash2, CheckCircle, 
   Clock, MapPin, User, Shield, Warehouse, Menu, X, Building, 
