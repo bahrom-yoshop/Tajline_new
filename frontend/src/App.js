@@ -22398,6 +22398,33 @@ function App() {
                                         variant="outline" 
                                         onClick={() => {
                                           setSelectedWarehouse(warehouse);
+
+                      {/* Модалка: Список городов склада */}
+                      <Dialog open={cityListModalOpen} onOpenChange={setCityListModalOpen}>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Города склада</DialogTitle>
+                            <DialogDescription>
+                              Склад: {cityListModalWarehouse?.name} (№ {cityListModalWarehouse?.warehouse_id_number || '—'})
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-2">
+                            {Array.isArray(cityListModalWarehouse?.cities) && cityListModalWarehouse.cities.length > 0 ? (
+                              <ul className="list-disc ml-5 text-sm">
+                                {cityListModalWarehouse.cities.map((c, idx) => (
+                                  <li key={idx}>{c}</li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-gray-600">Города не назначены</p>
+                            )}
+                          </div>
+                          <div className="flex justify-end mt-4">
+                            <Button variant="outline" onClick={() => setCityListModalOpen(false)}>Закрыть</Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
                                           setActiveTab('warehouses-manage');
                                         }}
                                         className="text-blue-600 border-blue-200 hover:bg-blue-50"
