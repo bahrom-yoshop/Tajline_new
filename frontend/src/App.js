@@ -18899,7 +18899,7 @@ function App() {
                                     id="operator_recipient_phone"
                                     type="tel"
                                     value={operatorCargoForm.recipient_phone}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, recipient_phone: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, recipient_phone: e.target.value }))}
                                     placeholder="+992XXXXXXXXX"
                                     required
                                   />
