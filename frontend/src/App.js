@@ -23026,6 +23026,8 @@ function App() {
                                         className="bg-red-600 hover:bg-red-700"
                                       >
                                         <Trash2 className="mr-2 h-4 w-4" />
+                                        Удалить
+                                      </Button>
 
                       {/* Модалка: Добавить города к складу */}
                       <Dialog open={cityModalOpen} onOpenChange={setCityModalOpen}>
