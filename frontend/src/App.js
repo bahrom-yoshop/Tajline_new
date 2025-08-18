@@ -14358,7 +14358,7 @@ function App() {
                         
                         {item.subsections && activeSection === item.section && (
                           <div className="ml-6 mt-2 space-y-1">
-                            {item.subsections.map((sub) => (
+                            {item.subsections.filter(sub => !sub.adminOnly || user?.role === 'admin').map((sub) => (
                               <button
                                 key={sub.id}
                                 onClick={() => {
