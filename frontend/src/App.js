@@ -36215,6 +36215,20 @@ function App() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ========================================
+          🔔 УВЕДОМЛЕНИЯ ЧАТА (для операторов и админов)
+          ======================================== */}
+      
+      {(user?.role === 'admin' || user?.role === 'operator') && (
+        <ChatNotifications 
+          user={user}
+          onChatAccept={(chatId) => {
+            setSelectedChatId(chatId);
+            setActiveTab('chat-cargo');
+          }}
+        />
+      )}
     </div>
   );
 }
