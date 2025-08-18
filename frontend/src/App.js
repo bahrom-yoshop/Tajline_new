@@ -22429,13 +22429,6 @@ function App() {
                         </DialogContent>
                       </Dialog>
 
-                                          setActiveTab('warehouses-manage');
-                                        }}
-                                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                                      >
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Редактировать
-                                      </Button>
                                       <Button 
                                         variant="destructive" 
                                         onClick={() => handleDeleteWarehouse(warehouse.id)}
