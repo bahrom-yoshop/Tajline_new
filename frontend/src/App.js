@@ -19587,34 +19587,36 @@ function App() {
                           </div>
 
                           {/* Выбор склада */}
-                          <div>
-                            <Label htmlFor="warehouse_id">Склад для выдачи груза</Label>
-                            <Select 
-                              key="warehouse-select"
-                              value={operatorCargoForm.warehouse_id} 
-                              onValueChange={(value) => {
-                                setOperatorCargoForm(prev => ({
-                                  ...prev, 
-                                  warehouse_id: value
-                                }));
-                              }}
-                            >
-                              <SelectTrigger key="warehouse-trigger">
-                                <SelectValue placeholder={
-                                  warehouses.length === 0 
-                                    ? "Загрузка складов..." 
-                                    : "Выберите склад для выдачи груза"
-                                } />
-                              </SelectTrigger>
-                              <SelectContent key="warehouse-content">
-                                {warehouses.filter(w => w.is_active).map((warehouse) => (
-                                  <SelectItem key={`warehouse-${warehouse.id}`} value={warehouse.id}>
-                                    {warehouse.name} - {warehouse.location}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          {false && (
+                            <div>
+                              <Label htmlFor="warehouse_id">Склад для выдачи груза</Label>
+                              <Select 
+                                key="warehouse-select"
+                                value={operatorCargoForm.warehouse_id} 
+                                onValueChange={(value) => {
+                                  setOperatorCargoForm(prev => ({
+                                    ...prev, 
+                                    warehouse_id: value
+                                  }));
+                                }}
+                              >
+                                <SelectTrigger key="warehouse-trigger">
+                                  <SelectValue placeholder={
+                                    warehouses.length === 0 
+                                      ? "Загрузка складов..." 
+                                      : "Выберите склад для выдачи груза"
+                                  } />
+                                </SelectTrigger>
+                                <SelectContent key="warehouse-content">
+                                  {warehouses.filter(w => w.is_active).map((warehouse) => (
+                                    <SelectItem key={`warehouse-${warehouse.id}`} value={warehouse.id}>
+                                      {warehouse.name} - {warehouse.location}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
 
                           {/* Способ оплаты */}
                           <div>
