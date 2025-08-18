@@ -1316,6 +1316,18 @@ backend:
           agent: "testing"
           comment: "❌ ОШИБКА СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102 ЗАВЕРШЕНА! РЕЗУЛЬТАТ: Груз 250102 не найден в системе Дата: 2025-08-18 02:03. ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ: 1) Диагностика через GET /api/debug/find-cargo-by-number/250102, 2) Получение списка городов через GET /api/destinations/cities, 3) Исправление складов через PATCH /api/admin/cargo/by-number/250102/set-warehouses, 4) Проверка что hidden_reason отсутствует и карточка является visible_candidate."
 
+  - task: "🎯 СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102: Исправление видимости заявки 250102 в списке «Размещение» в TAJLINE.TJ"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ ОШИБКА СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102 ЗАВЕРШЕНА! РЕЗУЛЬТАТ: Груз 250102 не найден в системе через доступные методы Дата: 2025-08-18 02:05. ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ: 1) Диагностика через GET /api/debug/find-cargo-by-number/250102 и operator/cargo/list, 2) Получение списка городов через GET /api/destinations/cities, 3) Исправление складов через PATCH /api/admin/cargo/by-number/250102/set-warehouses, 4) Проверка что hidden_reason отсутствует и карточка является visible_candidate."
+
 frontend:
   - task: "🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Простые модальные окна без Radix UI в TAJLINE.TJ"
     implemented: true
