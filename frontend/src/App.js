@@ -20717,7 +20717,7 @@ function App() {
                                               <div className="space-y-1 text-sm">
                                                 <p><strong>Имя:</strong> {item.sender_full_name}</p>
                                                 <p><strong>Телефон:</strong> {item.sender_phone}</p>
-                                                <p><strong>Принял:</strong> {item.accepting_operator}</p>
+                                                <p><strong>Принял оператор:</strong> {item.received_by_operator || item.accepting_operator || 'Не указано'}</p>
                                               </div>
                                             </div>
                                             
