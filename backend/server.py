@@ -18905,7 +18905,7 @@ async def send_message(chat_id: str, message_data: MessageCreate, current_user=D
         # Проверяем существование чата и права доступа
         chat = db.chats.find_one({
             "id": chat_id,
-            "participants.user_id": current_user["id"]
+            "participants.user_id": current_user.id
         }, {"_id": 0})
         
         if not chat:
