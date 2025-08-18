@@ -23075,7 +23075,8 @@ function App() {
                         </DialogContent>
                       </Dialog>
 
-                      {/* Массовое назначение городов для складов */}
+                      {/* ВРЕМЕННО ЗАКОММЕНТИРОВАНО ДЛЯ ИСПРАВЛЕНИЯ JSX ОШИБОК
+                      Массовое назначение городов для складов 
                       <Card>
                         <CardContent>
                               <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
