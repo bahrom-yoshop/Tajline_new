@@ -19086,73 +19086,199 @@ function App() {
                               <div className="space-y-4 border-t pt-4">
                                 <h3 className="text-lg font-semibold text-gray-900">Информация о грузе</h3>
                                 
-                                {/* Название груза */}
-                                <div>
-                                  <Label htmlFor="cargo_name" className="font-medium">
-                                    Название груза *
-                                  </Label>
-                                  <Input
-                                    id="cargo_name"
-                                    value={operatorCargoForm.cargo_items?.[0]?.name || ''}
-                                    onChange={(e) => {
-                                      const newItems = [...(operatorCargoForm.cargo_items || [])];
-                                      if (newItems.length === 0) newItems.push({});
-                                      newItems[0] = { ...newItems[0], name: e.target.value };
-                                      setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
-                                    }}
-                                    placeholder="Документы, личные вещи, электроника..."
-                                    required
-                                  />
+                                {/* 🔧 Отладка: показываем текущее состояние */}
+                                <div className="mb-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
+                                  🔧 Режим множественных грузов: <strong>{operatorCargoForm.use_multi_cargo ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'}</strong>
+                                  | Количество грузов: <strong>{operatorCargoForm.cargo_items?.length || 0}</strong>
                                 </div>
 
-                                {/* Вес и стоимость груза */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <Label htmlFor="cargo_weight" className="font-medium">
-                                      Вес груза (кг) *
-                                    </Label>
-                                    <Input
-                                      id="cargo_weight"
-                                      type="number"
-                                      step="0.1"
-                                      min="0"
-                                      value={operatorCargoForm.cargo_items?.[0]?.weight || ''}
-                                      onChange={(e) => {
-                                        const newItems = [...(operatorCargoForm.cargo_items || [])];
-                                        if (newItems.length === 0) newItems.push({});
-                                        newItems[0] = { ...newItems[0], weight: e.target.value };
-                                        setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
-                                        // Обновляем общий вес
-                                        setOperatorCargoForm(prev => ({...prev, total_weight: e.target.value}));
-                                      }}
-                                      placeholder="10.5"
-                                      required
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <Label htmlFor="cargo_value" className="font-medium">
-                                      Стоимость груза (руб.) *
-                                    </Label>
-                                    <Input
-                                      id="cargo_value"
-                                      type="number"
-                                      step="0.01"
-                                      min="0"
-                                      value={operatorCargoForm.cargo_items?.[0]?.declared_value || ''}
-                                      onChange={(e) => {
-                                        const newItems = [...(operatorCargoForm.cargo_items || [])];
-                                        if (newItems.length === 0) newItems.push({});
-                                        newItems[0] = { ...newItems[0], declared_value: e.target.value };
-                                        setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
-                                        // Обновляем общую стоимость
-                                        setOperatorCargoForm(prev => ({...prev, total_cost: e.target.value}));
-                                      }}
-                                      placeholder="5000"
-                                      required
-                                    />
-                                  </div>
-                                </div>
+                                {!operatorCargoForm.use_multi_cargo ? (
+                                  // Режим одиночного груза
+                                  <>
+                                    {/* Название груза */}
+                                    <div>
+                                      <Label htmlFor="cargo_name" className="font-medium">
+                                        Название груза *
+                                      </Label>
+                                      <Input
+                                        id="cargo_name"
+                                        value={operatorCargoForm.cargo_items?.[0]?.name || ''}
+                                        onChange={(e) => {
+                                          const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                          if (newItems.length === 0) newItems.push({});
+                                          newItems[0] = { ...newItems[0], name: e.target.value };
+                                          setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                        }}
+                                        placeholder="Документы, личные вещи, электроника..."
+                                        required
+                                      />
+                                    </div>
+
+                                    {/* Вес и стоимость груза */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <Label htmlFor="cargo_weight" className="font-medium">
+                                          Вес груза (кг) *
+                                        </Label>
+                                        <Input
+                                          id="cargo_weight"
+                                          type="number"
+                                          step="0.1"
+                                          min="0"
+                                          value={operatorCargoForm.cargo_items?.[0]?.weight || ''}
+                                          onChange={(e) => {
+                                            const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                            if (newItems.length === 0) newItems.push({});
+                                            newItems[0] = { ...newItems[0], weight: e.target.value };
+                                            setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                            // Обновляем общий вес
+                                            setOperatorCargoForm(prev => ({...prev, total_weight: e.target.value}));
+                                          }}
+                                          placeholder="10.5"
+                                          required
+                                        />
+                                      </div>
+                                      
+                                      <div>
+                                        <Label htmlFor="cargo_value" className="font-medium">
+                                          Стоимость груза (руб.) *
+                                        </Label>
+                                        <Input
+                                          id="cargo_value"
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          value={operatorCargoForm.cargo_items?.[0]?.declared_value || ''}
+                                          onChange={(e) => {
+                                            const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                            if (newItems.length === 0) newItems.push({});
+                                            newItems[0] = { ...newItems[0], declared_value: e.target.value };
+                                            setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                            // Обновляем общую стоимость
+                                            setOperatorCargoForm(prev => ({...prev, total_cost: e.target.value}));
+                                          }}
+                                          placeholder="5000"
+                                          required
+                                        />
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  // Режим множественных грузов
+                                  <>
+                                    <div className="bg-blue-50 p-4 rounded-lg">
+                                      <h4 className="font-semibold text-lg mb-3 flex items-center">
+                                        <Package className="mr-2 h-5 w-5" />
+                                        Список грузов
+                                      </h4>
+                                      
+                                      {(operatorCargoForm.cargo_items || []).map((item, index) => (
+                                        <div key={`cargo-item-${index}`} className="mb-4 p-4 bg-white rounded border">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <span className="font-medium text-sm text-gray-600">
+                                              Груз #{index + 1}
+                                            </span>
+                                            {(operatorCargoForm.cargo_items || []).length > 1 && (
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                  const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                                  newItems.splice(index, 1);
+                                                  setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                                }}
+                                                className="text-red-600 border-red-300 hover:bg-red-50"
+                                              >
+                                                <Minus className="h-4 w-4" />
+                                              </Button>
+                                            )}
+                                          </div>
+                                          
+                                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <div>
+                                              <Label className="text-sm font-medium">Название</Label>
+                                              <Input
+                                                value={item.cargo_name || ''}
+                                                onChange={(e) => {
+                                                  const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                                  newItems[index] = { ...newItems[index], cargo_name: e.target.value };
+                                                  setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                                }}
+                                                placeholder="Название груза"
+                                                className="mt-1"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label className="text-sm font-medium">Вес (кг)</Label>
+                                              <Input
+                                                type="number"
+                                                step="0.1"
+                                                min="0"
+                                                value={item.weight || ''}
+                                                onChange={(e) => {
+                                                  const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                                  newItems[index] = { ...newItems[index], weight: e.target.value };
+                                                  setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                                }}
+                                                placeholder="0.0"
+                                                className="mt-1"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label className="text-sm font-medium">Цена за кг (₽)</Label>
+                                              <Input
+                                                type="number"
+                                                step="0.01" 
+                                                min="0"
+                                                value={item.price_per_kg || ''}
+                                                onChange={(e) => {
+                                                  const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                                  newItems[index] = { ...newItems[index], price_per_kg: e.target.value };
+                                                  setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                                }}
+                                                placeholder="80"
+                                                className="mt-1"
+                                              />
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Показываем расчет для каждого груза */}
+                                          <div className="mt-2 p-2 bg-gray-50 rounded text-sm">
+                                            <span className="text-gray-600">
+                                              Стоимость: <strong>{((parseFloat(item.weight) || 0) * (parseFloat(item.price_per_kg) || 0)).toFixed(2)} ₽</strong>
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                      
+                                      {/* Кнопка добавления нового груза */}
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => {
+                                          const newItems = [...(operatorCargoForm.cargo_items || [])];
+                                          newItems.push({ cargo_name: '', weight: '', price_per_kg: '' });
+                                          setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
+                                        }}
+                                        className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
+                                      >
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Добавить еще груз
+                                      </Button>
+                                      
+                                      {/* Общий расчет */}
+                                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
+                                        <div className="text-sm text-green-700">
+                                          <strong>Общий вес: {(operatorCargoForm.cargo_items || []).reduce((sum, item) => sum + (parseFloat(item.weight) || 0), 0).toFixed(1)} кг</strong>
+                                        </div>
+                                        <div className="text-lg font-bold text-green-800">
+                                          Общая стоимость: {(operatorCargoForm.cargo_items || []).reduce((sum, item) => sum + ((parseFloat(item.weight) || 0) * (parseFloat(item.price_per_kg) || 0)), 0).toFixed(2)} ₽
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
 
                                 {/* Маршрут */}
                                 <div>
