@@ -1548,7 +1548,7 @@ function App() {
   const addOperatorCargoItem = () => {
     const items = Array.isArray(operatorCargoForm.cargo_items) ? [...operatorCargoForm.cargo_items] : [];
     items.push({ name: '', weight: '', price_per_kg: '', value: '', description: '' });
-    setOperatorCargoForm({ ...operatorCargoForm, cargo_items: items });
+    setOperatorCargoForm(prev => ({ ...prev, cargo_items: items }));
   };
   const removeOperatorCargoItem = (index) => {
     const items = Array.isArray(operatorCargoForm.cargo_items) ? [...operatorCargoForm.cargo_items] : [];
