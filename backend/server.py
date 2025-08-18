@@ -1208,7 +1208,6 @@ class ChatCreate(BaseModel):
     participant_ids: List[str] = Field(..., min_items=1, max_items=10)
 
 class MessageCreate(BaseModel):
-    chat_id: str
     message_type: str = "text"
     message_text: Optional[str] = Field(None, max_length=2000)
     reply_to_message_id: Optional[str] = None
