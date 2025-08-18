@@ -27668,7 +27668,7 @@ function App() {
                           <p className="text-sm text-gray-700 leading-relaxed">
                             <span className="font-medium">Название:</span> {cargo.cargo_name}<br />
                             <span className="font-medium">Вес:</span> {cargo.weight} кг • 
-                            <span className="font-medium"> Стоимость:</span> {cargo.declared_value} ₽
+                            <span className="font-medium"> Стоимость:</span> {cargo.declared_value || cargo.price || cargo.total_cost || 'Не указана'} ₽
                           </p>
                         </div>
                         <Badge variant="outline" className="text-blue-700 border-blue-400 bg-blue-100 font-semibold">
