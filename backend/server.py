@@ -10673,6 +10673,26 @@ async def generate_qr_codes_for_cargo_batch(
         operator_cargo_list = list(db.operator_cargo.find({"id": {"$in": cargo_ids}}))
         all_cargo = cargo_list + operator_cargo_list
     
+    # ИСПРАВЛЕНИЕ: Дедупликация по cargo_number чтобы избежать дублей при генерации QR
+    seen_cargo_numbers = set()
+    unique_cargo_list = []
+    
+    for cargo in all_cargo:
+        cargo_number = cargo.get('cargo_number')
+        if cargo_number and cargo_number not in seen_cargo_numbers:
+            seen_cargo_numbers.add(cargo_number)
+            unique_cargo_list.append(cargo)
+        elif not cargo_number:
+            # Добавляем грузы без номера (если есть), но это не должно происходить
+            unique_cargo_list.append(cargo)
+    
+    # Логирование для отладки дедупликации QR
+    if len(all_cargo) != len(unique_cargo_list):
+        print(f"🔧 ДЕДУПЛИКАЦИЯ QR: Найдено {len(all_cargo)} грузов, после дедупликации: {len(unique_cargo_list)}")
+    
+    # Используем дедуплицированный список
+    all_cargo = unique_cargo_list
+    
     if not all_cargo:
         raise HTTPException(status_code=404, detail="Грузы не найдены")
     
