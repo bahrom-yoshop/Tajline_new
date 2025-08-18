@@ -23177,6 +23177,7 @@ function App() {
                       </CardContent>
                     </Card>
                   )}
+                  КОНЕЦ ЗАКОММЕНТИРОВАННОЙ СЕКЦИИ */}
 
                   {/* Управление товарами на складе */}
                   {activeTab === 'warehouses-manage' && user?.role === 'admin' && (
