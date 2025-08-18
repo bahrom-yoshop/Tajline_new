@@ -22398,6 +22398,53 @@ function App() {
                                         className="bg-red-600 hover:bg-red-700"
                                       >
                                         <Trash2 className="mr-2 h-4 w-4" />
+
+                      {/* Модалка: Добавить города к складу */}
+                      <Dialog open={cityModalOpen} onOpenChange={setCityModalOpen}>
+                        <DialogContent className="max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Добавить город(а) к складу</DialogTitle>
+                            <DialogDescription>
+                              Склад: {cityModalWarehouse?.name} (№ {cityModalWarehouse?.warehouse_id_number || '—'})
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-3">
+                            <Label>Список городов (через запятую)</Label>
+                            <textarea
+                              className="w-full h-28 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              placeholder="Например: Душанбе, Худжанд, Куляб"
+                              value={cityModalText}
+                              onChange={(e) => setCityModalText(e.target.value)}
+                            />
+                            <div className="flex justify-end gap-2">
+                              <Button variant="outline" onClick={() => setCityModalOpen(false)}>Отмена</Button>
+                              <Button
+                                className="bg-purple-600 hover:bg-purple-700"
+                                onClick={async () => {
+                                  try {
+                                    const cities = (cityModalText || '').split(',').map(s => s.trim()).filter(Boolean);
+                                    if (!cities.length) {
+                                      showAlert('Введите хотя бы один город', 'error');
+                                      return;
+                                    }
+                                    const res = await apiCall(`/api/admin/warehouses/${cityModalWarehouse.id}/set-city`, 'PATCH', { cities });
+                                    showAlert(`Города сохранены: ${(res.cities||[]).join(', ')}`, 'success');
+                                    setCityModalOpen(false);
+                                    setCityModalWarehouse(null);
+                                    setCityModalText('');
+                                    fetchWarehouses();
+                                  } catch (e) {
+                                    showAlert(e?.detail || 'Ошибка сохранения городов', 'error');
+                                  }
+                                }}
+                              >
+                                Сохранить
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
                                         Удалить
                                       </Button>
                                     </div>
