@@ -18976,6 +18976,24 @@ function App() {
                                 />
                               </div>
 
+                              {/* Способ получения груза */}
+                              <div>
+                                <Label htmlFor="operator_delivery_method" className="font-medium">
+                                  Способ получения груза *
+                                </Label>
+                                <select
+                                  id="operator_delivery_method"
+                                  value={operatorCargoForm.delivery_method || 'pickup'}
+                                  onChange={(e) => setOperatorCargoForm({...operatorCargoForm, delivery_method: e.target.value})}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  required
+                                >
+                                  <option value="pickup">Самовывоз</option>
+                                  <option value="home_shipping">Отправка до дома</option>
+                                  <option value="door_delivery">Доставка до дверей</option>
+                                </select>
+                              </div>
+
                               {/* Курьерская служба — временно скрыто по требованию */}
                               {false && (
                                 <div className="space-y-4 border-t pt-4">
