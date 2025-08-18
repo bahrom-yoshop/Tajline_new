@@ -23075,10 +23075,6 @@ function App() {
                         </DialogContent>
                       </Dialog>
 
-                              ))}
-                            </>
-                          )}
-
                               {/* Массовое назначение городов для складов */}
                               <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                                 <h4 className="font-semibold text-purple-800 mb-2">Массово задать города</h4>
