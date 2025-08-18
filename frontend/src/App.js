@@ -19836,7 +19836,7 @@ function App() {
                   )}
 
                   {/* Список грузов */}
-                  {(activeTab === 'cargo-list' || !activeTab || activeTab === 'cargo-management') && (
+                  {(activeTab === 'cargo-list' || activeTab === 'cargo-operator-accept' || !activeTab || activeTab === 'cargo-management') && (
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center justify-between">
