@@ -18935,77 +18935,40 @@ function App() {
                                 />
                               </div>
 
-                              {/* Курьерская служба */}
-                              <div className="space-y-4 border-t pt-4">
-                                <h3 className="text-lg font-semibold text-gray-900">Курьерская служба</h3>
-                                
-                                {/* Переключатель забора груза */}
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    id="pickup_required"
-                                    checked={operatorCargoForm.pickup_required || false}
-                                    onChange={(e) => setOperatorCargoForm({
-                                      ...operatorCargoForm, 
-                                      pickup_required: e.target.checked
-                                    })}
-                                    className="rounded border-gray-300"
-                                  />
-                                  <Label htmlFor="pickup_required" className="cursor-pointer">
-                                    Требуется забор груза от отправителя
-                                  </Label>
+                              {/* Курьерская служба — временно скрыто по требованию */}
+                              {false && (
+                                <div className="space-y-4 border-t pt-4">
+                                  <h3 className="text-lg font-semibold text-gray-900">Курьерская служба</h3>
+                                  <div className="flex items-center space-x-2">
+                                    <input type="checkbox" id="pickup_required" checked={operatorCargoForm.pickup_required || false}
+                                      onChange={(e) => setOperatorCargoForm({ ...operatorCargoForm, pickup_required: e.target.checked })}
+                                      className="rounded border-gray-300" />
+                                    <Label htmlFor="pickup_required" className="cursor-pointer">Требуется забор груза от отправителя</Label>
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="pickup_method" className="font-medium">Способ получения груза *</Label>
+                                    <select id="pickup_method" value={operatorCargoForm.pickup_method || 'self_delivery'}
+                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_method: e.target.value})}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                      <option value="self_delivery">Самовывоз</option>
+                                      <option value="courier_pickup">Курьерский забор</option>
+                                      <option value="pickup_point">Пункт выдачи</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="courier_fee" className="font-medium">Стоимость курьерских услуг (₽)</Label>
+                                    <Input id="courier_fee" type="number" step="0.01" min="0" value={operatorCargoForm.courier_fee || ''}
+                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, courier_fee: e.target.value})}
+                                      placeholder="Введите стоимость курьерских услуг" />
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <input type="checkbox" id="multiple_cargo_types" checked={operatorCargoForm.multiple_cargo_types || false}
+                                      onChange={(e) => setOperatorCargoForm({ ...operatorCargoForm, multiple_cargo_types: e.target.checked })}
+                                      className="rounded border-gray-300" />
+                                    <Label htmlFor="multiple_cargo_types" className="cursor-pointer">Несколько видов груза (с калькулятором)</Label>
+                                  </div>
                                 </div>
-
-                                {/* Способ получения груза */}
-                                <div>
-                                  <Label htmlFor="pickup_method" className="font-medium">
-                                    Способ получения груза *
-                                  </Label>
-                                  <select
-                                    id="pickup_method"
-                                    value={operatorCargoForm.pickup_method || 'self_delivery'}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_method: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  >
-                                    <option value="self_delivery">Самовывоз</option>
-                                    <option value="courier_pickup">Курьерский забор</option>
-                                    <option value="pickup_point">Пункт выдачи</option>
-                                  </select>
-                                </div>
-
-                                {/* Стоимость курьерских услуг */}
-                                <div>
-                                  <Label htmlFor="courier_fee" className="font-medium">
-                                    Стоимость курьерских услуг (₽)
-                                  </Label>
-                                  <Input
-                                    id="courier_fee"
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={operatorCargoForm.courier_fee || ''}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, courier_fee: e.target.value})}
-                                    placeholder="Введите стоимость курьерских услуг"
-                                  />
-                                </div>
-
-                                {/* Несколько видов груза (с калькулятором) */}
-                                <div className="flex items-center space-x-2">
-                                  <input
-                                    type="checkbox"
-                                    id="multiple_cargo_types"
-                                    checked={operatorCargoForm.multiple_cargo_types || false}
-                                    onChange={(e) => setOperatorCargoForm({
-                                      ...operatorCargoForm, 
-                                      multiple_cargo_types: e.target.checked
-                                    })}
-                                    className="rounded border-gray-300"
-                                  />
-                                  <Label htmlFor="multiple_cargo_types" className="cursor-pointer">
-                                    Несколько видов груза (с калькулятором)
-                                  </Label>
-                                </div>
-                              </div>
+                              )}
 
                               {/* Информация о грузе */}
                               <div className="space-y-4 border-t pt-4">
