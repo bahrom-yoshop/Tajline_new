@@ -19027,7 +19027,7 @@ function App() {
                                   <h3 className="text-lg font-semibold text-gray-900">Курьерская служба</h3>
                                   <div className="flex items-center space-x-2">
                                     <input type="checkbox" id="pickup_required" checked={operatorCargoForm.pickup_required || false}
-                                      onChange={(e) => setOperatorCargoForm({ ...operatorCargoForm, pickup_required: e.target.checked })}
+                                      onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, pickup_required: e.target.checked }))}
                                       className="rounded border-gray-300" />
                                     <Label htmlFor="pickup_required" className="cursor-pointer">Требуется забор груза от отправителя</Label>
                                   </div>
