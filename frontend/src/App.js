@@ -32730,10 +32730,25 @@ function App() {
             {/* Старый контент модального окна заменен на UI внешнего сканера */}
             {externalScannerActive ? (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                {/* Статус сообщение */}
+                {/* Статус сообщение с анимированным фоном */}
                 {scannerMessage && (
-                  <div className="mb-4 p-3 bg-white border border-blue-200 rounded">
-                    <p className="text-sm text-blue-800">{scannerMessage}</p>
+                  <div className={`mb-4 p-3 border rounded-lg transition-all duration-500 ${
+                    lastScanResult === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+                    lastScanResult === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+                    'bg-white border-blue-200 text-blue-800'
+                  }`}>
+                    <p className="text-sm font-medium">{scannerMessage}</p>
+                    {/* Анимированная полоска прогресса для статуса */}
+                    {lastScanResult && (
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1">
+                        <div 
+                          className={`h-1 rounded-full transition-all duration-1000 ${
+                            lastScanResult === 'success' ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: '100%' }}
+                        ></div>
+                      </div>
+                    )}
                   </div>
                 )}
                 
