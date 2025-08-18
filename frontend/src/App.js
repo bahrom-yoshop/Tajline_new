@@ -22709,6 +22709,74 @@ function App() {
                                         Редактировать
                                       </Button>
 
+                  {/* ========================================
+                      💬 РАЗДЕЛ ЧАТА
+                      ======================================== */}
+                  
+                  {/* Чаты по грузам */}
+                  {activeTab === 'chat-cargo' && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <MessageSquare className="mr-2 h-5 w-5" />
+                          💬 Чаты по грузам
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Здесь будет список чатов */}
+                          <div className="text-center py-8 text-gray-500">
+                            <MessageSquare className="mx-auto h-12 w-12 mb-4 text-gray-300" />
+                            <p>Чаты по грузам пока не созданы</p>
+                            <p className="text-sm">Чаты создаются автоматически при приёме грузов</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Поддержка */}
+                  {activeTab === 'chat-support' && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <MessageSquare className="mr-2 h-5 w-5" />
+                          💬 Общий чат поддержки
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="text-center py-8 text-gray-500">
+                            <MessageSquare className="mx-auto h-12 w-12 mb-4 text-gray-300" />
+                            <p>Общий чат поддержки</p>
+                            <p className="text-sm">В разработке...</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Статистика чатов (только для админов) */}
+                  {activeTab === 'chat-stats' && user?.role === 'admin' && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center">
+                          <BarChart3 className="mr-2 h-5 w-5" />
+                          📊 Статистика чатов
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="text-center py-8 text-gray-500">
+                            <BarChart3 className="mx-auto h-12 w-12 mb-4 text-gray-300" />
+                            <p>Статистика чатов</p>
+                            <p className="text-sm">В разработке...</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                       {/* Модалка: Список городов склада */}
                       <Dialog open={cityListModalOpen} onOpenChange={setCityListModalOpen}>
                         <DialogContent className="max-w-md">
