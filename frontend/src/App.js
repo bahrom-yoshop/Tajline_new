@@ -19014,13 +19014,23 @@ function App() {
                                     checked={operatorCargoForm.use_multi_cargo}
                                     onChange={(e) => {
                                       const checked = e.target.checked;
-                                      setOperatorCargoForm(prev => ({
-                                        ...prev,
-                                        use_multi_cargo: checked,
-                                        cargo_items: checked
-                                          ? (prev.cargo_items && prev.cargo_items.length ? prev.cargo_items : [{ cargo_name: '', weight: '', price_per_kg: '' }])
-                                          : prev.cargo_items
-                                      }));
+                                      console.log('🔧 Чек-бокс изменен:', checked ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН');
+                                      
+                                      setOperatorCargoForm(prev => {
+                                        const newState = {
+                                          ...prev,
+                                          use_multi_cargo: checked,
+                                          cargo_items: checked
+                                            ? (prev.cargo_items && prev.cargo_items.length ? prev.cargo_items : [{ cargo_name: '', weight: '', price_per_kg: '' }])
+                                            : prev.cargo_items
+                                        };
+                                        console.log('📊 Новое состояние формы:', { 
+                                          use_multi_cargo: newState.use_multi_cargo,
+                                          cargo_items_length: newState.cargo_items?.length 
+                                        });
+                                        return newState;
+                                      });
+                                      
                                       if (!checked) {
                                         setTotalWeight(0);
                                         setTotalCost(0);
