@@ -14341,6 +14341,8 @@ function App() {
                               setActiveTab('warehouses-list');
                             } else if (item.section === 'users' && user?.role === 'admin') {
                               setActiveTab('users-regular');
+                            } else if (item.section === 'chat') {
+                              setActiveTab('chat-cargo');
                             }
                             setMobileMenuOpen(false);
                           }}
