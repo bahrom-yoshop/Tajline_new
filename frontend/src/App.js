@@ -14360,6 +14360,7 @@ function App() {
                               <button
                                 key={sub.id}
                                 onClick={() => {
+                                  setActiveSection(item.section);
                                   setActiveTab(sub.id);
                                   setMobileMenuOpen(false);
                                 }}
