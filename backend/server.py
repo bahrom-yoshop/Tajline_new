@@ -18957,6 +18957,32 @@ async def create_chat(chat_data: ChatCreate, current_user=Depends(get_current_us
         # Сохраняем в БД
         db.chats.insert_one(new_chat)
         
+        # ========================================
+        # 🔔 ОТПРАВКА УВЕДОМЛЕНИЙ ОПЕРАТОРАМ/АДМИНАМ
+        # ========================================
+        
+        # Если создатель - клиент, отправляем уведомления операторам и админам
+        if creator.get("role") == "client":
+            notification_message = {
+                "type": "new_chat_request",
+                "chat_id": chat_id,
+                "chat_title": chat_data.title,
+                "sender_name": creator.get("full_name", "Клиент"),
+                "sender_role": creator.get("role", "client"),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+            # Отправляем уведомления всем операторам и админам через WebSocket
+            for participant in participants:
+                if participant["user_role"] in ["admin", "operator"]:
+                    try:
+                        await chat_manager.send_to_user(participant["user_id"], notification_message)
+                        print(f"🔔 Уведомление о новом чате отправлено {participant['user_name']} ({participant['user_role']})")
+                    except Exception as notify_error:
+                        print(f"⚠️ Ошибка отправки уведомления пользователю {participant['user_id']}: {notify_error}")
+        
+        # ========================================
+        
         return {"success": True, "chat_id": chat_id, "chat": serialize_mongo_document(new_chat)}
         
     except Exception as e:
