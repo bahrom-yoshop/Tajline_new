@@ -19034,7 +19034,7 @@ function App() {
                                   <div>
                                     <Label htmlFor="pickup_method" className="font-medium">Способ получения груза *</Label>
                                     <select id="pickup_method" value={operatorCargoForm.pickup_method || 'self_delivery'}
-                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_method: e.target.value})}
+                                      onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, pickup_method: e.target.value }))}
                                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                       <option value="self_delivery">Самовывоз</option>
                                       <option value="courier_pickup">Курьерский забор</option>
