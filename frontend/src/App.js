@@ -32612,13 +32612,18 @@ function App() {
                     <span>Всего для размещения</span>
                     <span>{availableCargoForPlacement.length + sessionPlacedCount}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                     <div 
-                      className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-700 ease-out relative"
                       style={{
                         width: `${sessionPlacedCount > 0 ? (sessionPlacedCount / (availableCargoForPlacement.length + sessionPlacedCount)) * 100 : 0}%`
                       }}
-                    ></div>
+                    >
+                      {/* Анимированный блик */}
+                      {sessionPlacedCount > 0 && (
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
