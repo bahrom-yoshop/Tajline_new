@@ -18737,7 +18737,7 @@ function App() {
                                     id="pickup_date"
                                     type="date"
                                     value={operatorCargoForm.pickup_date}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_date: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, pickup_date: e.target.value }))}
                                     className="border-orange-200 focus:border-orange-400"
                                     min={new Date().toISOString().split('T')[0]}
                                     required
