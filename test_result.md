@@ -1304,6 +1304,18 @@ backend:
           agent: "testing"
           comment: "✅ УСПЕШНО ТОЧЕЧНОЕ ИСПРАВЛЕНИЕ ЗАЯВКИ 250107 ЗАВЕРШЕНО! РЕЗУЛЬТАТ: Груз 250107 успешно исправлен: warehouse_id установлен на Москва Склад №1 (d0a8362d-b4d3-4947-b335-28c94658a021), destination_warehouse_id установлен на Худжанд Склад №2 (52761d8b-6407-49a5-8c4c-e28db520cdff), hidden_reason исчез Дата: 2025-08-17 22:06. ИТОГ: Груз 250107 теперь имеет warehouse_id (Москва Склад №1: d0a8362d-b4d3-4947-b335-28c94658a021) и destination_warehouse_id (Худжанд Склад №2: 52761d8b-6407-49a5-8c4c-e28db520cdff), поле hidden_reason исчезло или стало visible_candidate."
 
+  - task: "🎯 СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102: Исправление видимости заявки 250102 в списке «Размещение» в TAJLINE.TJ"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ ОШИБКА СРОЧНАЯ ДИАГНОСТИКА ГРУЗА 250102 ЗАВЕРШЕНА! РЕЗУЛЬТАТ: Груз 250102 не найден в системе Дата: 2025-08-18 02:03. ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ: 1) Диагностика через GET /api/debug/find-cargo-by-number/250102, 2) Получение списка городов через GET /api/destinations/cities, 3) Исправление складов через PATCH /api/admin/cargo/by-number/250102/set-warehouses, 4) Проверка что hidden_reason отсутствует и карточка является visible_candidate."
+
 frontend:
   - task: "🎯 КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Простые модальные окна без Radix UI в TAJLINE.TJ"
     implemented: true
