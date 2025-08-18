@@ -32762,10 +32762,22 @@ function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Поле для груза */}
                   <div>
-                    <Label className="text-sm font-medium text-blue-700">
-                      Шаг 1: Сканирование груза
-                      {externalScannerStep === 'cargo' && <span className="text-green-600 ml-2">← Текущий шаг</span>}
-                      {externalScannedCargo && <span className="text-green-600 ml-2">✓ Завершено</span>}
+                    <Label className={`text-sm font-medium transition-colors duration-300 ${
+                      externalScannerStep === 'cargo' ? 'text-yellow-700' : 
+                      externalScannedCargo ? 'text-green-700' : 'text-blue-700'
+                    }`}>
+                      <span className="flex items-center">
+                        Шаг 1: Сканирование груза
+                        {externalScannerStep === 'cargo' && (
+                          <span className="text-yellow-600 ml-2 animate-pulse">← Текущий шаг</span>
+                        )}
+                        {externalScannedCargo && (
+                          <span className="text-green-600 ml-2 flex items-center">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
+                            ✓ Завершено
+                          </span>
+                        )}
+                      </span>
                     </Label>
                     <Input
                       placeholder="Отсканируйте QR код груза здесь..."
