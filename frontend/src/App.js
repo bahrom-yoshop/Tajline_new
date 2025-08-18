@@ -19095,7 +19095,7 @@ function App() {
                                         const newItems = [...(operatorCargoForm.cargo_items || [])];
                                         if (newItems.length === 0) newItems.push({});
                                         newItems[0] = { ...newItems[0], weight: e.target.value };
-                                        setOperatorCargoForm({...operatorCargoForm, cargo_items: newItems});
+                                        setOperatorCargoForm(prev => ({ ...prev, cargo_items: newItems }));
                                         // Обновляем общий вес
                                         setOperatorCargoForm(prev => ({...prev, total_weight: e.target.value}));
                                       }}
