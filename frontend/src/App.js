@@ -22739,7 +22739,6 @@ function App() {
                               </Button>
                             </div>
                           ) : (
-                            <>
                               {/* Панель массового выбора */}
                               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
                                 <div className="flex items-center space-x-2">
