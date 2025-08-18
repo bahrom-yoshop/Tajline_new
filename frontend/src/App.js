@@ -4486,6 +4486,11 @@ function App() {
   const [externalScannedCell, setExternalScannedCell] = useState(null);
   const [scannerMessage, setScannerMessage] = useState('');
   
+  // НОВЫЕ состояния для UX улучшений
+  const [cargoScanError, setCargoScanError] = useState(false);
+  const [cellScanError, setCellScanError] = useState(false);
+  const [lastScanResult, setLastScanResult] = useState(null); // 'success', 'error', null
+  
   // Состояния для камеры - разделены для каждого сканера
   const [html5QrCode, setHtml5QrCode] = useState(null);  // Основной сканер
   const [html5QrCodePlacement, setHtml5QrCodePlacement] = useState(null);  // Сканер размещения
