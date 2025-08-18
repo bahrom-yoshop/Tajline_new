@@ -144,6 +144,10 @@ function App() {
   // Поля для массового назначения городов
   const [bulkCitiesText, setBulkCitiesText] = useState('');
   const [bulkCitiesPreview, setBulkCitiesPreview] = useState(null);
+  // Модалка добавления городов к складу
+  const [cityModalOpen, setCityModalOpen] = useState(false);
+  const [cityModalWarehouse, setCityModalWarehouse] = useState(null);
+  const [cityModalText, setCityModalText] = useState('');
   const [warehousesStatistics, setWarehousesStatistics] = useState({}); // Статистика складов
   const [warehouseCargo, setWarehouseCargo] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
