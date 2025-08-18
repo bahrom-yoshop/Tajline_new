@@ -10614,7 +10614,6 @@ async def direct_accept_cargo_by_operator(
                 # Данные конкретного груза
                 "cargo_name": cargo_item.get("cargo_name", f"Груз №{index}"),
                 "weight": float(cargo_item.get("weight", 0)),
-                "declared_value": float(cargo_item.get("value", 0)),
                 "description": cargo_item.get("description", ""),
                 
                 # Общие данные заявки
