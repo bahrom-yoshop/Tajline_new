@@ -20668,52 +20668,45 @@ function App() {
                                               <div className="space-y-1 text-sm">
                                                 <p><strong>Наименование:</strong> {item.cargo_name}</p>
                                                 <p><strong>Вес:</strong> {item.weight} кг</p>
-                                                <p><strong>Стоимость:</strong> {item.declared_value} ₽</p>
+                                                <p><strong>Стоимость:</strong> {item.declared_value || item.total_cost || 'Не указана'} ₽</p>
                                                 <p><strong>Статус:</strong> {getProcessingStatusLabel(item.processing_status)}</p>
                                               </div>
                                             </div>
                                             
-                                            {/* Информация об оплате */}
+                                            {/* Информация об оплате - ОБНОВЛЕННАЯ */}
                                             <div className="space-y-2">
                                               <h4 className="font-semibold text-lg text-gray-700 mb-3">💳 Оплата</h4>
                                               <div className="space-y-1 text-sm">
+                                                {/* Способ оплаты */}
+                                                <p><strong>Способ оплаты:</strong> {
+                                                  item.payment_method === 'cash' ? 'Наличный' :
+                                                  item.payment_method === 'card_transfer' ? 'На карту' :
+                                                  item.payment_method === 'cash_on_delivery' ? 'Оплата при получении' :
+                                                  item.payment_method === 'credit' ? 'Оплата в долг' :
+                                                  item.payment_method === 'not_paid' ? 'Не оплачено' :
+                                                  item.payment_method || 'Не указан'
+                                                }</p>
+                                                
+                                                {/* Статус оплаты - НОВАЯ ЛОГИКА */}
                                                 <p><strong>Статус оплаты:</strong> 
                                                   <Badge 
                                                     variant={
-                                                      item.payment_status === 'paid' ? 'default' : 
-                                                      item.payment_status === 'not_paid' ? 'destructive' :
-                                                      item.payment_status === 'partially_paid' ? 'secondary' :
-                                                      item.payment_status === 'prepaid' ? 'outline' :
-                                                      item.payment_status === 'debt' ? 'secondary' :
-                                                      'secondary'
+                                                      (item.payment_method === 'cash' || item.payment_method === 'card_transfer') ? 'default' : 'destructive'
                                                     }
                                                     className="ml-2"
                                                   >
-                                                    {
-                                                      item.payment_status === 'paid' ? 'Полностью оплачено' :
-                                                      item.payment_status === 'not_paid' ? 'Не оплачено' :
-                                                      item.payment_status === 'partially_paid' ? 'Частично оплачено' :
-                                                      item.payment_status === 'prepaid' ? 'Предоплачено' :
-                                                      item.payment_status === 'debt' ? 'В долг' :
-                                                      item.payment_status === 'payment_on_delivery' ? 'Оплата при получении' :
-                                                      item.payment_status || 'Не указано'
-                                                    }
+                                                    {(item.payment_method === 'cash' || item.payment_method === 'card_transfer') ? 'Оплачено' : 'Не оплачено'}
                                                   </Badge>
                                                 </p>
-                                                <p><strong>Способ оплаты:</strong> {
-                                                  item.payment_method === 'cash' ? 'Наличные' :
-                                                  item.payment_method === 'card' ? 'Банковская карта' :
-                                                  item.payment_method === 'transfer' ? 'Банковский перевод' :
-                                                  item.payment_method === 'debt' ? 'В долг' :
-                                                  item.payment_method === 'prepaid' ? 'Предоплачено' :
-                                                  item.payment_method === 'online_payment' ? 'Онлайн оплата' :
-                                                  item.payment_method || 'Не указан'
-                                                }</p>
-                                                {item.amount_paid && (
-                                                  <p><strong>Получено:</strong> {item.amount_paid} ₽</p>
+                                                
+                                                {/* Сумма оплаты */}
+                                                {item.payment_amount && (
+                                                  <p><strong>Сумма оплаты:</strong> {item.payment_amount} ₽</p>
                                                 )}
-                                                {item.payment_notes && (
-                                                  <p><strong>Заметки:</strong> {item.payment_notes}</p>
+                                                
+                                                {/* Дата погашения долга */}
+                                                {item.debt_due_date && (
+                                                  <p><strong>Дата погашения долга:</strong> {new Date(item.debt_due_date).toLocaleDateString('ru-RU')}</p>
                                                 )}
                                               </div>
                                             </div>
