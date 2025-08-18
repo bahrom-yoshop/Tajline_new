@@ -3721,6 +3721,16 @@ function App() {
       showAlert('❌ Ошибка сканирования груза. Проверьте формат QR кода и попробуйте еще раз.', 'error');
       setScannerMessage('❌ Ошибка сканирования. Попробуйте еще раз.');
       
+      // UX УЛУЧШЕНИЯ: критическая ошибка
+      setCargoScanError(true);
+      setLastScanResult('error');
+      playErrorSound();
+      
+      // Автоматически убираем индикатор ошибки через 3 секунды
+      setTimeout(() => {
+        setCargoScanError(false);
+      }, 3000);
+      
       // Сбрасываем поле груза
       setExternalCargoInput('');
       setExternalScannedCargo(null);
