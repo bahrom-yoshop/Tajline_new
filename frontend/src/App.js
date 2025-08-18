@@ -3566,6 +3566,71 @@ function App() {
     showAlert('Размещение с внешним сканером остановлено', 'info');
   };
 
+  // Функция завершения и сохранения размещения
+  const handleCompletePlacement = async () => {
+    try {
+      console.log('💾 Завершение размещения грузов...');
+      
+      if (sessionPlacedCount === 0) {
+        showAlert('❌ Нет размещенных грузов для сохранения', 'warning');
+        return;
+      }
+
+      // Собираем данные для сохранения
+      const placementData = {
+        session_id: Date.now(), // временный ID сессии
+        total_placed: sessionPlacedCount,
+        placement_timestamp: new Date().toISOString(),
+        operator_id: user?.id,
+        warehouse_id: user?.warehouse_id,
+        placed_cargo_summary: `Размещено ${sessionPlacedCount} грузов в рамках сессии`
+      };
+
+      // Отправляем данные на сервер
+      const response = await apiCall('POST', '/api/warehouse/complete-placement', placementData);
+      
+      if (response.success) {
+        showAlert(`✅ Размещение успешно завершено! Сохранено ${sessionPlacedCount} грузов`, 'success');
+        
+        // Сбрасываем состояние сессии
+        resetPlacementSession();
+        
+        // Закрываем модальное окно
+        setShowCargoPlacementModal(false);
+        
+        // Обновляем список доступных грузов
+        fetchAvailableCargoForPlacement();
+        
+        console.log('✅ Размещение завершено успешно');
+      } else {
+        throw new Error(response.message || 'Ошибка сохранения размещения');
+      }
+      
+    } catch (error) {
+      console.error('❌ Ошибка при завершении размещения:', error);
+      showAlert(`❌ Ошибка при сохранении размещения: ${error.message}`, 'error');
+    }
+  };
+
+  // Функция сброса сессии размещения
+  const resetPlacementSession = () => {
+    console.log('🔄 Сброс сессии размещения...');
+    
+    setSessionPlacedCount(0);
+    setExternalScannedCargo(null);
+    setExternalScannedCell(null);
+    setExternalCargoInput('');
+    setExternalCellInput('');
+    setExternalScannerStep('cargo');
+    setScannerMode('none');
+    setScannerMessage('');
+    
+    // Останавливаем внешний сканер если активен
+    if (externalScannerActive) {
+      setExternalScannerActive(false);
+    }
+  };
+
   // Функция обработки ввода от внешнего сканера для груза
   const handleExternalCargoScan = async (cargoData) => {
     try {
