@@ -12,7 +12,7 @@ from datetime import datetime
 class QRStabilityTester:
     def __init__(self):
         # Use the correct backend URL from frontend/.env
-        self.base_url = "https://cargo-system-debug.preview.emergentagent.com"
+        self.base_url = "https://qr-logistics-1.preview.emergentagent.com"
         self.tokens = {}
         self.tests_run = 0
         self.tests_passed = 0

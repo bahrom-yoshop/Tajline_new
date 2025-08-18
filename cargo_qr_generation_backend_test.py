@@ -35,7 +35,7 @@ import base64
 from datetime import datetime, timedelta
 
 # Получаем URL backend из переменной окружения
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-system-debug.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://qr-logistics-1.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class CargoQRGenerationTester:

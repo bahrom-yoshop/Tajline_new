@@ -31,7 +31,7 @@ import sys
 from datetime import datetime
 
 # Конфигурация
-BASE_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
+BASE_URL = "https://qr-logistics-1.preview.emergentagent.com/api"
 ADMIN_PHONE = "+79999888777"
 ADMIN_PASSWORD = "admin123"
 

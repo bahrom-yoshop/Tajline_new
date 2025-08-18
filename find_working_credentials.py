@@ -6,7 +6,7 @@
 import requests
 import json
 
-BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
+BACKEND_URL = "https://qr-logistics-1.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Список возможных учетных данных для тестирования

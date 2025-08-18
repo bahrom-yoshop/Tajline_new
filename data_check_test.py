@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 class DataChecker:
-    def __init__(self, base_url="https://cargo-system-debug.preview.emergentagent.com"):
+    def __init__(self, base_url="https://qr-logistics-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         

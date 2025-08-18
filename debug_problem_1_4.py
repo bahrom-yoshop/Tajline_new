@@ -6,7 +6,7 @@ Debug script for Problem 1.4 to understand warehouse assignment logic
 import requests
 import json
 
-base_url = "https://cargo-system-debug.preview.emergentagent.com"
+base_url = "https://qr-logistics-1.preview.emergentagent.com"
 
 # Login as admin
 admin_login = {

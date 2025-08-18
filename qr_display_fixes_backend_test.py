@@ -29,7 +29,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Конфигурация
-BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
+BACKEND_URL = "https://qr-logistics-1.preview.emergentagent.com/api"
 
 # Тестовые данные
 WAREHOUSE_OPERATOR = {

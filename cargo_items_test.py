@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 class CargoItemsAnalyzer:
-    def __init__(self, base_url="https://cargo-system-debug.preview.emergentagent.com"):
+    def __init__(self, base_url="https://qr-logistics-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.tokens = {}
         self.users = {}
@@ -303,7 +303,7 @@ class CargoItemsAnalyzer:
 
 if __name__ == "__main__":
     import os
-    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://cargo-system-debug.preview.emergentagent.com')
+    backend_url = os.environ.get('REACT_APP_BACKEND_URL', 'https://qr-logistics-1.preview.emergentagent.com')
     
     analyzer = CargoItemsAnalyzer(base_url=backend_url)
     

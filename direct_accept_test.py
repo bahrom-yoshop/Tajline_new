@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Конфигурация
-BACKEND_URL = "https://cargo-system-debug.preview.emergentagent.com/api"
+BACKEND_URL = "https://qr-logistics-1.preview.emergentagent.com/api"
 
 # Тестовые данные для авторизации
 OPERATOR_CREDENTIALS = {
