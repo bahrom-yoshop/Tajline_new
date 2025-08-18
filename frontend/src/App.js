@@ -22376,6 +22376,17 @@ function App() {
                                       </Button>
                                       <Button 
                                         variant="outline"
+                                        className="text-purple-700 border-purple-300 hover:bg-purple-50"
+                                        onClick={() => {
+                                          setCityListModalWarehouse(warehouse);
+                                          setCityListModalOpen(true);
+                                        }}
+                                      >
+                                        <MapPin className="mr-2 h-4 w-4" />
+                                        Города склада
+                                      </Button>
+                                      <Button 
+                                        variant="outline"
                                         onClick={() => openCellManagement(warehouse)}
                                       >
                                         <Settings className="mr-2 h-4 w-4" />
