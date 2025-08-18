@@ -18975,7 +18975,7 @@ async def get_chat_messages(chat_id: str, skip: int = 0, limit: int = 50, curren
         # Проверяем доступ к чату
         chat = db.chats.find_one({
             "id": chat_id,
-            "participants.user_id": current_user["id"]
+            "participants.user_id": current_user.id
         }, {"_id": 0})
         
         if not chat:
