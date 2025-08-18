@@ -19343,21 +19343,77 @@ function App() {
 
                                 {/* Способ оплаты */}
                                 <div>
-                                  <Label htmlFor="payment_method" className="font-medium">
+                                  <Label htmlFor="operator_payment_method" className="font-medium">
                                     Способ оплаты *
                                   </Label>
-                                  <select
-                                    id="payment_method"
-                                    value={operatorCargoForm.payment_method || 'not_paid'}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, payment_method: e.target.value})}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  <Select 
+                                    key="operator-payment-method-select"
+                                    value={operatorCargoForm.payment_method || 'not_paid'} 
+                                    onValueChange={(value) => {
+                                      const newForm = { ...operatorCargoForm };
+                                      newForm.payment_method = value;
+                                      
+                                      // Сброс зависимых полей
+                                      if (value !== 'cash' && value !== 'card_transfer') {
+                                        newForm.payment_amount = '';
+                                      }
+                                      if (value !== 'credit') {
+                                        newForm.debt_due_date = '';
+                                      }
+                                      
+                                      setOperatorCargoForm(newForm);
+                                    }}
                                   >
-                                    <option value="not_paid">Не оплачено</option>
-                                    <option value="cash">Наличными</option>
-                                    <option value="card">Картой</option>
-                                    <option value="transfer">Переводом</option>
-                                  </select>
+                                    <SelectTrigger key="operator-payment-method-trigger">
+                                      <SelectValue placeholder="Выберите способ оплаты" />
+                                    </SelectTrigger>
+                                    <SelectContent key="operator-payment-method-content">
+                                      <SelectItem key="operator-payment-not_paid" value="not_paid">Не оплачено</SelectItem>
+                                      <SelectItem key="operator-payment-cash" value="cash">Наличный</SelectItem>
+                                      <SelectItem key="operator-payment-card_transfer" value="card_transfer">На карту</SelectItem>
+                                      <SelectItem key="operator-payment-cash_on_delivery" value="cash_on_delivery">Оплата при получении</SelectItem>
+                                      <SelectItem key="operator-payment-credit" value="credit">Оплата в долг</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 </div>
+
+                                {/* Поле суммы оплаты (для наличных и карты) */}
+                                {(operatorCargoForm.payment_method === 'cash' || operatorCargoForm.payment_method === 'card_transfer') && (
+                                  <div>
+                                    <Label htmlFor="operator_payment_amount" className="font-medium">
+                                      {operatorCargoForm.payment_method === 'cash' ? 'Сумма наличными (сом) *' : 'Сумма на карту (сом) *'}
+                                    </Label>
+                                    <Input
+                                      id="operator_payment_amount"
+                                      type="number"
+                                      step="0.01"
+                                      min="0"
+                                      value={operatorCargoForm.payment_amount || ''}
+                                      onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, payment_amount: e.target.value }))}
+                                      placeholder={operatorCargoForm.payment_method === 'cash' ? 'Введите сумму наличными' : 'Введите сумму для перевода'}
+                                      required={operatorCargoForm.payment_method === 'cash' || operatorCargoForm.payment_method === 'card_transfer'}
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Дата погашения долга (для оплаты в долг) */}
+                                {operatorCargoForm.payment_method === 'credit' && (
+                                  <div>
+                                    <Label htmlFor="operator_debt_due_date" className="font-medium">Дата погашения долга *</Label>
+                                    <Input
+                                      id="operator_debt_due_date"
+                                      type="date"
+                                      value={operatorCargoForm.debt_due_date || ''}
+                                      onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, debt_due_date: e.target.value }))}
+                                      required
+                                      min={new Date().toISOString().split('T')[0]}
+                                      className="w-full"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Выберите дату, до которой клиент должен погасить долг
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             </>
                           ) : (
