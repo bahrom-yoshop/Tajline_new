@@ -18984,7 +18984,7 @@ function App() {
                                 <select
                                   id="operator_delivery_method"
                                   value={operatorCargoForm.delivery_method || 'pickup'}
-                                  onChange={(e) => setOperatorCargoForm({...operatorCargoForm, delivery_method: e.target.value})}
+                                  onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, delivery_method: e.target.value }))}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                   required
                                 >
