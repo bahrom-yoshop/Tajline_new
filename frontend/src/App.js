@@ -18657,7 +18657,7 @@ function App() {
                                   <Input
                                     id="pickup_cargo_name"
                                     value={operatorCargoForm.cargo_name || ''}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, cargo_name: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, cargo_name: e.target.value }))}
                                     placeholder="Документы, одежда, подарки..."
                                     className="border-orange-200 focus:border-orange-400"
                                     required
