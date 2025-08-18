@@ -3650,6 +3650,11 @@ function App() {
         setScannerMessage(`✅ Груз ${cargo.cargo_number} найден! Переходим к сканированию ячейки.`);
         showAlert(`Груз ${cargo.cargo_number} найден! Отсканируйте ячейку.`, 'success');
         
+        // UX УЛУЧШЕНИЯ: успешное сканирование
+        setCargoScanError(false);
+        setLastScanResult('success');
+        playSuccessSound();
+        
         // Переходим к сканированию ячейки
         setExternalScannerStep('cell');
         setScannerMessage(`📍 Отсканируйте QR код ячейки для размещения груза ${cargo.cargo_number}`);
