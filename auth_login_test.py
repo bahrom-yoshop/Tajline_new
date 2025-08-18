@@ -30,7 +30,7 @@ class AuthLoginTester:
         self.test_results = []
         self.test_user_data = {
             "phone": "+79777888999",
-            "password": "operator123"
+            "password": "warehouse123"
         }
         
     def log_result(self, test_name, success, details="", response_data=None):
