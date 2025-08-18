@@ -18741,6 +18741,355 @@ async def cleanup_duplicate_notifications(current_user: User = Depends(get_curre
         print(f"Error cleaning up duplicates: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+# ========================================
+# 💬 CHAT API ENDPOINTS
+# ========================================
+
+@app.websocket("/api/chat/ws")
+async def chat_websocket_endpoint(websocket: WebSocket, token: str):
+    """WebSocket endpoint for real-time chat"""
+    try:
+        # Проверяем токен
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_phone = payload.get("sub")
+        user_id = payload.get("user_id")
+        
+        if not user_id:
+            await websocket.close(code=1000, reason="Invalid token")
+            return
+        
+        # Получаем информацию о пользователе
+        user_info = {}
+        user = db.users.find_one({"id": user_id}, {"_id": 0})
+        if user:
+            user_info = {
+                "id": user.get("id"),
+                "full_name": user.get("full_name", "Unknown"),
+                "role": user.get("role", "client"),
+                "phone": user.get("phone")
+            }
+        
+        # Подключаем к чату
+        await chat_manager.connect_to_chat(websocket, user_id, user_info)
+        
+        try:
+            while True:
+                # Получаем сообщения от клиента
+                data = await websocket.receive_text()
+                message_data = json.loads(data)
+                
+                message_type = message_data.get("type")
+                
+                if message_type == "join_chat":
+                    chat_id = message_data.get("chat_id")
+                    if chat_id:
+                        chat_manager.join_chat(user_id, chat_id)
+                        
+                elif message_type == "leave_chat":
+                    chat_id = message_data.get("chat_id")
+                    if chat_id:
+                        chat_manager.leave_chat(user_id, chat_id)
+                        
+                elif message_type == "typing_start" or message_type == "typing_stop":
+                    chat_id = message_data.get("chat_id")
+                    if chat_id:
+                        typing_message = {
+                            "type": message_type,
+                            "chat_id": chat_id,
+                            "user_id": user_id,
+                            "user_name": user_info.get("full_name"),
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                        await chat_manager.send_to_chat(chat_id, typing_message, exclude_user=user_id)
+                
+        except WebSocketDisconnect:
+            chat_manager.disconnect_from_chat(user_id)
+    except Exception as e:
+        print(f"❌ WebSocket error: {e}")
+        await websocket.close(code=1000, reason="Server error")
+
+@app.post("/api/chat/create")
+async def create_chat(chat_data: ChatCreate, current_user=Depends(get_current_user)):
+    """Создать новый чат"""
+    try:
+        chat_id = str(uuid.uuid4())
+        
+        # Получаем информацию о создателе
+        creator = db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        if not creator:
+            raise HTTPException(status_code=404, detail="Creator not found")
+        
+        # Получаем участников чата
+        participants = []
+        for participant_id in chat_data.participant_ids:
+            user = db.users.find_one({"id": participant_id}, {"_id": 0})
+            if user:
+                participants.append({
+                    "user_id": user["id"],
+                    "user_name": user.get("full_name", "Unknown"),
+                    "user_role": user.get("role", "client"),
+                    "joined_at": datetime.utcnow(),
+                    "is_active": True
+                })
+        
+        # Если чат привязан к грузу, получаем информацию о грузе
+        cargo_number = None
+        if chat_data.cargo_id:
+            cargo = db.cargo.find_one({"id": chat_data.cargo_id}, {"_id": 0, "cargo_number": 1})
+            if cargo:
+                cargo_number = cargo.get("cargo_number")
+        
+        # Создаем чат
+        new_chat = {
+            "id": chat_id,
+            "chat_type": chat_data.chat_type,
+            "cargo_id": chat_data.cargo_id,
+            "cargo_number": cargo_number,
+            "title": chat_data.title,
+            "participants": participants,
+            "created_by": current_user["id"],
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "last_message_at": None,
+            "unread_count": {},
+            "is_archived": False
+        }
+        
+        # Сохраняем в БД
+        db.chats.insert_one(new_chat)
+        
+        return {"success": True, "chat_id": chat_id, "chat": serialize_mongo_document(new_chat)}
+        
+    except Exception as e:
+        print(f"❌ Error creating chat: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create chat")
+
+@app.get("/api/chat/list")
+async def get_chat_list(skip: int = 0, limit: int = 20, current_user=Depends(get_current_user)):
+    """Получить список чатов пользователя"""
+    try:
+        user_id = current_user["id"]
+        
+        # Находим чаты где пользователь является участником
+        chats_cursor = db.chats.find({
+            "participants.user_id": user_id,
+            "is_archived": False
+        }).sort("last_message_at", -1).skip(skip).limit(limit)
+        
+        chats = list(chats_cursor)
+        total_count = db.chats.count_documents({
+            "participants.user_id": user_id,
+            "is_archived": False
+        })
+        
+        # Подсчитываем общее количество непрочитанных
+        unread_total = 0
+        for chat in chats:
+            unread_count = chat.get("unread_count", {}).get(user_id, 0)
+            unread_total += unread_count
+        
+        return {
+            "chats": serialize_mongo_document(chats),
+            "total_count": total_count,
+            "unread_total": unread_total
+        }
+        
+    except Exception as e:
+        print(f"❌ Error getting chat list: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get chat list")
+
+@app.post("/api/chat/{chat_id}/messages")
+async def send_message(chat_id: str, message_data: MessageCreate, current_user=Depends(get_current_user)):
+    """Отправить сообщение в чат"""
+    try:
+        # Проверяем существование чата и права доступа
+        chat = db.chats.find_one({
+            "id": chat_id,
+            "participants.user_id": current_user["id"]
+        }, {"_id": 0})
+        
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found or access denied")
+        
+        # Получаем информацию о отправителе
+        user = db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Создаем сообщение
+        message_id = str(uuid.uuid4())
+        new_message = {
+            "id": message_id,
+            "chat_id": chat_id,
+            "sender_id": current_user["id"],
+            "sender_name": user.get("full_name", "Unknown"),
+            "sender_role": user.get("role", "client"),
+            "message_type": message_data.message_type,
+            "message_text": message_data.message_text,
+            "attachments": [],
+            "sent_at": datetime.utcnow(),
+            "edited_at": None,
+            "is_edited": False,
+            "read_by": {current_user["id"]: datetime.utcnow()},
+            "reply_to_message_id": message_data.reply_to_message_id
+        }
+        
+        # Сохраняем сообщение
+        db.messages.insert_one(new_message)
+        
+        # Обновляем чат
+        db.chats.update_one(
+            {"id": chat_id},
+            {
+                "$set": {
+                    "updated_at": datetime.utcnow(),
+                    "last_message_at": datetime.utcnow()
+                },
+                "$inc": {
+                    f"unread_count.{participant['user_id']}": 1 
+                    for participant in chat["participants"] 
+                    if participant["user_id"] != current_user["id"]
+                }
+            }
+        )
+        
+        # Отправляем через WebSocket
+        websocket_message = {
+            "type": "message_received",
+            "chat_id": chat_id,
+            "message": serialize_mongo_document(new_message)
+        }
+        
+        await chat_manager.send_to_chat(chat_id, websocket_message, exclude_user=current_user["id"])
+        
+        return {"success": True, "message_id": message_id, "message": serialize_mongo_document(new_message)}
+        
+    except Exception as e:
+        print(f"❌ Error sending message: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send message")
+
+@app.get("/api/chat/{chat_id}/messages")
+async def get_chat_messages(chat_id: str, skip: int = 0, limit: int = 50, current_user=Depends(get_current_user)):
+    """Получить сообщения чата"""
+    try:
+        # Проверяем доступ к чату
+        chat = db.chats.find_one({
+            "id": chat_id,
+            "participants.user_id": current_user["id"]
+        }, {"_id": 0})
+        
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found or access denied")
+        
+        # Получаем сообщения
+        messages_cursor = db.messages.find({
+            "chat_id": chat_id
+        }).sort("sent_at", -1).skip(skip).limit(limit)
+        
+        messages = list(messages_cursor)
+        messages.reverse()  # Возвращаем в хронологическом порядке
+        
+        # Отмечаем сообщения как прочитанные
+        message_ids = [msg["id"] for msg in messages]
+        if message_ids:
+            db.messages.update_many(
+                {"id": {"$in": message_ids}},
+                {"$set": {f"read_by.{current_user['id']}": datetime.utcnow()}}
+            )
+            
+            # Обнуляем счетчик непрочитанных
+            db.chats.update_one(
+                {"id": chat_id},
+                {"$set": {f"unread_count.{current_user['id']}": 0}}
+            )
+        
+        return {"messages": serialize_mongo_document(messages)}
+        
+    except Exception as e:
+        print(f"❌ Error getting messages: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get messages")
+
+@app.post("/api/chat/upload")
+async def upload_chat_file(file: UploadFile = File(...), current_user=Depends(get_current_user)):
+    """Загрузить файл для чата"""
+    try:
+        # Проверяем размер файла (макс 10MB)
+        if file.size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+        
+        # Определяем тип файла
+        file_type = "document"
+        if file.content_type:
+            if file.content_type.startswith("image/"):
+                file_type = "image"
+            elif file.content_type.startswith("audio/"):
+                file_type = "audio"
+            elif file.content_type.startswith("video/"):
+                file_type = "video"
+        
+        # Генерируем уникальное имя файла
+        file_id = str(uuid.uuid4())
+        file_extension = os.path.splitext(file.filename)[1] if file.filename else ""
+        safe_filename = f"{file_id}{file_extension}"
+        
+        # Определяем папку для сохранения
+        folder = "chat_audio" if file_type == "audio" else "chat_files"
+        file_path = f"uploads/{folder}/{safe_filename}"
+        
+        # Сохраняем файл
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Создаем запись о файле
+        file_record = {
+            "id": file_id,
+            "file_name": file.filename,
+            "file_size": len(content),
+            "file_type": file_type,
+            "file_url": f"/{file_path}",
+            "mime_type": file.content_type,
+            "uploaded_by": current_user["id"],
+            "uploaded_at": datetime.utcnow()
+        }
+        
+        return {"success": True, "file": serialize_mongo_document(file_record)}
+        
+    except Exception as e:
+        print(f"❌ Error uploading file: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upload file")
+
+@app.get("/api/chat/stats")
+async def get_chat_stats(current_user=Depends(get_current_user)):
+    """Получить статистику чатов (только для админов)"""
+    try:
+        user = db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        if not user or user.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Access denied")
+        
+        # WebSocket статистика
+        ws_stats = chat_manager.get_chat_stats()
+        
+        # Общая статистика чатов
+        total_chats = db.chats.count_documents({})
+        active_chats = db.chats.count_documents({"is_archived": False})
+        total_messages = db.messages.count_documents({})
+        
+        return {
+            "websocket_stats": ws_stats,
+            "database_stats": {
+                "total_chats": total_chats,
+                "active_chats": active_chats,
+                "total_messages": total_messages
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Error getting chat stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get chat stats")
+
+# ========================================
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
