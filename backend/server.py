@@ -1033,7 +1033,94 @@ class CargoOrderResponse(BaseModel):
 class BulkRemoveFromPlacementRequest(BaseModel):
     cargo_ids: List[str] = Field(..., min_items=1, max_items=100, description="Список ID грузов для удаления (максимум 100)")
 
-# Утилиты
+# ========================================
+# 💬 МОДЕЛИ ДЛЯ СИСТЕМЫ ЧАТА
+# ========================================
+
+class ChatParticipant(BaseModel):
+    user_id: str
+    user_name: str
+    user_role: str  # client, operator, admin, courier
+    joined_at: datetime
+    is_active: bool = True
+
+class Chat(BaseModel):
+    id: str
+    chat_type: str = "cargo_chat"  # cargo_chat, general_support
+    cargo_id: Optional[str] = None
+    cargo_number: Optional[str] = None
+    title: str  # "Груз #2508185378/01" или "Общий чат поддержки"
+    participants: List[ChatParticipant]
+    created_by: str
+    created_at: datetime
+    updated_at: datetime
+    last_message_at: Optional[datetime] = None
+    unread_count: Dict[str, int] = {}  # user_id -> количество непрочитанных
+    is_archived: bool = False
+
+class MessageAttachment(BaseModel):
+    id: str
+    file_name: str
+    file_size: int
+    file_type: str  # image, document, audio, video
+    file_url: str  # путь к файлу
+    mime_type: str
+    uploaded_at: datetime
+
+class ChatMessage(BaseModel):
+    id: str
+    chat_id: str
+    sender_id: str
+    sender_name: str
+    sender_role: str
+    message_type: str = "text"  # text, image, file, audio, system
+    message_text: Optional[str] = None
+    attachments: Optional[List[MessageAttachment]] = []
+    audio_duration: Optional[int] = None  # для голосовых сообщений в секундах
+    sent_at: datetime
+    edited_at: Optional[datetime] = None
+    is_edited: bool = False
+    read_by: Dict[str, datetime] = {}  # user_id -> время прочтения
+    reply_to_message_id: Optional[str] = None  # для ответов на сообщения
+
+class ChatCreate(BaseModel):
+    chat_type: str = "cargo_chat"
+    cargo_id: Optional[str] = None
+    title: str = Field(..., min_length=1, max_length=200)
+    participant_ids: List[str] = Field(..., min_items=1, max_items=10)
+
+class MessageCreate(BaseModel):
+    chat_id: str
+    message_type: str = "text"
+    message_text: Optional[str] = Field(None, max_length=2000)
+    reply_to_message_id: Optional[str] = None
+
+class MessageUpdate(BaseModel):
+    message_text: str = Field(..., min_length=1, max_length=2000)
+
+class ChatListResponse(BaseModel):
+    chats: List[Chat]
+    total_count: int
+    unread_total: int
+
+class WebSocketMessage(BaseModel):
+    type: str  # message_sent, message_received, user_joined, user_left, typing_start, typing_stop
+    chat_id: str
+    data: Dict[str, Any]
+
+# ========================================
+# 📁 МОДЕЛИ ДЛЯ ЗАГРУЗКИ ФАЙЛОВ
+# ========================================
+
+class FileUploadResponse(BaseModel):
+    file_id: str
+    file_name: str
+    file_size: int
+    file_type: str
+    file_url: str
+    uploaded_at: datetime
+
+# ========================================
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
