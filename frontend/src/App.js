@@ -23075,9 +23075,6 @@ function App() {
                         </DialogContent>
                       </Dialog>
 
-                                        Удалить
-                                      </Button>
-                                    </div>
                                   </CardContent>
                                 </Card>
                               ))}
