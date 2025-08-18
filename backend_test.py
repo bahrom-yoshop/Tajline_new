@@ -73,44 +73,39 @@ class ChatNotificationTester:
             self.log_result(f"Авторизация {role_name}", False, f"Ошибка: {str(e)}")
             return None, None
     
-    def create_test_user(self, role, full_name, phone, password):
-        """Создание тестового пользователя"""
+    def create_test_client(self):
+        """Создание тестового клиента через регистрацию"""
         try:
-            if not self.admin_token:
-                self.log_result("Создание пользователя", False, "Нет токена администратора")
-                return None
-                
-            user_data = {
-                "full_name": full_name,
+            # Генерируем уникальный номер телефона
+            import random
+            phone_suffix = random.randint(1000, 9999)
+            phone = f"+7990{phone_suffix}"
+            
+            client_data = {
+                "full_name": "Тестовый Клиент Чата",
                 "phone": phone,
-                "password": password,
-                "role": role
+                "password": "client123",
+                "role": "user"  # Регистрация создает пользователей с ролью user
             }
             
-            headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
-            response = requests.post(f"{BACKEND_URL}/admin/users", 
-                                   json=user_data, headers=headers)
+            response = requests.post(f"{BACKEND_URL}/auth/register", 
+                                   json=client_data, headers=HEADERS)
             
             if response.status_code == 200:
-                user_info = response.json()
-                self.test_users[role] = {
-                    "user_info": user_info,
-                    "phone": phone,
-                    "password": password
-                }
+                user_info = response.json().get('user', {})
+                user_info['phone'] = phone  # Сохраняем телефон для авторизации
                 
-                self.log_result(f"Создание пользователя {role}", True,
+                self.log_result("Создание тестового клиента", True,
                               f"ID: {user_info.get('id')}, "
-                              f"Имя: {full_name}, "
                               f"Телефон: {phone}")
                 return user_info
             else:
-                self.log_result(f"Создание пользователя {role}", False,
+                self.log_result("Создание тестового клиента", False,
                               f"HTTP {response.status_code}: {response.text}")
                 return None
                 
         except Exception as e:
-            self.log_result(f"Создание пользователя {role}", False, f"Ошибка: {str(e)}")
+            self.log_result("Создание тестового клиента", False, f"Ошибка: {str(e)}")
             return None
     
     def get_users_list(self, role_filter=None):
@@ -122,30 +117,95 @@ class ChatNotificationTester:
                 
             headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
             
-            # Тестируем endpoint для получения операторов/админов
-            response = requests.get(f"{BACKEND_URL}/admin/users/list", headers=headers)
-            
-            if response.status_code == 200:
-                users = response.json()
+            # Используем правильный endpoint
+            if role_filter:
+                # Получаем пользователей по ролям
+                all_users = []
+                for role in role_filter:
+                    response = requests.get(f"{BACKEND_URL}/admin/users?role={role}", headers=headers)
+                    if response.status_code == 200:
+                        users_data = response.json()
+                        users = users_data.get('items', [])
+                        all_users.extend(users)
                 
-                # Фильтруем по ролям если указано
-                if role_filter:
-                    filtered_users = [u for u in users if u.get('role') in role_filter]
-                    self.log_result("Получение списка пользователей", True,
-                                  f"Найдено {len(filtered_users)} пользователей с ролями {role_filter}")
-                    return filtered_users
-                else:
+                self.log_result("Получение списка пользователей", True,
+                              f"Найдено {len(all_users)} пользователей с ролями {role_filter}")
+                return all_users
+            else:
+                response = requests.get(f"{BACKEND_URL}/admin/users", headers=headers)
+                if response.status_code == 200:
+                    users_data = response.json()
+                    users = users_data.get('items', [])
                     self.log_result("Получение списка пользователей", True,
                                   f"Найдено {len(users)} пользователей всего")
                     return users
-            else:
-                self.log_result("Получение списка пользователей", False,
-                              f"HTTP {response.status_code}: {response.text}")
-                return []
+                else:
+                    self.log_result("Получение списка пользователей", False,
+                                  f"HTTP {response.status_code}: {response.text}")
+                    return []
                 
         except Exception as e:
             self.log_result("Получение списка пользователей", False, f"Ошибка: {str(e)}")
             return []
+    
+    def check_chat_participants(self, chat_id):
+        """Проверка участников чата"""
+        try:
+            if not self.admin_token:
+                return False
+                
+            headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            
+            # Получаем список чатов
+            response = requests.get(f"{BACKEND_URL}/chat/list", headers=headers)
+            
+            if response.status_code == 200:
+                chats_data = response.json()
+                chats = chats_data.get('chats', []) if isinstance(chats_data, dict) else chats_data
+                
+                # Ищем наш чат
+                chat_found = None
+                for chat in chats:
+                    if chat.get('id') == chat_id:
+                        chat_found = chat
+                        break
+                
+                if chat_found:
+                    participants = chat_found.get('participants', [])
+                    
+                    # Проверяем роли участников
+                    client_found = False
+                    admin_found = False
+                    operator_found = False
+                    
+                    for participant in participants:
+                        role = participant.get('user_role', '')
+                        if role in ['user', 'client']:
+                            client_found = True
+                        elif role == 'admin':
+                            admin_found = True
+                        elif role in ['operator', 'warehouse_operator']:
+                            operator_found = True
+                    
+                    details = f"Участников: {len(participants)}, "
+                    details += f"Клиент: {'✓' if client_found else '✗'}, "
+                    details += f"Админ: {'✓' if admin_found else '✗'}, "
+                    details += f"Оператор: {'✓' if operator_found else '✗'}"
+                    
+                    self.log_result("Проверка участников чата", True, details)
+                    return True
+                else:
+                    self.log_result("Проверка участников чата", False,
+                                  f"Чат с ID {chat_id} не найден")
+                    return False
+            else:
+                self.log_result("Проверка участников чата", False,
+                              f"HTTP {response.status_code}: {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_result("Проверка участников чата", False, f"Ошибка: {str(e)}")
+            return False
     
     def create_chat(self, token, chat_data, creator_role):
         """Создание чата"""
