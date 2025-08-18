@@ -307,7 +307,7 @@ class CargoGroupingTester:
                     self.log_test(
                         "Поиск грузов в API размещения",
                         True,
-                        f"Найдено {len(found_cargo)} из {len(created_cargo_numbers)} созданных грузов в списке размещения (всего в списке: {len(items)})"
+                        f"Найдено {len(found_cargo)} грузов из наших {len(created_cargo_numbers)} созданных в списке размещения (всего в списке: {len(items)})"
                     )
                     
                     # Показываем структуру данных
@@ -315,6 +315,18 @@ class CargoGroupingTester:
                     for cargo in found_cargo:
                         print(f"   • {cargo['cargo_number']}: {cargo['cargo_name']} ({cargo['weight']}кг) - {cargo['warehouse_name']}")
                     print()
+                    
+                    # Проверяем на дублирование наших грузов
+                    cargo_numbers_found = [c["cargo_number"] for c in found_cargo]
+                    unique_numbers = set(cargo_numbers_found)
+                    
+                    if len(cargo_numbers_found) > len(unique_numbers):
+                        print("🚨 ОБНАРУЖЕНО ДУБЛИРОВАНИЕ наших грузов в API ответе!")
+                        for number in unique_numbers:
+                            count = cargo_numbers_found.count(number)
+                            if count > 1:
+                                print(f"   • {number}: найден {count} раз")
+                        print()
                     
                     return found_cargo
                 else:
