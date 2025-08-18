@@ -22852,113 +22852,117 @@ function App() {
                       💬 РАЗДЕЛ ЧАТА
                       ======================================== */}
                   
-                  {/* Чаты по грузам */}
-                  {activeTab === 'chat-cargo' && (
-                    <Card className="h-[600px]">
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <MessageSquare className="mr-2 h-5 w-5" />
-                            💬 Чаты по грузам
-                            {chatNotifications > 0 && (
-                              <Badge variant="destructive" className="ml-2">
-                                {chatNotifications}
-                              </Badge>
-                            )}
-                          </div>
-                          <Button
-                            onClick={() => {
-                              fetchChatOperators();
-                              setShowCreateChatModal(true);
-                            }}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Plus className="mr-2 h-4 w-4" />
-                            Начать чат
-                          </Button>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="h-[500px] p-0">
-                        <ChatComponent 
-                          user={user}
-                          selectedChatId={selectedChatId}
-                          onChatSelect={setSelectedChatId}
-                        />
-                      </CardContent>
-                    </Card>
-                  )}
+                  {activeSection === 'chat' && (
+                    <>
+                      {/* Чаты по грузам */}
+                      {activeTab === 'chat-cargo' && (
+                        <Card className="h-[600px]">
+                          <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <MessageSquare className="mr-2 h-5 w-5" />
+                                💬 Чаты по грузам
+                                {chatNotifications > 0 && (
+                                  <Badge variant="destructive" className="ml-2">
+                                    {chatNotifications}
+                                  </Badge>
+                                )}
+                              </div>
+                              <Button
+                                onClick={() => {
+                                  fetchChatOperators();
+                                  setShowCreateChatModal(true);
+                                }}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Plus className="mr-2 h-4 w-4" />
+                                Начать чат
+                              </Button>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="h-[500px] p-0">
+                            <ChatComponent 
+                              user={user}
+                              selectedChatId={selectedChatId}
+                              onChatSelect={setSelectedChatId}
+                            />
+                          </CardContent>
+                        </Card>
+                      )}
 
-                  {/* Поддержка */}
-                  {activeTab === 'chat-support' && (
-                    <Card className="h-[600px]">
-                      <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <MessageSquare className="mr-2 h-5 w-5" />
-                          💬 Общий чат поддержки
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="h-[500px]">
-                        <div className="flex items-center justify-center h-full">
-                          <div className="text-center text-gray-500">
-                            <MessageSquare className="mx-auto h-12 w-12 mb-4 text-gray-300" />
-                            <p>Общий чат поддержки</p>
-                            <p className="text-sm">В разработке...</p>
-                            <Button 
-                              className="mt-4"
-                              onClick={() => {
-                                // TODO: Создать общий чат поддержки
-                                alert('Функция в разработке');
-                              }}
-                            >
-                              Создать чат поддержки
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                      {/* Поддержка */}
+                      {activeTab === 'chat-support' && (
+                        <Card className="h-[600px]">
+                          <CardHeader>
+                            <CardTitle className="flex items-center">
+                              <MessageSquare className="mr-2 h-5 w-5" />
+                              💬 Общий чат поддержки
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="h-[500px]">
+                            <div className="flex items-center justify-center h-full">
+                              <div className="text-center text-gray-500">
+                                <MessageCircle className="mx-auto h-12 w-12 mb-4 text-gray-300" />
+                                <p>Общий чат поддержки</p>
+                                <p className="text-sm">Для связи с администрацией</p>
+                                <Button 
+                                  className="mt-4"
+                                  onClick={() => {
+                                    fetchChatOperators();
+                                    setShowCreateChatModal(true);
+                                  }}
+                                >
+                                  Создать чат поддержки
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
 
-                  {/* Статистика чатов (только для админов) */}
-                  {activeTab === 'chat-stats' && user?.role === 'admin' && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center">
-                          <BarChart3 className="mr-2 h-5 w-5" />
-                          📊 Статистика чатов
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="text-center py-8 text-gray-500">
-                            <BarChart3 className="mx-auto h-12 w-12 mb-4 text-gray-300" />
-                            <p>Статистика чатов</p>
-                            <p className="text-sm">В разработке...</p>
-                            <Button 
-                              className="mt-4"
-                              onClick={async () => {
-                                try {
-                                  const token = localStorage.getItem('access_token');
-                                  const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/chat/stats`, {
-                                    headers: {
-                                      'Authorization': `Bearer ${token}`
+                      {/* Статистика чатов (только для админов) */}
+                      {activeTab === 'chat-stats' && user?.role === 'admin' && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center">
+                              <BarChart3 className="mr-2 h-5 w-5" />
+                              📊 Статистика чатов
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-4">
+                              <div className="text-center py-8 text-gray-500">
+                                <BarChart3 className="mx-auto h-12 w-12 mb-4 text-gray-300" />
+                                <p>Статистика чатов</p>
+                                <p className="text-sm">В разработке...</p>
+                                <Button 
+                                  className="mt-4"
+                                  onClick={async () => {
+                                    try {
+                                      const token = localStorage.getItem('access_token');
+                                      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/chat/stats`, {
+                                        headers: {
+                                          'Authorization': `Bearer ${token}`
+                                        }
+                                      });
+                                      
+                                      if (response.ok) {
+                                        const stats = await response.json();
+                                        alert(`Статистика чатов:\n\nАктивные подключения: ${stats.websocket_stats.total_connections}\nВсего чатов: ${stats.database_stats.total_chats}\nСообщений: ${stats.database_stats.total_messages}`);
+                                      }
+                                    } catch (error) {
+                                      console.error('Ошибка получения статистики:', error);
                                     }
-                                  });
-                                  
-                                  if (response.ok) {
-                                    const stats = await response.json();
-                                    alert(`Статистика чатов:\n\nАктивные подключения: ${stats.websocket_stats.total_connections}\nВсего чатов: ${stats.database_stats.total_chats}\nСообщений: ${stats.database_stats.total_messages}`);
-                                  }
-                                } catch (error) {
-                                  console.error('Ошибка получения статистики:', error);
-                                }
-                              }}
-                            >
-                              Показать статистику
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                                  }}
+                                >
+                                  Показать статистику
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </>
                   )}
 
                       {/* Модалка: Список городов склада */}
