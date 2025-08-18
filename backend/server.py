@@ -18960,7 +18960,7 @@ async def send_message(chat_id: str, message_data: MessageCreate, current_user=D
             "message": serialize_mongo_document(new_message)
         }
         
-        await chat_manager.send_to_chat(chat_id, websocket_message, exclude_user=current_user["id"])
+        await chat_manager.send_to_chat(chat_id, websocket_message, exclude_user=current_user.id)
         
         return {"success": True, "message_id": message_id, "message": serialize_mongo_document(new_message)}
         
