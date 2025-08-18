@@ -3625,6 +3625,11 @@ function App() {
     setScannerMode('none');
     setScannerMessage('');
     
+    // Сбрасываем UX состояния
+    setCargoScanError(false);
+    setCellScanError(false);
+    setLastScanResult(null);
+    
     // Останавливаем внешний сканер если активен
     if (externalScannerActive) {
       setExternalScannerActive(false);
