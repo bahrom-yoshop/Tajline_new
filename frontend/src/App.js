@@ -1619,6 +1619,9 @@ function App() {
         // Автообновление «Размещения» сразу после приёмки
         try {
           await fetchAvailableCargoForPlacement(1, availableCargoPerPage);
+          showAlert('Список «Размещение» обновлён', 'info');
+          // Автопереход на вкладку «Размещение груза»
+          setActiveTab('placement');
         } catch (e) {
           console.warn('Не удалось автообновить «Размещение»:', e);
         }
