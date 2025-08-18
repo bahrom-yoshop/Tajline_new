@@ -10894,6 +10894,106 @@ async def direct_accept_cargo_by_operator(
             
             print(f"✅ Груз {cargo_number} (груз {index} из {len(cargo_items)}) успешно принят через оператора {current_user.full_name}")
         
+        # ========================================
+        # 💬 АВТОМАТИЧЕСКОЕ СОЗДАНИЕ ЧАТА ДЛЯ ЗАЯВКИ
+        # ========================================
+        try:
+            # Создаем чат для заявки с несколькими грузами
+            chat_id = str(uuid.uuid4())
+            chat_title = f"Груз #{base_request_number}"
+            
+            # Получаем участников чата
+            participants = []
+            
+            # Добавляем оператора
+            if current_user:
+                participants.append({
+                    "user_id": current_user.id,
+                    "user_name": current_user.full_name,
+                    "user_role": current_user.role,
+                    "joined_at": datetime.utcnow(),
+                    "is_active": True
+                })
+            
+            # Попытаемся найти клиента по номеру телефона
+            client_phone = cargo_data.get("sender_phone")
+            client = None
+            if client_phone:
+                client = db.users.find_one({"phone": client_phone}, {"_id": 0})
+                if client:
+                    participants.append({
+                        "user_id": client["id"],
+                        "user_name": client.get("full_name", "Клиент"),
+                        "user_role": client.get("role", "client"),
+                        "joined_at": datetime.utcnow(),
+                        "is_active": True
+                    })
+            
+            # Добавляем админов (для поддержки)
+            admins = list(db.users.find({"role": "admin"}, {"_id": 0, "id": 1, "full_name": 1, "role": 1}))
+            for admin in admins:
+                if admin["id"] not in [p["user_id"] for p in participants]:
+                    participants.append({
+                        "user_id": admin["id"],
+                        "user_name": admin.get("full_name", "Администратор"),
+                        "user_role": "admin",
+                        "joined_at": datetime.utcnow(),
+                        "is_active": True
+                    })
+            
+            # Создаем чат только если есть участники
+            if len(participants) > 1:
+                new_chat = {
+                    "id": chat_id,
+                    "chat_type": "cargo_chat",
+                    "cargo_id": created_cargo_list[0]["cargo_id"] if created_cargo_list else None,
+                    "cargo_number": base_request_number,
+                    "title": chat_title,
+                    "participants": participants,
+                    "created_by": current_user.id,
+                    "created_at": datetime.utcnow(),
+                    "updated_at": datetime.utcnow(),
+                    "last_message_at": None,
+                    "unread_count": {},
+                    "is_archived": False
+                }
+                
+                # Сохраняем чат в БД
+                db.chats.insert_one(new_chat)
+                
+                # Отправляем системное сообщение
+                system_message = {
+                    "id": str(uuid.uuid4()),
+                    "chat_id": chat_id,
+                    "sender_id": "system",
+                    "sender_name": "Система",
+                    "sender_role": "system",
+                    "message_type": "system",
+                    "message_text": f"🚚 Создан чат для заявки #{base_request_number}\n📦 Количество грузов: {len(created_cargo_list)}\n👤 Оператор: {current_user.full_name}",
+                    "attachments": [],
+                    "sent_at": datetime.utcnow(),
+                    "edited_at": None,
+                    "is_edited": False,
+                    "read_by": {},
+                    "reply_to_message_id": None
+                }
+                
+                db.messages.insert_one(system_message)
+                
+                # Обновляем время последнего сообщения в чате
+                db.chats.update_one(
+                    {"id": chat_id},
+                    {"$set": {"last_message_at": datetime.utcnow()}}
+                )
+                
+                print(f"💬 Автоматически создан чат {chat_id} для заявки #{base_request_number} с {len(participants)} участниками")
+                
+        except Exception as chat_error:
+            print(f"⚠️ Ошибка создания чата для заявки #{base_request_number}: {chat_error}")
+            # Не прерываем основной процесс если чат не создался
+        
+        # ========================================
+        
         return {
             "success": True,
             "message": f"Успешно принято {len(created_cargo_list)} грузов на склад через оператора",
