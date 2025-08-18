@@ -111,16 +111,21 @@ function App() {
     pickup_required: false
   });
 
-  // Город → склад для выдачи (загружаем 1:1 карты)
+  // Города → склад для выдачи (один склад может иметь много городов)
+  const [destinationCitiesAll, setDestinationCitiesAll] = useState([]);
   const [destinationCities, setDestinationCities] = useState([]);
+  const [destinationCitiesQuery, setDestinationCitiesQuery] = useState('');
 
   useEffect(() => {
     const loadCities = async () => {
       try {
         const res = await apiCall('/api/destinations/cities', 'GET');
-        setDestinationCities(res.items || []);
+        const items = res.items || [];
+        setDestinationCitiesAll(items);
+        setDestinationCities(items);
       } catch (e) {
         console.error('Не удалось загрузить города назначения', e);
+        setDestinationCitiesAll([]);
         setDestinationCities([]);
       }
     };
