@@ -32590,11 +32590,25 @@ function App() {
               </div>
             )}
 
-            {/* Кнопка закрытия */}
-            <div className="flex justify-end">
+            {/* Кнопки управления */}
+            <div className="flex justify-between items-center gap-3">
+              {/* Кнопка завершения размещения - показывается только если есть размещенные грузы */}
+              {sessionPlacedCount > 0 && (
+                <Button 
+                  onClick={handleCompletePlacement}
+                  className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                  size="lg"
+                >
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Сохранить и завершить размещение ({sessionPlacedCount} грузов)
+                </Button>
+              )}
+              
+              {/* Кнопка закрытия */}
               <Button 
                 variant="outline" 
                 onClick={() => setShowCargoPlacementModal(false)}
+                className={sessionPlacedCount > 0 ? "min-w-[120px]" : "flex-1"}
               >
                 Закрыть
               </Button>
