@@ -14468,7 +14468,7 @@ function App() {
                   
                   {sidebarOpen && item.subsections && activeSection === item.section && (
                     <div className="ml-4 mt-2 space-y-1 border-l-2 border-white/20 pl-4">
-                      {item.subsections.map((sub) => (
+                      {item.subsections.filter(sub => !sub.adminOnly || user?.role === 'admin').map((sub) => (
                         <button
                           key={sub.id}
                           onClick={() => {
