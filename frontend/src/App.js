@@ -19408,6 +19408,12 @@ function App() {
 
 
 
+                          {/* 🔧 Отладка: показываем текущее состояние */}
+                          <div className="mb-2 p-2 bg-gray-100 rounded text-xs text-gray-600">
+                            🔧 Режим множественных грузов: <strong>{operatorCargoForm.use_multi_cargo ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'}</strong>
+                            | Количество грузов: <strong>{operatorCargoForm.cargo_items?.length || 0}</strong>
+                          </div>
+
                           {!operatorCargoForm.use_multi_cargo ? (
                             // Старая форма для одного груза
                             <>
