@@ -14466,7 +14466,10 @@ function App() {
                       {item.subsections.map((sub) => (
                         <button
                           key={sub.id}
-                          onClick={() => setActiveTab(sub.id)}
+                          onClick={() => {
+                            setActiveSection(item.section);
+                            setActiveTab(sub.id);
+                          }}
                           className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                             activeTab === sub.id 
                               ? 'bg-white/20 text-white font-medium' 
