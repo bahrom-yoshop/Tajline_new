@@ -18921,7 +18921,7 @@ async def send_message(chat_id: str, message_data: MessageCreate, current_user=D
         new_message = {
             "id": message_id,
             "chat_id": chat_id,
-            "sender_id": current_user["id"],
+            "sender_id": current_user.id,
             "sender_name": user.get("full_name", "Unknown"),
             "sender_role": user.get("role", "client"),
             "message_type": message_data.message_type,
