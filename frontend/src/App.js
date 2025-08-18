@@ -19756,6 +19756,19 @@ function App() {
                           </div>
                           </>
                           )}
+
+                          {/* Фиксированный нижний блок отправки заявки (всегда виден) */}
+                          <div className="sticky bottom-0 bg-white/90 backdrop-blur border-t pt-4 pb-2 mt-6">
+                            <div className="flex items-center justify-between mb-2 text-xs text-gray-500">
+                              <span>
+                                Отправка: {isPickupMode ? 'Заявка на забор (курьер)' : (showOperatorCargoForm ? 'Приём на склад (оператор)' : 'Обычная заявка')}
+                              </span>
+                              <span>Проверьте город выдачи и данные получателя перед отправкой</span>
+                            </div>
+                            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700">
+                              Отправить заявку
+                            </Button>
+                          </div>
                         </form>
                       </CardContent>
                     </Card>
