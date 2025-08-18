@@ -19561,30 +19561,32 @@ function App() {
 
                           {/* НОВЫЕ ПОЛЯ ДЛЯ УЛУЧШЕННОЙ СИСТЕМЫ */}
                           
-                          {/* Выбор маршрута */}
-                          <div>
-                            <Label htmlFor="route">Маршрут доставки</Label>
-                            <Select 
-                              key="route-select"
-                              value={operatorCargoForm.route} 
-                              onValueChange={(value) => {
-                                setOperatorCargoForm(prev => ({
-                                  ...prev, 
-                                  route: value, 
-                                  warehouse_id: ''
-                                }));
-                                fetchWarehousesByRoute(value);
-                              }}
-                            >
-                              <SelectTrigger key="route-trigger">
-                                <SelectValue placeholder="Выберите маршрут" />
-                              </SelectTrigger>
-                              <SelectContent key="route-content">
-                                <SelectItem key="route-moscow-to-tajikistan" value="moscow_to_tajikistan">Москва → Таджикистан</SelectItem>
-                                <SelectItem key="route-tajikistan-to-moscow" value="tajikistan_to_moscow">Таджикистан → Москва</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                          {/* Выбор маршрута — скрыто по требованию */}
+                          {false && (
+                            <div>
+                              <Label htmlFor="route">Маршрут доставки</Label>
+                              <Select 
+                                key="route-select"
+                                value={operatorCargoForm.route} 
+                                onValueChange={(value) => {
+                                  setOperatorCargoForm(prev => ({
+                                    ...prev, 
+                                    route: value, 
+                                    warehouse_id: ''
+                                  }));
+                                  fetchWarehousesByRoute(value);
+                                }}
+                              >
+                                <SelectTrigger key="route-trigger">
+                                  <SelectValue placeholder="Выберите маршрут" />
+                                </SelectTrigger>
+                                <SelectContent key="route-content">
+                                  <SelectItem key="route-moscow-to-tajikistan" value="moscow_to_tajikistan">Москва → Таджикистан</SelectItem>
+                                  <SelectItem key="route-tajikistan-to-moscow" value="tajikistan_to_moscow">Таджикистан → Москва</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
 
                           {/* Выбор склада */}
                           {false && (
