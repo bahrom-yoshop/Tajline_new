@@ -182,32 +182,48 @@ def test_cargo_250101_diagnosis():
         print(f"Статус финальной диагностики: {final_debug_response.status_code}")
         
         if final_debug_response.status_code == 200:
-            final_cargo_data = final_debug_response.json()
+            final_debug_data = final_debug_response.json()
             print("✅ Финальная диагностика завершена!")
             
             # Проверяем изменения
-            final_warehouse_id = final_cargo_data.get("warehouse_id")
-            final_destination_warehouse_id = final_cargo_data.get("destination_warehouse_id")
-            final_status = final_cargo_data.get("status")
-            final_hidden_reason = final_cargo_data.get("hidden_reason")
+            final_cargo_data = final_debug_data.get("data", [])
+            final_summary = final_debug_data.get("summary", {})
             
-            print(f"📋 Финальные данные груза:")
-            print(f"   - warehouse_id: {final_warehouse_id}")
-            print(f"   - destination_warehouse_id: {final_destination_warehouse_id}")
-            print(f"   - Статус: {final_status}")
-            print(f"   - hidden_reason: {final_hidden_reason}")
+            print(f"📋 Финальная диагностика:")
+            print(f"   - Всего найдено: {final_summary.get('total_found', 0)}")
+            print(f"   - По коллекциям: {final_summary.get('by_collection', {})}")
+            print(f"   - Статусы скрытия: {final_summary.get('hidden_status_counts', {})}")
             
-            # Проверяем результат исправления
-            if final_warehouse_id and not final_hidden_reason:
-                print("🎉 УСПЕХ! Груз 250101 теперь виден для размещения!")
-                print("   ✅ warehouse_id установлен")
-                print("   ✅ hidden_reason исчез")
+            if final_cargo_data:
+                final_first_cargo = final_cargo_data[0]
+                final_warehouse_id = final_first_cargo.get("warehouse_id")
+                final_destination_warehouse_id = final_first_cargo.get("destination_warehouse_id")
+                final_status = final_first_cargo.get("status")
+                final_hidden_reason = final_first_cargo.get("hidden_reason")
+                
+                print(f"📋 Финальные данные груза:")
+                print(f"   - warehouse_id: {final_warehouse_id}")
+                print(f"   - destination_warehouse_id: {final_destination_warehouse_id}")
+                print(f"   - Статус: {final_status}")
+                print(f"   - hidden_reason: {final_hidden_reason}")
+                
+                # Проверяем результат исправления
+                if final_warehouse_id and not final_hidden_reason:
+                    print("🎉 УСПЕХ! Груз 250101 теперь виден для размещения!")
+                    print("   ✅ warehouse_id установлен")
+                    print("   ✅ hidden_reason исчез")
+                else:
+                    print("⚠️ Проблемы остались:")
+                    if not final_warehouse_id:
+                        print("   ❌ warehouse_id все еще пустой")
+                    if final_hidden_reason:
+                        print(f"   ❌ hidden_reason: {final_hidden_reason}")
             else:
-                print("⚠️ Проблемы остались:")
-                if not final_warehouse_id:
-                    print("   ❌ warehouse_id все еще пустой")
-                if final_hidden_reason:
-                    print(f"   ❌ hidden_reason: {final_hidden_reason}")
+                print("❌ Финальные данные груза не найдены")
+                final_warehouse_id = None
+                final_destination_warehouse_id = None
+                final_status = None
+                final_hidden_reason = None
                     
         else:
             print(f"❌ Ошибка финальной диагностики: {final_debug_response.text}")
