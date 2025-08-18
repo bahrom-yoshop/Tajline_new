@@ -27438,6 +27438,22 @@ function App() {
               {/* Кнопки действий */}
               <div className="flex space-x-2 pt-4">
                 <Button 
+                  onClick={async () => {
+                    // Сначала сохраняем заявку (по факту уже сохранена), затем печать накладной
+                    try {
+                      const numbers = operatorCargoResponse.created_cargo.map(c => c.cargo_number).join(',');
+                      await generateCargoInvoice(numbers);
+                      showAlert('Накладная отправлена на печать', 'success');
+                    } catch (e) {
+                      showAlert('Ошибка печати накладной', 'error');
+                    }
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Сохранить и печатать накладную
+                </Button>
+                <Button 
                   onClick={handleGenerateOperatorCargoQR}
                   disabled={generatingCargoQR}
                   className="flex-1 bg-orange-600 hover:bg-orange-700"
@@ -27447,7 +27463,7 @@ function App() {
                   ) : (
                     <QrCode className="mr-2 h-4 w-4" />
                   )}
-                  Генерировать и печатать QR коды для всех грузов
+                  Печатать и генерировать QR коды для всех грузов
                 </Button>
                 <Button 
                   variant="outline" 
@@ -27456,7 +27472,7 @@ function App() {
                     setOperatorCargoResponse(null);
                   }}
                 >
-                  Пропустить
+                  Закрыть
                 </Button>
               </div>
 
