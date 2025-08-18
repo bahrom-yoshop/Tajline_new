@@ -1573,7 +1573,7 @@ function App() {
     // Пересчеты общих итогов
     const total_weight = items.reduce((s, it) => s + (parseFloat(it.weight) || 0), 0);
     const total_cost = items.reduce((s, it) => s + (parseFloat(it.value) || 0), 0);
-    setOperatorCargoForm({ ...operatorCargoForm, cargo_items: items, total_weight, total_cost });
+    setOperatorCargoForm(prev => ({ ...prev, cargo_items: items, total_weight, total_cost }));
   };
 
   // НОВАЯ ФУНКЦИЯ: Обработка отправки формы приёма груза через оператора
