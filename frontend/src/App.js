@@ -18798,7 +18798,7 @@ function App() {
                                   </Label>
                                   <Select
                                     value={operatorCargoForm.payment_method}
-                                    onValueChange={(value) => setOperatorCargoForm({...operatorCargoForm, payment_method: value})}
+                                    onValueChange={(value) => setOperatorCargoForm(prev => ({ ...prev, payment_method: value }))}
                                   >
                                     <SelectTrigger className="border-orange-200 focus:border-orange-400">
                                       <SelectValue placeholder="Статус оплаты" />
