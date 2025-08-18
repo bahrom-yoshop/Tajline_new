@@ -19044,7 +19044,7 @@ function App() {
                                   <div>
                                     <Label htmlFor="courier_fee" className="font-medium">Стоимость курьерских услуг (₽)</Label>
                                     <Input id="courier_fee" type="number" step="0.01" min="0" value={operatorCargoForm.courier_fee || ''}
-                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, courier_fee: e.target.value})}
+                                      onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, courier_fee: e.target.value }))}
                                       placeholder="Введите стоимость курьерских услуг" />
                                   </div>
                                   <div className="flex items-center space-x-2">
