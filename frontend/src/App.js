@@ -32758,7 +32758,11 @@ function App() {
                         }
                       }}
                       disabled={externalScannerStep !== 'cargo'}
-                      className={`mt-1 ${externalScannerStep === 'cargo' ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-100'}`}
+                      className={`mt-1 transition-all duration-300 ${
+                        externalScannerStep === 'cargo' 
+                          ? (cargoScanError ? 'bg-red-50 border-red-300 ring-red-200 ring-2' : 'bg-yellow-50 border-yellow-300 focus:border-yellow-400 focus:ring-yellow-200') 
+                          : 'bg-gray-100'
+                      }`}
                       autoFocus={externalScannerStep === 'cargo'}
                     />
                     {externalScannedCargo && (
