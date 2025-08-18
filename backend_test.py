@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-КРИТИЧЕСКОЕ ТЕСТИРОВАНИЕ: Исправления полей стоимости и оплаты в API размещения
-Тестирование исправлений в /api/operator/cargo/available-for-placement согласно review request
+🔧 ОТЛАДКА СТОИМОСТИ: Тестирование поля стоимости с отладкой
+Протестируй с отладкой поля стоимости согласно review request
 """
 
 import requests
@@ -9,6 +9,7 @@ import json
 import sys
 import os
 from datetime import datetime
+import time
 
 # Получаем URL backend из переменной окружения
 BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://tajline-cargo-3.preview.emergentagent.com')
