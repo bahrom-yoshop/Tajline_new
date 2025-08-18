@@ -5669,8 +5669,28 @@ async def get_available_cargo_for_placement(
             operator_skip = max(0, skip - total_count_cargo)
             cargo_list_operator = list(db.operator_cargo.find(placement_query).skip(operator_skip).limit(remaining_limit).sort("created_at", -1))
         
-        # Объединяем списки
+        # Объединяем списки и убираем дубликаты по cargo_number
         cargo_list = cargo_list_main + cargo_list_operator
+        
+        # ИСПРАВЛЕНИЕ: Дедупликация по cargo_number чтобы избежать дублей
+        seen_cargo_numbers = set()
+        unique_cargo_list = []
+        
+        for cargo in cargo_list:
+            cargo_number = cargo.get('cargo_number')
+            if cargo_number and cargo_number not in seen_cargo_numbers:
+                seen_cargo_numbers.add(cargo_number)
+                unique_cargo_list.append(cargo)
+            elif not cargo_number:
+                # Добавляем грузы без номера (если есть), но это не должно происходить
+                unique_cargo_list.append(cargo)
+        
+        # Логирование для отладки
+        if len(cargo_list) != len(unique_cargo_list):
+            print(f"🔧 ДЕДУПЛИКАЦИЯ: Найдено {len(cargo_list)} грузов, после дедупликации: {len(unique_cargo_list)}")
+        
+        # Используем дедуплицированный список
+        cargo_list = unique_cargo_list
         
         # Обрабатываем данные и добавляем информацию об операторах и складах
         normalized_cargo = []
