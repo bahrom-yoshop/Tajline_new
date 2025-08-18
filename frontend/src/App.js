@@ -133,6 +133,41 @@ function App() {
     loadCities();
   }, []);
 
+  // ========================================
+  // 💬 ЗАГРУЗКА УВЕДОМЛЕНИЙ ЧАТА
+  // ========================================
+  useEffect(() => {
+    const loadChatNotifications = async () => {
+      if (!user) return;
+      
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/chat/list`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setChatNotifications(data.unread_total || 0);
+        }
+      } catch (error) {
+        console.error('❌ Ошибка загрузки уведомлений чата:', error);
+      }
+    };
+    
+    // Загружаем уведомления при входе пользователя
+    loadChatNotifications();
+    
+    // Обновляем уведомления каждые 30 секунд
+    const interval = setInterval(loadChatNotifications, 30000);
+    
+    return () => clearInterval(interval);
+  }, [user]);
+
   // НОВОЕ: Состояние для информации о маршруте при оформлении груза
   const [routeInfo, setRouteInfo] = useState({
     distance: '',
