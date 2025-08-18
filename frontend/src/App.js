@@ -3814,6 +3814,13 @@ function App() {
     pickup_time_from: '',  // Время забора с (HH:MM)
     pickup_time_to: ''     // Время забора до (HH:MM)
   });
+  
+  // ========================================
+  // 💬 СОСТОЯНИЯ ЧАТА
+  // ========================================
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [chatNotifications, setChatNotifications] = useState(0);
+  
   // Operator cargo management states
   const [operatorCargo, setOperatorCargo] = useState([]);
   
