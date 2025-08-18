@@ -22482,7 +22482,7 @@ function App() {
                                     <ul className="list-disc ml-5">
                                       {(bulkCitiesPreview.results || []).map((r, idx) => (
                                         <li key={idx} className={r.status === 'ok' ? 'text-green-700' : r.status === 'conflict' ? 'text-orange-700' : 'text-red-700'}>
-                                          {r.warehouse_id} → {Array.isArray(r.final_cities) ? r.final_cities.join(', ') : (r.city || '')} — {r.status}{r.conflict_with ? ` (конфликт с ${r.conflict_with})` : ''}
+                                          {(r.warehouse_id || r.input)} → {Array.isArray(r.final_cities) ? r.final_cities.join(', ') : (r.city || '')} — {r.status}{r.conflict_with ? ` (конфликт с ${r.conflict_with})` : ''}
                                         </li>
                                       ))}
                                     </ul>
