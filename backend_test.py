@@ -76,16 +76,15 @@ class ChatNotificationTester:
     def create_test_client(self):
         """Создание тестового клиента через регистрацию"""
         try:
-            # Генерируем уникальный номер телефона
+            # Генерируем уникальный номер телефона (минимум 10 символов)
             import random
-            phone_suffix = random.randint(1000, 9999)
-            phone = f"+7990{phone_suffix}"
+            phone_suffix = random.randint(10000000, 99999999)  # 8 цифр
+            phone = f"+7{phone_suffix}"  # +7 + 8 цифр = 10 символов
             
             client_data = {
                 "full_name": "Тестовый Клиент Чата",
                 "phone": phone,
-                "password": "client123",
-                "role": "user"  # Регистрация создает пользователей с ролью user
+                "password": "client123"
             }
             
             response = requests.post(f"{BACKEND_URL}/auth/register", 
