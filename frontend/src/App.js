@@ -14486,6 +14486,12 @@ function App() {
                             setActiveSection(item.section);
                             setActiveTab(sub.id);
                             console.log('🔧 Состояния установлены - новая секция:', item.section, 'новый таб:', sub.id);
+                            
+                            // Проверим состояния через небольшую задержку
+                            setTimeout(() => {
+                              console.log('🔧 ПРОВЕРКА ЧЕРЕЗ 100мс - activeSection:', activeSection, 'activeTab:', activeTab);
+                              console.log('🔧 Условие рендеринга чата:', activeSection === 'chat' ? 'ИСТИНА' : 'ЛОЖЬ');
+                            }, 100);
                           }}
                           className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
                             activeTab === sub.id 
