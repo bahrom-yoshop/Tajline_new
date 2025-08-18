@@ -3724,17 +3724,11 @@ function App() {
       console.log('🖥️ Сканирование ячейки внешним сканером:', cellData);
       
       const cellInfo = parseCellQRCode(cellData);
+      
       if (cellInfo) {
-        // Используем читаемое имя ячейки для отображения
-        // ИСПРАВЛЕНИЕ: Отображаем цифровой код QR вместо читаемого формата
+        // ✅ QR КОД ЯЧЕЙКИ ПРАВИЛЬНЫЙ ФОРМАТ
         const cellDisplayFormat = cellInfo.cell_code || cellInfo.readable_name;
-        
-        // Вводим данные в поле для сканирования ячейки
-        setExternalCellInput(cellDisplayFormat);
-        
         console.log('📍 Отсканированы данные ячейки:', cellDisplayFormat);
-        console.log('📍 Формат данных:', cellInfo.format);
-        console.log('📍 Код для размещения:', cellInfo.cell_code);
         
         // Проверяем занятость ячейки перед размещением
         try {
@@ -3762,14 +3756,37 @@ function App() {
           const cellStatusResponse = await apiCall(`/api/warehouse/cell/status`, 'POST', cellStatusPayload);
 
           if (cellStatusResponse && cellStatusResponse.is_occupied) {
-            // Ячейка занята - показываем предупреждение
-            setScannerError(`Ячейка ${cellDisplayFormat} уже занята`);
-            setScannerMessage(`⚠️ Ячейка ${cellDisplayFormat} уже забронирована грузом: ${cellStatusResponse.cargo_number || 'Неизвестный груз'}`);
-            showAlert(`⚠️ Ячейка ${cellDisplayFormat} уже забронирована грузом: ${cellStatusResponse.cargo_number || 'Неизвестный груз'}`, 'warning');
-            return;
+            // ❌ ЯЧЕЙКА ЗАНЯТА - показываем подсказку и сбрасываем
+            console.log('❌ Ячейка занята, сбрасываем поля...');
+            
+            const occupiedBy = cellStatusResponse.cargo_number || 'Неизвестный груз';
+            
+            showAlert(
+              `❌ Ячейка ${cellDisplayFormat} уже занята грузом "${occupiedBy}".\n\nОтсканируйте другую свободную ячейку.`, 
+              'warning'
+            );
+            
+            setScannerMessage(`❌ Ячейка занята. Отсканируйте свободную ячейку.`);
+            
+            // АВТОМАТИЧЕСКИЙ СБРОС: очищаем поле и остаемся на шаге сканирования ячейки
+            setExternalCellInput('');
+            setExternalScannedCell(null);
+            // externalScannerStep остается 'cell' - не меняем!
+            
+            // Фокусируемся обратно на поле ячейки
+            setTimeout(() => {
+              const cellInput = document.querySelector('input[placeholder*="QR код ячейки"]');
+              if (cellInput) {
+                cellInput.focus();
+                cellInput.select(); // выделяем весь текст для удобства
+              }
+            }, 100);
+            
+            return; // Прерываем выполнение
           }
 
-          // Ячейка свободна - продолжаем размещение
+          // ✅ ЯЧЕЙКА СВОБОДНА - продолжаем размещение
+          setExternalCellInput(cellDisplayFormat);
           setExternalScannedCell(cellInfo);
           setScannerMessage(`✅ Ячейка отсканирована: ${cellDisplayFormat}. Ячейка свободна. Выполняем размещение...`);
           
@@ -3779,25 +3796,59 @@ function App() {
           }
 
         } catch (statusError) {
-          console.warn('Не удалось проверить статус ячейки, продолжаем размещение:', statusError);
-          // Если не удалось проверить статус ячейки, продолжаем размещение (fallback)
+          console.warn('⚠️ Не удалось проверить статус ячейки, возможно API недоступен:', statusError);
+          
+          // Если не удалось проверить статус, продолжаем размещение (fallback)
+          setExternalCellInput(cellDisplayFormat);
           setExternalScannedCell(cellInfo);
-          setScannerMessage(`✅ Ячейка отсканирована: ${cellDisplayFormat}. Выполняем размещение...`);
+          setScannerMessage(`⚠️ Не удалось проверить статус ячейки. Выполняем размещение...`);
           
           if (externalScannedCargo) {
             await performExternalScannerPlacement(externalScannedCargo, cellInfo);
           }
         }
+        
       } else {
-        setScannerError('Неверный формат QR-кода ячейки');
-        setScannerMessage('❌ Неверный формат QR-кода ячейки. Ожидается формат: Б1-П2-Я3');
-        showAlert('Неверный формат QR-кода ячейки. Попробуйте еще раз.', 'error');
+        // ❌ НЕПРАВИЛЬНЫЙ ФОРМАТ QR КОДА ЯЧЕЙКИ - показываем подсказку и сбрасываем
+        console.log('❌ Неправильный формат QR кода ячейки, сбрасываем поля...');
+        
+        showAlert(
+          `❌ Неправильный формат QR кода ячейки.\n\nОжидаемый формат: Б1-П2-Я3 или QR код ячейки.\n\nПример: Б1-П1-Я15\n\nОтсканируйте правильный QR код ячейки.`, 
+          'warning'
+        );
+        
+        setScannerMessage('❌ Неверный формат QR кода ячейки. Отсканируйте правильный QR код.');
+        
+        // АВТОМАТИЧЕСКИЙ СБРОС: очищаем поле и остаемся на шаге сканирования ячейки
+        setExternalCellInput('');
+        setExternalScannedCell(null);
+        // externalScannerStep остается 'cell'
+        
+        // Фокусируемся обратно на поле ячейки
+        setTimeout(() => {
+          const cellInput = document.querySelector('input[placeholder*="QR код ячейки"]');
+          if (cellInput) {
+            cellInput.focus();
+          }
+        }, 100);
       }
+      
     } catch (error) {
-      console.error('Ошибка обработки сканирования ячейки:', error);
-      setScannerError('Ошибка обработки данных ячейки');
-      setScannerMessage('❌ Ошибка обработки данных ячейки');
-      showAlert('Ошибка обработки данных ячейки', 'error');
+      console.error('❌ Ошибка обработки сканирования ячейки:', error);
+      
+      // При общей ошибке также сбрасываем и показываем понятное сообщение
+      showAlert('❌ Ошибка сканирования ячейки. Проверьте QR код и попробуйте еще раз.', 'error');
+      setScannerMessage('❌ Ошибка сканирования. Попробуйте еще раз.');
+      
+      // Сбрасываем поле ячейки
+      setExternalCellInput('');
+      setExternalScannedCell(null);
+      
+      // Возвращаем фокус на поле ячейки
+      setTimeout(() => {
+        const cellInput = document.querySelector('input[placeholder*="QR код ячейки"]');
+        if (cellInput) cellInput.focus();
+      }, 100);
     }
   };
 
