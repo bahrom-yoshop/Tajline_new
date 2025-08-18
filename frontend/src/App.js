@@ -19241,111 +19241,58 @@ function App() {
                             />
                           </div>
 
-                          {/* НОВЫЕ ПОЛЯ ДЛЯ КУРЬЕРСКОЙ СЛУЖБЫ */}
-                          <div className="space-y-4 border-t pt-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Курьерская служба</h3>
-                            
-                            {/* Переключатель забора груза */}
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id="pickup_required"
-                                checked={operatorCargoForm.pickup_required}
-                                onChange={(e) => setOperatorCargoForm({
-                                  ...operatorCargoForm, 
-                                  pickup_required: e.target.checked,
-                                  pickup_address: e.target.checked ? operatorCargoForm.pickup_address : '',
-                                  pickup_date: e.target.checked ? operatorCargoForm.pickup_date : '',
-                                  pickup_time_from: e.target.checked ? operatorCargoForm.pickup_time_from : '',
-                                  pickup_time_to: e.target.checked ? operatorCargoForm.pickup_time_to : ''
-                                })}
-                                className="rounded border-gray-300"
-                              />
-                              <Label htmlFor="pickup_required" className="text-sm font-medium">
-                                Требуется забор груза от отправителя
-                              </Label>
-                            </div>
-
-                            {/* Поля забора груза (показываются только если включен забор) */}
-                            {operatorCargoForm.pickup_required && (
-                              <div className="bg-blue-50 p-4 rounded-lg space-y-4">
-                                <div>
-                                  <Label htmlFor="pickup_address">Адрес забора груза *</Label>
-                                  <Input
-                                    id="pickup_address"
-                                    value={operatorCargoForm.pickup_address}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_address: e.target.value})}
-                                    placeholder="Москва, ул. Ленина, 15, офис 203"
-                                    required={operatorCargoForm.pickup_required}
-                                  />
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div>
-                                    <Label htmlFor="pickup_date">Дата забора *</Label>
-                                    <Input
-                                      id="pickup_date"
-                                      type="date"
-                                      value={operatorCargoForm.pickup_date}
-                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_date: e.target.value})}
-                                      required={operatorCargoForm.pickup_required}
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <Label htmlFor="pickup_time_from">Время с *</Label>
-                                    <Input
-                                      id="pickup_time_from"
-                                      type="time"
-                                      value={operatorCargoForm.pickup_time_from}
-                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_time_from: e.target.value})}
-                                      required={operatorCargoForm.pickup_required}
-                                    />
-                                  </div>
-                                  
-                                  <div>
-                                    <Label htmlFor="pickup_time_to">Время до *</Label>
-                                    <Input
-                                      id="pickup_time_to"
-                                      type="time"
-                                      value={operatorCargoForm.pickup_time_to}
-                                      onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_time_to: e.target.value})}
-                                      required={operatorCargoForm.pickup_required}
-                                    />
-                                  </div>
-                                </div>
+                          {/* Курьерская служба — скрыто по требованию */}
+                          {false && (
+                            <div className="space-y-4 border-t pt-4">
+                              <h3 className="text-lg font-semibold text-gray-900">Курьерская служба</h3>
+                              <div className="flex items-center space-x-2">
+                                <input type="checkbox" id="pickup_required" checked={operatorCargoForm.pickup_required}
+                                  onChange={(e) => setOperatorCargoForm({
+                                    ...operatorCargoForm, 
+                                    pickup_required: e.target.checked,
+                                    pickup_address: e.target.checked ? operatorCargoForm.pickup_address : '',
+                                    pickup_date: e.target.checked ? operatorCargoForm.pickup_date : '',
+                                    pickup_time_from: e.target.checked ? operatorCargoForm.pickup_time_from : '',
+                                    pickup_time_to: e.target.checked ? operatorCargoForm.pickup_time_to : ''
+                                  })}
+                                  className="rounded border-gray-300" />
+                                <Label htmlFor="pickup_required" className="text-sm font-medium">Требуется забор груза от отправителя</Label>
                               </div>
-                            )}
-
-                            {/* Способ получения груза */}
-                            <div>
-                              <Label htmlFor="delivery_method">Способ получения груза *</Label>
-                              <select
-                                id="delivery_method"
-                                value={operatorCargoForm.delivery_method}
-                                onChange={(e) => setOperatorCargoForm({...operatorCargoForm, delivery_method: e.target.value})}
-                                className="w-full p-2 border border-gray-300 rounded-md"
-                                required
-                              >
-                                <option value="pickup">Самовывоз</option>
-                                <option value="home_delivery">Доставка до дома</option>
-                              </select>
+                              {operatorCargoForm.pickup_required && (
+                                <div className="bg-blue-50 p-4 rounded-lg space-y-4">
+                                  <div>
+                                    <Label htmlFor="pickup_address">Адрес забора груза *</Label>
+                                    <Input id="pickup_address" value={operatorCargoForm.pickup_address} onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_address: e.target.value})} placeholder="Москва, ул. Ленина, 15, офис 203" required={operatorCargoForm.pickup_required} />
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                      <Label htmlFor="pickup_date">Дата забора *</Label>
+                                      <Input id="pickup_date" type="date" value={operatorCargoForm.pickup_date} onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_date: e.target.value})} required={operatorCargoForm.pickup_required} />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="pickup_time_from">Время с *</Label>
+                                      <Input id="pickup_time_from" type="time" value={operatorCargoForm.pickup_time_from} onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_time_from: e.target.value})} required={operatorCargoForm.pickup_required} />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="pickup_time_to">Время до *</Label>
+                                      <Input id="pickup_time_to" type="time" value={operatorCargoForm.pickup_time_to} onChange={(e) => setOperatorCargoForm({...operatorCargoForm, pickup_time_to: e.target.value})} required={operatorCargoForm.pickup_required} />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                              <div>
+                                <Label htmlFor="delivery_method">Способ получения груза *</Label>
+                                <select id="delivery_method" value={operatorCargoForm.delivery_method} onChange={(e) => setOperatorCargoForm({...operatorCargoForm, delivery_method: e.target.value})} className="w-full p-2 border border-gray-300 rounded-md" required>
+                                  <option value="pickup">Самовывоз</option>
+                                  <option value="home_delivery">Доставка до дома</option>
+                                </select>
+                              </div>
+                              <div>
+                                <Label htmlFor="courier_fee">Стоимость курьерских услуг (₽)</Label>
+                                <Input id="courier_fee" type="number" min="0" step="0.01" value={operatorCargoForm.courier_fee} onChange={(e) => setOperatorCargoForm({...operatorCargoForm, courier_fee: e.target.value})} placeholder="Введите стоимость курьерских услуг" />
+                              </div>
                             </div>
-
-                            {/* Стоимость курьерских услуг */}
-                            <div>
-                              <Label htmlFor="courier_fee">Стоимость курьерских услуг (₽)</Label>
-                              <Input
-                                id="courier_fee"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={operatorCargoForm.courier_fee}
-                                onChange={(e) => setOperatorCargoForm({...operatorCargoForm, courier_fee: e.target.value})}
-                                placeholder="Введите стоимость курьерских услуг"
-                              />
-                            </div>
-                          </div>
+                          )}
 
                           {/* Переключатель между режимами */}
                           <div className="mb-4 p-4 bg-gray-50 rounded-lg">
