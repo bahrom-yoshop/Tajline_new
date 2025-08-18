@@ -36070,6 +36070,135 @@ function App() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ========================================
+          💬 МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ЧАТА
+          ======================================== */}
+      
+      <Dialog open={showCreateChatModal} onOpenChange={setShowCreateChatModal}>
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl">
+              <MessageSquare className="mr-2 h-6 w-6 text-blue-600" />
+              💬 Начать новый чат
+            </DialogTitle>
+            <DialogDescription>
+              Выберите сотрудников для общения и укажите тему чата
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Название чата */}
+            <div>
+              <Label htmlFor="chat_title" className="font-medium">
+                Тема чата *
+              </Label>
+              <Input
+                id="chat_title"
+                value={newChatTitle}
+                onChange={(e) => setNewChatTitle(e.target.value)}
+                placeholder="Введите тему разговора (например: Вопрос по грузу №123, Техническая поддержка)"
+                className="mt-1"
+                required
+              />
+            </div>
+            
+            {/* Выбор операторов и админов */}
+            <div>
+              <Label className="font-medium mb-3 block">
+                Выберите сотрудников для общения *
+              </Label>
+              
+              <div className="border rounded-lg p-4 max-h-64 overflow-y-auto">
+                {chatOperatorsList.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">
+                    <User className="mx-auto h-8 w-8 mb-2 text-gray-300" />
+                    <p>Загрузка списка сотрудников...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {chatOperatorsList.map(operator => (
+                      <div
+                        key={operator.id}
+                        className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+                          selectedChatOperators.includes(operator.id)
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => {
+                          if (selectedChatOperators.includes(operator.id)) {
+                            setSelectedChatOperators(prev => prev.filter(id => id !== operator.id));
+                          } else {
+                            setSelectedChatOperators(prev => [...prev, operator.id]);
+                          }
+                        }}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-4 h-4 rounded border-2 ${
+                            selectedChatOperators.includes(operator.id)
+                              ? 'bg-blue-500 border-blue-500'
+                              : 'border-gray-300'
+                          }`}>
+                            {selectedChatOperators.includes(operator.id) && (
+                              <CheckCircle className="w-4 h-4 text-white" />
+                            )}
+                          </div>
+                          
+                          <User className="h-5 w-5 text-gray-400" />
+                          
+                          <div>
+                            <p className="font-medium">{operator.full_name}</p>
+                            <div className="flex items-center space-x-2">
+                              <Badge 
+                                variant={operator.role === 'admin' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {operator.role === 'admin' ? '👑 Администратор' : '👤 Оператор'}
+                              </Badge>
+                              <span className="text-xs text-gray-500">{operator.phone}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {selectedChatOperators.length > 0 && (
+                <div className="mt-3 p-3 bg-green-50 rounded-lg">
+                  <p className="text-sm text-green-700">
+                    ✅ Выбрано сотрудников: <strong>{selectedChatOperators.length}</strong>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Кнопки действий */}
+          <div className="flex justify-between pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowCreateChatModal(false);
+                setNewChatTitle('');
+                setSelectedChatOperators([]);
+              }}
+            >
+              Отмена
+            </Button>
+            
+            <Button
+              onClick={createNewChat}
+              disabled={!newChatTitle.trim() || selectedChatOperators.length === 0}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Создать чат
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
