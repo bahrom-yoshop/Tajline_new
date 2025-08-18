@@ -18995,6 +18995,31 @@ function App() {
                               </div>
 
 
+                              {/* Переключатель между режимами (оператор): один груз / несколько грузов */}
+                              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                                <Label className="flex items-center space-x-2 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={operatorCargoForm.use_multi_cargo}
+                                    onChange={(e) => {
+                                      setOperatorCargoForm({
+                                        ...operatorCargoForm,
+                                        use_multi_cargo: e.target.checked
+                                      });
+                                      if (!e.target.checked) {
+                                        setTotalWeight(0);
+                                        setTotalCost(0);
+                                      }
+                                    }}
+                                    className="rounded"
+                                  />
+                                  <span className="text-sm font-medium">
+                                    Несколько видов груза (с калькулятором)
+                                  </span>
+                                </Label>
+                              </div>
+
+
 
                               {/* Курьерская служба — временно скрыто по требованию */}
                               {false && (
