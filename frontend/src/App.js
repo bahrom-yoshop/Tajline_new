@@ -27597,62 +27597,82 @@ function App() {
         </DialogContent>
       </Dialog>
 
-      {/* Operator QR Generation Modal */}
+      {/* Operator QR Generation Modal - Адаптированное для мобильных устройств */}
       <Dialog open={operatorQRGenerationModal} onOpenChange={setOperatorQRGenerationModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              <QrCode className="mr-2 h-5 w-5 inline" />
-              Генерация QR кодов для заявки
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[95vh] overflow-y-auto sm:w-full">
+          <DialogHeader className="pb-4 border-b">
+            <DialogTitle className="flex items-center text-xl">
+              <QrCode className="mr-2 h-6 w-6 text-blue-600" />
+              Печать накладной и QR-кодов
             </DialogTitle>
-            <DialogDescription>
-              Создайте QR коды для всех грузов принятой заявки
+            <DialogDescription className="text-base">
+              Заявка успешно принята. Выберите необходимые действия для обработки грузов.
             </DialogDescription>
           </DialogHeader>
           
           {operatorCargoResponse && (
-            <div className="space-y-4">
-              {/* Информация о заявке */}
-              <div className="p-4 bg-green-50 rounded-lg">
-                <div className="flex items-center mb-2">
-                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                  <h5 className="font-medium text-green-800">
-                    Заявка успешно принята
+            <div className="space-y-6 py-4">
+              {/* Информация о заявке - адаптивная сетка */}
+              <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border border-green-200">
+                <div className="flex items-center mb-3">
+                  <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                  <h5 className="font-semibold text-green-800 text-lg">
+                    ✅ Заявка успешно принята
                   </h5>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
-                  <div>
-                    <strong>Номер заявки:</strong> {operatorCargoResponse.base_request_number}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                  <div className="p-2 bg-white rounded border border-green-200">
+                    <span className="text-gray-600">Номер заявки:</span>
+                    <div className="font-bold text-green-800 text-lg">
+                      #{operatorCargoResponse.base_request_number}
+                    </div>
                   </div>
-                  <div>
-                    <strong>Создано грузов:</strong> {operatorCargoResponse.total_cargo_count}
+                  <div className="p-2 bg-white rounded border border-green-200">
+                    <span className="text-gray-600">Создано грузов:</span>
+                    <div className="font-bold text-green-800 text-lg">
+                      {operatorCargoResponse.total_cargo_count} шт.
+                    </div>
                   </div>
-                  <div>
-                    <strong>Оператор:</strong> {operatorCargoResponse.received_by}
+                  <div className="p-2 bg-white rounded border border-green-200">
+                    <span className="text-gray-600">Оператор:</span>
+                    <div className="font-medium text-green-700">
+                      {operatorCargoResponse.received_by}
+                    </div>
                   </div>
-                  <div>
-                    <strong>Дата:</strong> {new Date(operatorCargoResponse.received_at).toLocaleString('ru-RU')}
+                  <div className="p-2 bg-white rounded border border-green-200">
+                    <span className="text-gray-600">Дата и время:</span>
+                    <div className="font-medium text-green-700">
+                      {new Date(operatorCargoResponse.received_at).toLocaleString('ru-RU')}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Список созданных грузов */}
-              <div className="space-y-2">
-                <h4 className="font-semibold">Созданные грузы:</h4>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+              {/* Список созданных грузов - улучшенный дизайн */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg flex items-center">
+                  <Package className="mr-2 h-5 w-5 text-blue-600" />
+                  Список созданных грузов:
+                </h4>
+                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                   {operatorCargoResponse.created_cargo.map((cargo, index) => (
-                    <div key={cargo.cargo_id} className="p-3 border rounded-lg bg-gray-50">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium text-blue-800">
-                            📦 {cargo.cargo_number}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {cargo.cargo_name} • {cargo.weight} кг • {cargo.declared_value} ₽
+                    <div key={cargo.cargo_id} className="p-4 border-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <QrCode className="h-4 w-4 text-blue-600 mr-2" />
+                            <p className="font-bold text-blue-800 text-lg">
+                              {cargo.cargo_number}
+                            </p>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            <span className="font-medium">Название:</span> {cargo.cargo_name}<br />
+                            <span className="font-medium">Вес:</span> {cargo.weight} кг • 
+                            <span className="font-medium"> Стоимость:</span> {cargo.declared_value} ₽
                           </p>
                         </div>
-                        <Badge variant="outline" className="text-blue-600 border-blue-600">
-                          Груз {index + 1}
+                        <Badge variant="outline" className="text-blue-700 border-blue-400 bg-blue-100 font-semibold">
+                          Груз #{index + 1}
                         </Badge>
                       </div>
                     </div>
@@ -27660,52 +27680,115 @@ function App() {
                 </div>
               </div>
 
-              {/* Кнопки действий */}
-              <div className="flex space-x-2 pt-4">
-                <Button 
-                  onClick={async () => {
-                    // Сначала сохраняем заявку (по факту уже сохранена), затем печать накладной
-                    try {
-                      const numbers = operatorCargoResponse.created_cargo.map(c => c.cargo_number).join(',');
-                      await generateCargoInvoice(numbers);
-                      showAlert('Накладная отправлена на печать', 'success');
-                    } catch (e) {
-                      showAlert('Ошибка печати накладной', 'error');
-                    }
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Сохранить и печатать накладную
-                </Button>
-                <Button 
-                  onClick={handleGenerateOperatorCargoQR}
-                  disabled={generatingCargoQR}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                >
-                  {generatingCargoQR ? (
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <QrCode className="mr-2 h-4 w-4" />
-                  )}
-                  Печатать и генерировать QR коды для всех грузов
-                </Button>
+              {/* Кнопки действий - адаптивный макет */}
+              <div className="border-t pt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  {/* Кнопка печати накладной */}
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        const numbers = operatorCargoResponse.created_cargo.map(c => c.cargo_number).join(',');
+                        await generateCargoInvoice(numbers);
+                        showAlert('📄 Накладная отправлена на печать', 'success');
+                      } catch (e) {
+                        showAlert('❌ Ошибка печати накладной', 'error');
+                      }
+                    }}
+                    className="h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <FileText className="mr-2 h-5 w-5" />
+                    <div className="text-center">
+                      <div>Печать накладной</div>
+                      <div className="text-xs opacity-90">для всех грузов</div>
+                    </div>
+                  </Button>
+
+                  {/* Кнопка генерации QR-кодов */}
+                  <Button 
+                    onClick={handleGenerateOperatorCargoQR}
+                    disabled={generatingCargoQR}
+                    className="h-14 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500"
+                  >
+                    {generatingCargoQR ? (
+                      <>
+                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                        <div className="text-center">
+                          <div>Генерация...</div>
+                          <div className="text-xs opacity-90">Подождите</div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="mr-2 h-5 w-5" />
+                        <div className="text-center">
+                          <div>Генерировать QR-коды</div>
+                          <div className="text-xs opacity-90">для всех грузов</div>
+                        </div>
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Комбинированная кнопка для одновременных действий */}
+                <div className="mb-4">
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        // Сначала печатаем накладную
+                        const numbers = operatorCargoResponse.created_cargo.map(c => c.cargo_number).join(',');
+                        await generateCargoInvoice(numbers);
+                        
+                        // Затем генерируем QR-коды
+                        await handleGenerateOperatorCargoQR();
+                        
+                        showAlert('✅ Накладная и QR-коды успешно созданы!', 'success');
+                      } catch (e) {
+                        showAlert('❌ Ошибка при выполнении операций', 'error');
+                      }
+                    }}
+                    disabled={generatingCargoQR}
+                    className="w-full h-16 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500"
+                  >
+                    <div className="flex items-center justify-center">
+                      <FileText className="mr-2 h-6 w-6" />
+                      <QrCode className="mr-3 h-6 w-6" />
+                      <div className="text-center">
+                        <div>🚀 ВЫПОЛНИТЬ ВСЁ</div>
+                        <div className="text-sm opacity-90">Накладная + QR-коды</div>
+                      </div>
+                    </div>
+                  </Button>
+                </div>
+
+                {/* Кнопка закрытия */}
                 <Button 
                   variant="outline" 
                   onClick={() => {
                     setOperatorQRGenerationModal(false);
                     setOperatorCargoResponse(null);
+                    // Переходим на вкладку "Размещение" после закрытия
+                    setActiveTab('placement');
                   }}
+                  className="w-full h-12 border-2 border-gray-300 hover:border-gray-400 font-semibold"
                 >
-                  Закрыть
+                  <X className="mr-2 h-5 w-5" />
+                  Закрыть и перейти к размещению
                 </Button>
               </div>
 
-              <div className="p-3 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-700">
-                  💡 <strong>Совет:</strong> QR коды помогут быстро находить и размещать грузы на складе. 
-                  Рекомендуется сгенерировать их сразу после приёма заявки.
-                </p>
+              {/* Подсказка - адаптивная */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <div className="flex items-start">
+                  <div className="text-2xl mr-3">💡</div>
+                  <div>
+                    <h6 className="font-semibold text-blue-800 mb-1">Рекомендации:</h6>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• <strong>QR-коды</strong> помогут быстро находить и размещать грузы на складе</li>
+                      <li>• <strong>Накладная</strong> содержит всю информацию о принятых грузах</li>
+                      <li>• Рекомендуется выполнить все действия сразу после приёма заявки</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </div>
           )}
