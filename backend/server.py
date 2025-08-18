@@ -18815,7 +18815,7 @@ async def create_chat(chat_data: ChatCreate, current_user=Depends(get_current_us
         chat_id = str(uuid.uuid4())
         
         # Получаем информацию о создателе
-        creator = db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        creator = db.users.find_one({"id": current_user.id}, {"_id": 0})
         if not creator:
             raise HTTPException(status_code=404, detail="Creator not found")
         
