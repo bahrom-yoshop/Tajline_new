@@ -19874,17 +19874,20 @@ function App() {
                             </Select>
                           </div>
 
-                          {/* Поле суммы оплаты (только для наличных и карты) */}
+                          {/* Поле суммы оплаты (для наличных и карты) */}
                           {(operatorCargoForm.payment_method === 'cash' || operatorCargoForm.payment_method === 'card_transfer') && (
                             <div>
-                              <Label htmlFor="payment_amount">Сумма оплаты (сом)</Label>
+                              <Label htmlFor="payment_amount">
+                                {operatorCargoForm.payment_method === 'cash' ? 'Сумма наличными (сом) *' : 'Сумма на карту (сом) *'}
+                              </Label>
                               <Input
                                 id="payment_amount"
                                 type="number"
                                 step="0.01"
+                                min="0"
                                 value={operatorCargoForm.payment_amount}
                                 onChange={(e) => setOperatorCargoForm({...operatorCargoForm, payment_amount: e.target.value})}
-                                placeholder="Введите сумму оплаты"
+                                placeholder={operatorCargoForm.payment_method === 'cash' ? 'Введите сумму наличными' : 'Введите сумму для перевода'}
                                 required={operatorCargoForm.payment_method === 'cash' || operatorCargoForm.payment_method === 'card_transfer'}
                               />
                             </div>
