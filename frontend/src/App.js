@@ -32811,10 +32811,22 @@ function App() {
 
                   {/* Поле для ячейки */}
                   <div>
-                    <Label className="text-sm font-medium text-blue-700">
-                      Шаг 2: Сканирование ячейки
-                      {externalScannerStep === 'cell' && <span className="text-green-600 ml-2">← Текущий шаг</span>}
-                      {externalScannedCell && <span className="text-green-600 ml-2">✓ Завершено</span>}
+                    <Label className={`text-sm font-medium transition-colors duration-300 ${
+                      externalScannerStep === 'cell' ? 'text-yellow-700' : 
+                      externalScannedCell ? 'text-green-700' : 'text-blue-700'
+                    }`}>
+                      <span className="flex items-center">
+                        Шаг 2: Сканирование ячейки
+                        {externalScannerStep === 'cell' && (
+                          <span className="text-yellow-600 ml-2 animate-pulse">← Текущий шаг</span>
+                        )}
+                        {externalScannedCell && (
+                          <span className="text-green-600 ml-2 flex items-center">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
+                            ✓ Завершено
+                          </span>
+                        )}
+                      </span>
                     </Label>
                     <Input
                       placeholder="Отсканируйте QR код ячейки или введите вручную: Б1-П2-Я3"
