@@ -20777,6 +20777,30 @@ function App() {
                                                 )}
                                               </div>
                                             </div>
+                                            
+                                            {/* НОВАЯ СЕКЦИЯ: Связанные грузы */}
+                                            {relatedCargos.length > 1 && (
+                                              <div className="space-y-2">
+                                                <h4 className="font-semibold text-lg text-gray-700 mb-3">📦 Связанные грузы</h4>
+                                                <div className="space-y-1 text-sm">
+                                                  <p><strong>Количество грузов:</strong> {relatedCargos.length}</p>
+                                                  <div className="bg-gray-50 p-3 rounded-lg">
+                                                    <p className="font-medium text-gray-700 mb-2">Грузы из заявки №{item.cargo_number.split('/')[0]}:</p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                      {relatedCargos.map((relatedCargo, index) => (
+                                                        <Badge 
+                                                          key={relatedCargo.id} 
+                                                          variant="outline" 
+                                                          className="bg-blue-50 text-blue-700 border-blue-200"
+                                                        >
+                                                          #{relatedCargo.cargo_number}
+                                                        </Badge>
+                                                      ))}
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            )}
                                           </div>
                                         
                                         {/* Кнопки действий */}
