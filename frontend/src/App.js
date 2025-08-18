@@ -18856,7 +18856,7 @@ function App() {
                                   <Input
                                     id="operator_sender_name"
                                     value={operatorCargoForm.sender_full_name}
-                                    onChange={(e) => setOperatorCargoForm({...operatorCargoForm, sender_full_name: e.target.value})}
+                                    onChange={(e) => setOperatorCargoForm(prev => ({ ...prev, sender_full_name: e.target.value }))}
                                     placeholder="Иванов Иван Иванович"
                                     required
                                   />
