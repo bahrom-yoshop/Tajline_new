@@ -2098,7 +2098,7 @@ async def login(user_data: UserLogin):
         )
     
     # Проверяем правильность пароля
-    if not verify_password(user_data.password, user["password_hash"]):
+    if not verify_password(user_data.password, user["password"]):
         # Получаем информацию о роли для более точного сообщения
         role_names = {
             "admin": "Администратор",
