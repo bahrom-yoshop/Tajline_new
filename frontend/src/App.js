@@ -14043,6 +14043,7 @@ function App() {
         icon: <Package className="w-5 h-5" />,
         section: 'cargo-management',
         subsections: [
+          { id: 'cargo-operator-accept', label: 'Оформить груз' },
           { id: 'cargo-accept', label: 'Принимать новый груз' },
           { id: 'cargo-list', label: 'Список грузов' },
           { id: 'cargo-placement', label: 'Размещение груза' },
