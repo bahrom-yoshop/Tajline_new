@@ -18912,7 +18912,7 @@ async def send_message(chat_id: str, message_data: MessageCreate, current_user=D
             raise HTTPException(status_code=404, detail="Chat not found or access denied")
         
         # Получаем информацию о отправителе
-        user = db.users.find_one({"id": current_user["id"]}, {"_id": 0})
+        user = db.users.find_one({"id": current_user.id}, {"_id": 0})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
