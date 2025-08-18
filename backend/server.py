@@ -8759,15 +8759,27 @@ async def set_cities_bulk(payload: BulkWarehouseCitiesRequest, current_user: Use
 
     # Соберем для каждого склада итоговый список городов к добавлению (merge с существующими)
     for it in payload.items:
-        wh_id = it.get("warehouse_id")
-        if not wh_id:
-            results.append({"warehouse_id": wh_id, "status": "invalid", "reason": "warehouse_id missing"})
-            continue
-        wh = db.warehouses.find_one({"id": wh_id})
-        if not wh:
-            results.append({"warehouse_id": wh_id, "status": "not_found"})
+        ident = it.get("warehouse_id") or it.get("warehouse_id_number")
+        if not ident:
+            results.append({"input": ident, "status": "invalid", "reason": "warehouse_id or warehouse_id_number required"})
             continue
 
+        # Разрешаем идентификатором быть либо UUID (id), либо номером склада (warehouse_id_number, например 001)
+        wh = None
+        try:
+            import re as _re
+            if it.get("warehouse_id_number") or _re.fullmatch(r"^\d{3}$", str(ident).strip()):
+                wh = db.warehouses.find_one({"warehouse_id_number": str(ident).strip()})
+            else:
+                wh = db.warehouses.find_one({"id": str(ident).strip()})
+        except Exception:
+            wh = db.warehouses.find_one({"id": str(ident).strip()})
+
+        if not wh:
+            results.append({"input": ident, "status": "not_found"})
+            continue
+
+        wh_id = wh.get("id")
         existing = wh.get("cities") or []
         existing_norm = [str(c).strip() for c in existing if str(c).strip()]
 
