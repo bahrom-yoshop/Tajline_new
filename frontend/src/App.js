@@ -19893,10 +19893,10 @@ function App() {
                             </div>
                           )}
 
-                          {/* Дата погашения долга (только для оплаты в долг) */}
+                          {/* Дата погашения долга (для оплаты в долг) */}
                           {operatorCargoForm.payment_method === 'credit' && (
                             <div>
-                              <Label htmlFor="debt_due_date">Дата погашения долга</Label>
+                              <Label htmlFor="debt_due_date">Дата погашения долга *</Label>
                               <Input
                                 id="debt_due_date"
                                 type="date"
@@ -19904,7 +19904,11 @@ function App() {
                                 onChange={(e) => setOperatorCargoForm({...operatorCargoForm, debt_due_date: e.target.value})}
                                 required
                                 min={new Date().toISOString().split('T')[0]}
+                                className="w-full"
                               />
+                              <p className="text-xs text-gray-500 mt-1">
+                                Выберите дату, до которой клиент должен погасить долг
+                              </p>
                             </div>
                           )}
 
