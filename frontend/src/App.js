@@ -1620,8 +1620,7 @@ function App() {
         try {
           await fetchAvailableCargoForPlacement(1, availableCargoPerPage);
           showAlert('Список «Размещение» обновлён', 'info');
-          // Автопереход на вкладку «Размещение груза»
-          setActiveTab('placement');
+          // Переход на вкладку «Размещение» выполним после закрытия модалки
         } catch (e) {
           console.warn('Не удалось автообновить «Размещение»:', e);
         }
