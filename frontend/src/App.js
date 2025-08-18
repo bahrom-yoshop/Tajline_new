@@ -19896,76 +19896,7 @@ function App() {
                             </div>
                           )}
 
-                          {/* Способ оплаты */}
-                          <div>
-                            <Label htmlFor="payment_method">Способ оплаты</Label>
-                            <Select 
-                              key="payment-method-select"
-                              value={operatorCargoForm.payment_method} 
-                              onValueChange={(value) => {
-                                const newForm = { ...operatorCargoForm };
-                                newForm.payment_method = value;
-                                
-                                // Сброс зависимых полей
-                                if (value !== 'cash' && value !== 'card_transfer') {
-                                  newForm.payment_amount = '';
-                                }
-                                if (value !== 'credit') {
-                                  newForm.debt_due_date = '';
-                                }
-                                
-                                setOperatorCargoForm(newForm);
-                              }}
-                            >
-                              <SelectTrigger key="payment-method-trigger">
-                                <SelectValue placeholder="Выберите способ оплаты" />
-                              </SelectTrigger>
-                              <SelectContent key="payment-method-content">
-                                <SelectItem key="payment-not_paid" value="not_paid">Не оплачено</SelectItem>
-                                <SelectItem key="payment-cash" value="cash">Наличный</SelectItem>
-                                <SelectItem key="payment-card_transfer" value="card_transfer">На карту</SelectItem>
-                                <SelectItem key="payment-cash_on_delivery" value="cash_on_delivery">Оплата при получении</SelectItem>
-                                <SelectItem key="payment-credit" value="credit">Оплата в долг</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* Поле суммы оплаты (для наличных и карты) */}
-                          {(operatorCargoForm.payment_method === 'cash' || operatorCargoForm.payment_method === 'card_transfer') && (
-                            <div>
-                              <Label htmlFor="payment_amount">
-                                {operatorCargoForm.payment_method === 'cash' ? 'Сумма наличными (сом) *' : 'Сумма на карту (сом) *'}
-                              </Label>
-                              <Input
-                                id="payment_amount"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={operatorCargoForm.payment_amount}
-                                onChange={(e) => setOperatorCargoForm({...operatorCargoForm, payment_amount: e.target.value})}
-                                placeholder={operatorCargoForm.payment_method === 'cash' ? 'Введите сумму наличными' : 'Введите сумму для перевода'}
-                                required={operatorCargoForm.payment_method === 'cash' || operatorCargoForm.payment_method === 'card_transfer'}
-                              />
-                            </div>
-                          )}
-
-                          {/* Дата погашения долга (для оплаты в долг) */}
-                          {operatorCargoForm.payment_method === 'credit' && (
-                            <div>
-                              <Label htmlFor="debt_due_date">Дата погашения долга *</Label>
-                              <Input
-                                id="debt_due_date"
-                                type="date"
-                                value={operatorCargoForm.debt_due_date}
-                                onChange={(e) => setOperatorCargoForm({...operatorCargoForm, debt_due_date: e.target.value})}
-                                required
-                                min={new Date().toISOString().split('T')[0]}
-                                className="w-full"
-                              />
-                              <p className="text-xs text-gray-500 mt-1">
-                                Выберите дату, до которой клиент должен погасить долг
-                              </p>
-                            </div>
+                          {/* Кнопки действий - показываем только в обычном режиме */}                </div>
                           )}
 
                           {/* Кнопки действий - показываем только в обычном режиме */}
