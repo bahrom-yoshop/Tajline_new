@@ -23073,8 +23073,6 @@ function App() {
                         </DialogContent>
                       </Dialog>
 
-                                  </CardContent>
-                                </Card>
                               ))}
                             </>
                           )}
