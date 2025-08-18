@@ -148,6 +148,8 @@ function App() {
   const [cityModalOpen, setCityModalOpen] = useState(false);
   const [cityModalWarehouse, setCityModalWarehouse] = useState(null);
   const [cityModalText, setCityModalText] = useState('');
+  const [cityListModalOpen, setCityListModalOpen] = useState(false);
+  const [cityListModalWarehouse, setCityListModalWarehouse] = useState(null);
   const [warehousesStatistics, setWarehousesStatistics] = useState({}); // Статистика складов
   const [warehouseCargo, setWarehouseCargo] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
