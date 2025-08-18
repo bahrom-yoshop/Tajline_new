@@ -22862,6 +22862,7 @@ function App() {
                       💬 РАЗДЕЛ ЧАТА
                       ======================================== */}
                   
+                  {console.log('🔧 ПРОВЕРКА РЕНДЕРИНГА ЧАТА - activeSection:', activeSection, 'тип:', typeof activeSection, 'равен ли chat:', activeSection === 'chat')}
                   {activeSection === 'chat' && (
                     <>
                       {console.log('🔧 Секция чата рендерится! activeSection:', activeSection, 'activeTab:', activeTab)}
