@@ -22302,9 +22302,23 @@ function App() {
                                           className="rounded mt-2"
                                         />
                                         <div>
-                                          <h3 className="font-bold text-xl text-gray-900 mb-2">
+                                          <h3 className="font-bold text-xl text-gray-900 mb-1">
                                             🏭 {warehouse.name}
                                           </h3>
+                                          <div className="text-xs text-gray-500 mb-2 select-all">
+                                            ID: {warehouse.id} | №: {warehouse.warehouse_id_number || '—'}
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              className="ml-2 px-2 py-0 text-xs"
+                                              onClick={() => {
+                                                navigator.clipboard.writeText(warehouse.id);
+                                                showAlert('ID склада скопирован в буфер обмена', 'success');
+                                              }}
+                                            >
+                                              Скопировать ID
+                                            </Button>
+                                          </div>
                                           <p className="text-gray-600 flex items-center mb-1">
                                             <MapPin className="inline h-4 w-4 mr-2" />
                                             {warehouse.location}
