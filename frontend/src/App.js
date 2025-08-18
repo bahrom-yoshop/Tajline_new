@@ -25168,8 +25168,9 @@ function App() {
                 // Добавляем информацию о маршруте складования
                 source_warehouse_id: operatorWarehouses[0]?.id, // Склад оператора (откуда)
                 source_warehouse_name: operatorWarehouses[0]?.name,
-                destination_warehouse_id: cargoAcceptanceForm.warehouse_id, // Выбранный склад (куда)
-                destination_warehouse_name: warehouses.find(w => w.id === cargoAcceptanceForm.warehouse_id)?.name,
+                // Автозаполнение склада для выдачи по выбранному городу
+                destination_warehouse_id: cargoAcceptanceForm.warehouse_id, 
+                destination_warehouse_name: cargoAcceptanceForm.destination_warehouse_name || warehouses.find(w => w.id === cargoAcceptanceForm.warehouse_id)?.name,
                 // Указываем, что это маршрутная доставка
                 is_route_delivery: true,
                 route_info: {
