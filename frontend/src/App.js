@@ -22870,6 +22870,7 @@ function App() {
                                         Редактировать
                                       </Button>
 
+                      </CardContent>
                 </div>
               )}
 
