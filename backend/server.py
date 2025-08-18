@@ -2098,7 +2098,14 @@ async def login(user_data: UserLogin):
         )
     
     # Проверяем правильность пароля
-    if not verify_password(user_data.password, user["password"]):
+    stored_password = user.get("password_hash") or user.get("password")
+    if not stored_password:
+        raise HTTPException(
+            status_code=500, 
+            detail="User password not found in database"
+        )
+    
+    if not verify_password(user_data.password, stored_password):
         # Получаем информацию о роли для более точного сообщения
         role_names = {
             "admin": "Администратор",
