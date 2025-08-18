@@ -18421,7 +18421,7 @@ function App() {
                             {/* Кнопка приёма груза через оператора восстановлена */}
                             <Button
                               type="button"
-                              onClick={() => setShowOperatorCargoForm(!showOperatorCargoForm)}
+                              onClick={() => { setShowOperatorCargoForm(!showOperatorCargoForm); if (!showOperatorCargoForm) { setOperatorCargoForm(prev => ({ ...prev, use_multi_cargo: true, cargo_items: prev.cargo_items && prev.cargo_items.length ? prev.cargo_items : [{ cargo_name: '', weight: '', price_per_kg: '' }] })); } }}
                               variant={showOperatorCargoForm ? "default" : "outline"}
                               className={`${showOperatorCargoForm 
                                 ? 'bg-blue-600 hover:bg-blue-700 text-white' 
