@@ -3717,9 +3717,6 @@ function App() {
       }, 100);
     }
   };
-      showAlert('Ошибка обработки данных груза', 'error');
-    }
-  };
 
   // Функция обработки ввода от внешнего сканера для ячейки
   const handleExternalCellScan = async (cellData) => {
